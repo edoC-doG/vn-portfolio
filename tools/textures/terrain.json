@@ -1,6 +1,8 @@
 {
-  "_comment": "Which downloaded folder in assets/incoming/ feeds each terrain layer. The first folder that exists wins.",
-  "rock": ["rock_face", "aerial_rocks_02"],
-  "ground": ["forrest_ground_01", "forest_ground_01"],
-  "sand": ["coast_sand_01"]
+  "_comment": "Which folder in assets/incoming/ feeds each terrain layer. The first folder that exists wins.",
+  "rock": ["rock", "rock_face"],
+  "aerial": ["aerial", "aerial_rocks_02"],
+  "ground": ["ground", "forrest_ground_01", "forest_ground_01"],
+  "sand": ["sand", "coast_sand_01"],
+  "grass": ["grass"]
 }
