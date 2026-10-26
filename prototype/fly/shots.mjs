@@ -13,7 +13,7 @@ await page.route(/cdn\.jsdelivr\.net\/npm\/three@0\.186\.1\/(.*)/, (route) => {
 await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
 const errs = []; page.on('pageerror', (e) => errs.push('PAGEERR ' + e.message)); page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errs.push(m.type() + ' ' + m.text()); });
 const t0 = Date.now();
-await page.goto('http://127.0.0.1:8770/_local.html?test' + (mode === 'phone' ? '' : '&tier=mid'));
+await page.goto('http://127.0.0.1:8770/_local.html?test' + (mode === 'phone' ? '' : '&tier=mid') + (process.env.Q ? '&' + process.env.Q : '')); // Q='time=17:20&rain=0.8' sets the look
 await page.waitForFunction(() => window.__fly, null, { timeout: 120000 });
 await page.evaluate(() => window.__fly.ready);
 console.log('ready in', ((Date.now() - t0) / 1000).toFixed(1), 's');

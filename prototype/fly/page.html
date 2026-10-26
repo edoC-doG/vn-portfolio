@@ -54,6 +54,10 @@
   .sw input:checked { background: var(--coral); }
   .sw input:checked::after { transform: translateX(12px); }
   #loading { color: var(--gold); }
+  .hud { flex-wrap: wrap; row-gap: 6px; }
+  .chip { font: inherit; color: var(--body); background: none; border: 1px solid rgba(230, 238, 236, 0.22); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+  .chip:hover { border-color: rgba(230, 238, 236, 0.5); color: var(--ink); }
+  .chip:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 
   /* panels */
   .panel { position: fixed; z-index: 4; top: calc(96px + env(safe-area-inset-top, 0px)); width: min(440px, 38vw); box-sizing: border-box; max-height: calc(100% - 200px); overflow: auto;
@@ -172,6 +176,9 @@
 </header>
 <div class="hud">
   <span id="fps">– khung/giây</span>
+  <span id="clock" aria-live="off"></span>
+  <button class="chip" id="sky" type="button" title="Đổi giờ trong cảnh">Giờ thật</button>
+  <button class="chip" id="wx" type="button" title="Đổi thời tiết">Thời tiết thật</button>
   <label class="sw"><input type="checkbox" id="light"> Chế độ nhẹ</label>
   <span id="loading" hidden></span>
 </div>

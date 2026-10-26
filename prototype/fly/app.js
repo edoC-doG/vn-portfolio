@@ -71,7 +71,7 @@ const scene = new THREE.Scene();
 const FOG_COL = new THREE.Color(0x173039);
 scene.fog = new THREE.FogExp2(FOG_COL, 0.0042);
 scene.background = FOG_COL.clone();
-const SH = { uTime: { value: 0 }, uScale: { value: 600 }, uBoost: { value: 1 } };
+const SH = { uTime: { value: 0 }, uScale: { value: 600 }, uBoost: { value: 1 }, uLamp: { value: 1 } }; // uLamp: artificial lights, 1 at night, near 0 by day
 const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 9000);
 
 // materials: Lambert on the light tier, Standard otherwise
@@ -101,6 +101,7 @@ const TERRAIN_TEX = /*TERRAIN_TEX*/ null;
 const NAT_TEX = !!(TERRAIN_TEX && ['rock', 'ground', 'field', 'sand'].every((l) => TERRAIN_TEX[l]));
 const toSRGBHex = (m) => '#' + m.map((v) => Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055)).toString(16).padStart(2, '0')).join('');
 const NAT_MAPS = {};
+const WET = { value: 0 }; // rain darkens the ground and makes it shine
 // Terrain, karsts and islands: smooth normals with detail added in the shader. Steep faces become rock with strata,
 // gentle slopes stay vegetated (tinted by the vertex colours), and the waterline turns to wet sand. A procedural bump adds grain.
 const NAT_GLSL = `
@@ -115,7 +116,7 @@ const NAT_GLSL = `
     vec3 vGrad = sign(fDet) * (dHdxy.x * R1 + dHdxy.y * R2);
     return normalize(abs(fDet) * surf_norm - vGrad);
   }
-  varying vec3 vNatP; varying vec3 vNatN; uniform vec3 uRock; uniform vec3 uSand; uniform float uVeg;
+  varying vec3 vNatP; varying vec3 vNatN; uniform vec3 uRock; uniform vec3 uSand; uniform float uVeg; uniform float uWet;
 #ifdef NAT_TEX
   uniform sampler2D tRock, tGround, tField, tSand; uniform vec3 uRockMean, uGroundMean, uFieldMean, uSandMean;
   vec3 triC(sampler2D t, vec3 p, vec3 w){ return texture2D(t, p.zy).rgb * w.x + texture2D(t, p.xz).rgb * w.y + texture2D(t, p.xy).rgb * w.z; }
@@ -140,7 +141,7 @@ function natureMaterial({ color = 0xffffff, vertexColors = false, rock = 0x3b3d3
     if (!LOW) NAT_MAPS[l + 'N'] ??= loadTex('terrain-' + l + '-n');
   }
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uRock = { value: new THREE.Color(rock) }; sh.uniforms.uSand = { value: new THREE.Color(sand) }; sh.uniforms.uVeg = { value: veg };
+    sh.uniforms.uRock = { value: new THREE.Color(rock) }; sh.uniforms.uSand = { value: new THREE.Color(sand) }; sh.uniforms.uVeg = { value: veg }; sh.uniforms.uWet = WET;
     if (NAT_TEX) {
       for (const l of ['rock', 'ground', 'field', 'sand']) {
         const U = l[0].toUpperCase() + l.slice(1);
@@ -180,7 +181,8 @@ function natureMaterial({ color = 0xffffff, vertexColors = false, rock = 0x3b3d3
         #endif
         vec3 natC = mix(veg, rk, rockW);
         natC = mix(natC, sandC * mix(0.55, 1.0, smoothstep(-0.2, 0.9, P.y)), sandW);
-        diffuseColor.rgb = natC;`)
+        diffuseColor.rgb = natC * mix(1.0, 0.6, uWet);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n roughnessFactor = mix(roughnessFactor, 0.3, uWet);')
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 ${LOW ? '' : NAT_TEX ? `        #ifdef NAT_TEX_N
         {
@@ -207,17 +209,22 @@ const sky = new THREE.Mesh(
   new THREE.SphereGeometry(4500, 32, 16),
   new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { top: { value: new THREE.Color(0x050b16) }, mid: { value: new THREE.Color(0x0f2a3a) }, horizon: { value: new THREE.Color(0x173039) } },
+    uniforms: { top: { value: new THREE.Color(0x050b16) }, mid: { value: new THREE.Color(0x0f2a3a) }, horizon: { value: new THREE.Color(0x173039) },
+      uSunDir: { value: new THREE.Vector3(0, -1, 0) }, uSunCol: { value: new THREE.Color(0, 0, 0) }, uSunDisc: { value: 0 } },
     vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; varying vec3 vP;
+    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 horizon; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform float uSunDisc; varying vec3 vP;
       void main(){ float h = clamp(vP.y, -0.1, 1.0);
         vec3 c = mix(horizon, mid, smoothstep(0.0, 0.18, h)); c = mix(c, top, smoothstep(0.18, 0.75, h));
+        // sun: wide glow (strongest low on the horizon at dawn and dusk) and the disc
+        float sd = max(dot(normalize(vP), uSunDir), 0.0);
+        c += uSunCol * (pow(sd, 5.0) * 0.45 + pow(sd, 60.0) * 0.6) + uSunCol * smoothstep(0.9993, 0.9997, sd) * uSunDisc * 6.0;
         gl_FragColor = vec4(c, 1.0);
         #include <colorspace_fragment>
       }`,
   })
 );
 sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
+const STARS_MAT = new THREE.PointsMaterial({ color: 0xcfe6ff, size: 1.4, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.8 });
 {
   const p = [];
   for (let i = 0; i < nq(1400, 700); i++) {
@@ -225,7 +232,7 @@ sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
     p.push(Math.sin(ph) * Math.cos(th) * 4000, Math.cos(ph) * 4000, Math.sin(ph) * Math.sin(th) * 4000);
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
-  const stars = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xcfe6ff, size: 1.4, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.8 }));
+  const stars = new THREE.Points(g, STARS_MAT);
   stars.frustumCulled = false; stars.renderOrder = -9; sky.add(stars);
 }
 function glowTexture() {
@@ -236,9 +243,10 @@ function glowTexture() {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 const moonGroup = new THREE.Group();
+const MOON_HALO = new THREE.SpriteMaterial({ map: glowTexture(), color: 0xbfd8ff, transparent: true, opacity: 0.4, depthWrite: false, fog: false, blending: THREE.AdditiveBlending });
 moonGroup.add(new THREE.Mesh(new THREE.SphereGeometry(60, 32, 16), new THREE.MeshBasicMaterial({ color: 0xfff3d6, fog: false })));
 {
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: 0xbfd8ff, transparent: true, opacity: 0.4, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+  const halo = new THREE.Sprite(MOON_HALO);
   halo.scale.set(380, 380, 1); moonGroup.add(halo);
 }
 scene.add(moonGroup);
@@ -250,12 +258,10 @@ scene.add(moonLight, moonLight.target);
 const warmFill = new THREE.DirectionalLight(0xffc38a, 0.35); warmFill.position.set(-1, 0.4, 1); scene.add(warmFill);
 const heroLight = new THREE.SpotLight(0xffd2a0, 0, 0, 0.34, 0.85, 0); scene.add(heroLight, heroLight.target);
 const warmLight = new THREE.PointLight(0xffa25a, 0, 70, 1.6); scene.add(warmLight);
-{
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const env = new THREE.Scene(); env.add(sky.clone());
-  scene.environment = pmrem.fromScene(env, 0.02).texture;
-  scene.environmentIntensity = 0.5;
-}
+// image-based light from the sky; rebuilt when the time of day or the weather has moved enough (see updateAtmo)
+const PMREM = new THREE.PMREMGenerator(renderer), ENV_SCENE = new THREE.Scene(); ENV_SCENE.add(sky.clone());
+function rebuildEnv() { const old = scene.environment; scene.environment = PMREM.fromScene(ENV_SCENE, 0.02).texture; old?.dispose(); }
+rebuildEnv(); scene.environmentIntensity = 0.5;
 
 // ---------------------------------------------------------------- the S route
 // Stops follow the real east-west order of each place (east = -x, so north is up when seen from the south), spaced evenly north to south.
@@ -411,7 +417,7 @@ const water = new THREE.Mesh(
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       uTime: { value: 0 }, uDeep: { value: new THREE.Color(0x04121a) }, uShallow: { value: new THREE.Color(0x15403f) },
       uSkyLo: { value: new THREE.Color(0x1f4250) }, uSkyHi: { value: new THREE.Color(0x0b2232) }, uMoonCol: { value: new THREE.Color(0xe8f0ff) },
-      uMoonDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() }, uGlintAmt: { value: 1 },
+      uMoonDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() }, uGlintAmt: { value: 1 }, uRain: { value: 0 },
       tNormal: { value: null }, tDepth: { value: null }, uDepthB: { value: new THREE.Vector4(DEPTH_B.x0, DEPTH_B.z0, 1 / DEPTH_B.w, 1 / DEPTH_B.h) },
     }]),
     vertexShader: `varying vec3 vW;
@@ -420,12 +426,23 @@ const water = new THREE.Mesh(
       #include <fog_vertex>
       }`,
     fragmentShader: `uniform float uTime; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSkyLo; uniform vec3 uSkyHi; uniform vec3 uMoonCol; uniform vec3 uMoonDir;
-      uniform float uGlintAmt; uniform sampler2D tNormal; uniform sampler2D tDepth; uniform vec4 uDepthB; varying vec3 vW;
+      uniform float uGlintAmt; uniform float uRain; uniform sampler2D tNormal; uniform sampler2D tDepth; uniform vec4 uDepthB; varying vec3 vW;
       #include <fog_pars_fragment>
       float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       float n2(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
         return mix(mix(h1(i), h1(i + vec2(1.0, 0.0)), u.x), mix(h1(i + vec2(0.0, 1.0)), h1(i + vec2(1.0, 1.0)), u.x), u.y); }
       vec3 nm(vec2 uv){ return texture2D(tNormal, uv).xzy * 2.0 - 1.0; } // the map's blue channel is "up"
+      // rain: expanding rings, one drop per cell, two staggered layers
+      vec2 ripples(vec2 p, float t){
+        vec2 acc = vec2(0.0);
+        for (int k = 0; k < 2; k++) {
+          vec2 q = p * (k == 0 ? 1.0 : 1.37) + float(k) * 7.3, i = floor(q), f = fract(q) - 0.5;
+          float h = h1(i + float(k) * 1.7), ph = fract(t * (0.8 + h * 0.6) + h * 7.0);
+          vec2 d = f - (vec2(h1(i + 3.1), h1(i + 5.7)) - 0.5) * 0.5; float r = length(d), rr = ph * 0.5;
+          acc += d / (r + 1e-3) * sin((r - rr) * 45.0) * smoothstep(0.07, 0.0, abs(r - rr)) * (1.0 - ph);
+        }
+        return acc;
+      }
       void main(){
         vec3 toCam = cameraPosition - vW; float dist = length(toCam); vec3 V = toCam / dist;
         vec2 p = vW.xz;
@@ -433,6 +450,7 @@ const water = new THREE.Mesh(
 ${LOW ? '' : '               + nm(p / 3.7 + vec2(uTime * 0.026, -uTime * 0.021)) * 0.45'};
         float detail = 1.0 - smoothstep(80.0, 900.0, dist);
         vec3 N = normalize(vec3(n.x * 0.42 * detail, n.y, n.z * 0.42 * detail));
+        if (uRain > 0.01) { vec2 rp = ripples(p * 1.4, uTime) * uRain * (1.0 - smoothstep(25.0, 90.0, dist)); N = normalize(N + vec3(rp.x, 0.0, rp.y) * 0.9); }
         // depth of the sea floor under this point (deep sea outside the baked area)
         vec2 duv = (p - uDepthB.xy) * uDepthB.zw; float floorY = -6.0;
         if (duv.x > 0.0 && duv.x < 1.0 && duv.y > 0.0 && duv.y < 1.0) floorY = texture2D(tDepth, duv).r * 12.0 - 6.0;
@@ -474,10 +492,10 @@ function glowMaterial(alpha = 1) {
         gl_Position = projectionMatrix * mvPosition;
         #include <fog_vertex>
       }`,
-    fragmentShader: `varying vec3 vC; uniform float uAlpha;
+    fragmentShader: `varying vec3 vC; uniform float uAlpha; uniform float uLamp;
       #include <fog_pars_fragment>
       void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = pow(max(1.0 - d, 0.0), 2.4) * uAlpha;
-        vec3 c = vC * a;
+        vec3 c = vC * a * uLamp;
         #ifdef USE_FOG
           #ifdef FOG_EXP2
             c *= exp(-fogDensity * fogDensity * vFogDepth * vFogDepth);
@@ -489,7 +507,7 @@ function glowMaterial(alpha = 1) {
         #include <colorspace_fragment>
       }`,
   });
-  m.uniforms.uTime = SH.uTime; m.uniforms.uScale = SH.uScale; m.uniforms.uBoost = SH.uBoost;
+  m.uniforms.uTime = SH.uTime; m.uniforms.uScale = SH.uScale; m.uniforms.uBoost = SH.uBoost; m.uniforms.uLamp = SH.uLamp;
   return m;
 }
 const GLOW_MAT = glowMaterial();
@@ -828,7 +846,7 @@ function addFlag(k, o, rot) {
     const head = new THREE.ConeGeometry(1.3, 3.4, 6).rotateZ(-Math.PI / 2);
     const last = pts[pts.length - 1];
     g.add(new THREE.Mesh(bake([[new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), LOW ? 120 : 200, 0.62, LOW ? 6 : 8), null], [head, MY(last.x + 1.6, last.y + 0.4, 0)]]), dm));
-    ANIM.push({ k, fn: (t) => { dm.emissiveIntensity = 0.9 + 0.35 * Math.sin(t * 1.3); } });
+    ANIM.push({ k, fn: (t) => { dm.emissiveIntensity = (0.9 + 0.35 * Math.sin(t * 1.3)) * lerp(0.3, 1, SH.uLamp.value); } });
     const rail = []; for (let i = 0; i <= 16; i++) for (const sd of [-1, 1]) { const q = at(k, -L / 2 + (i * L) / 16, 36); rail.push({ x: q.x + TX[q.i] * sd * 3, y: 14.8, z: q.z + TZ[q.i] * sd * 3, c: 0xfff1d6, s: 0.12, tw: 0.1 }); }
     field(k, rail, { reflect: false });
   }
@@ -1020,7 +1038,7 @@ const ribbonMat = new THREE.ShaderMaterial({
   const rc = new THREE.CatmullRomCurve3(curve.getSpacedPoints(400).filter((p, i) => i * (LTOT / 400) <= A_STOP[10] + 60).map((p) => p.clone().setY(1.6)));
   OV.add(new THREE.Mesh(new THREE.TubeGeometry(rc, 600, 2.2, 6), ribbonMat));
 }
-const markerMat = glowMaterial(1);
+const markerMat = glowMaterial(1); markerMat.uniforms.uLamp = { value: 1 }; // the overview markers stay lit by day
 const markers = field(-1, STOP_NAMES.map((_, k) => { const p = at(k, 0, 0); return { x: p.x, y: 4, z: p.z, c: 0xffc77a, s: 1, halo: 26, tw: 0.4 }; }), { bodies: false, reflect: false, mat: markerMat });
 const MAPB = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
 const coastMat = new THREE.MeshBasicMaterial({ color: 0x7fbccc, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
@@ -1274,6 +1292,181 @@ if (!LOW) {
   composer.addPass(new OutputPass());
 }
 
+// ---------------------------------------------------------------- time of day and weather
+// Real Vietnam time and real weather by default: the sun's height is computed for the stop being flown over, and the
+// current rain and cloud cover of all 11 places come from Open-Meteo (free, no key). The HUD chips switch to fixed looks.
+const STOP_LL = [[23.364, 105.316], [21.028, 105.854], [20.951, 107.08], [16.463, 107.59], [16.054, 108.202], [12.667, 108.038],
+  [12.238, 109.197], [10.928, 108.102], [10.776, 106.7], [10.045, 105.747], [8.604, 104.72]];
+function sunElevation(ms, lat, lon) {
+  const d = new Date(ms), N = (ms - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5;
+  const B = ((2 * Math.PI) / 365) * (N - 81), eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B); // minutes
+  const decl = ((-23.44 * Math.PI) / 180) * Math.cos(((2 * Math.PI) / 365) * (N + 10));
+  const H = (((ms / 36e5) % 24) + lon / 15 + eot / 60 - 12) * 15 * (Math.PI / 180), phi = (lat * Math.PI) / 180;
+  return (Math.asin(Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.cos(H)) * 180) / Math.PI;
+}
+const C = (h) => new THREE.Color(h);
+// looks by sun elevation (degrees): night, blue hour, sunset, golden hour, day
+const LOOKS = [
+  { e: -14, top: C(0x050b16), mid: C(0x0f2a3a), hor: C(0x173039), hs: C(0x7f9fc0), hg: C(0x0e1a16), hemi: 0.85, key: C(0xa9c4ff), keyI: 1.7, exp: 1.15, lamp: 1, bloom: 0.7,
+    deep: C(0x04121a), shallow: C(0x15403f), wlo: C(0x1f4250), whi: C(0x0b2232), spec: C(0xe8f0ff), sun: C(0x000000) },
+  { e: -4, top: C(0x0b1838), mid: C(0x27466e), hor: C(0x6a6c88), hs: C(0x8aa0c8), hg: C(0x1a2018), hemi: 0.95, key: C(0x9fb4e0), keyI: 1.1, exp: 1.12, lamp: 0.9, bloom: 0.6,
+    deep: C(0x08182a), shallow: C(0x1b4648), wlo: C(0x56658a), whi: C(0x27466e), spec: C(0xb8c4f0), sun: C(0x3a2030) },
+  { e: 1.5, top: C(0x1d3a6e), mid: C(0x55699a), hor: C(0xf09058), hs: C(0xb0b4cc), hg: C(0x3a3020), hemi: 1.25, key: C(0xff9a58), keyI: 2.4, exp: 1.0, lamp: 0.55, bloom: 0.5,
+    deep: C(0x0e2230), shallow: C(0x2a5450), wlo: C(0xd0885c), whi: C(0x4a6a9a), spec: C(0xffb070), sun: C(0xff8a40) },
+  { e: 12, top: C(0x2c6ab4), mid: C(0x78a6d6), hor: C(0xf0c8a0), hs: C(0xbcd4ee), hg: C(0x4a4430), hemi: 1.55, key: C(0xffd2a0), keyI: 3.0, exp: 0.95, lamp: 0.12, bloom: 0.32,
+    deep: C(0x0f3346), shallow: C(0x2f6a62), wlo: C(0xc8d0d8), whi: C(0x6f9ccc), spec: C(0xfff0d0), sun: C(0xffc890) },
+  { e: 40, top: C(0x2766be), mid: C(0x6ca2dc), hor: C(0xcde1f0), hs: C(0xcfe3ff), hg: C(0x4d4a36), hemi: 1.85, key: C(0xfff4e2), keyI: 3.4, exp: 0.9, lamp: 0, bloom: 0.22,
+    deep: C(0x0d3a52), shallow: C(0x2e7a72), wlo: C(0xb8d4ea), whi: C(0x5f98d4), spec: C(0xffffff), sun: C(0xfff0d8) },
+];
+const OVERCAST = { day: [C(0x7b8792), C(0x96a2ac), C(0xb0b9c0)], night: [C(0x080d12), C(0x131b21), C(0x1b2429)] };
+const ATMO = {
+  timeMode: 'real', wxMode: 'real', e: -20, rain: 0, cloud: 0, hemi: 0.85, fogK: 1, flash: 0, nextFlash: 4, envE: 999, envC: -1, envT: 0, clock: '', wx: null,
+  look: Object.fromEntries(Object.entries(LOOKS[0]).map(([k, v]) => [k, v.isColor ? v.clone() : v])),
+};
+// URL overrides for testing: ?time=HH:MM (Vietnam time), ?rain=0..1, ?cloud=0..1. Screenshots default to a clear night.
+const Q_TIME = Q.get('time') || (TEST ? '22:00' : null), Q_RAIN = Q.has('rain') ? +Q.get('rain') : TEST ? 0 : null, Q_CLOUD = Q.has('cloud') ? +Q.get('cloud') : null;
+const TIME_MODES = { real: null, day: 45, sunset: 1.5, night: -25 }, TIME_LABEL = { real: 'Giờ thật', day: 'Ban ngày', sunset: 'Hoàng hôn', night: 'Ban đêm' };
+const WX_MODES = { real: null, clear: [0, 0.1], rain: [0.85, 1] }, WX_LABEL = { real: 'Thời tiết thật', clear: 'Trời quang', rain: 'Mưa' };
+function nowMs() {
+  if (!Q_TIME) return Date.now();
+  const [hh, mm] = Q_TIME.split(':').map(Number), vn = new Date(Date.now() + 7 * 36e5);
+  return Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate(), hh - 7, mm || 0);
+}
+async function fetchWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${STOP_LL.map((l) => l[0]).join(',')}&longitude=${STOP_LL.map((l) => l[1]).join(',')}&current=precipitation,cloud_cover,weather_code`;
+    const j = await (await fetch(url)).json(), list = Array.isArray(j) ? j : [j];
+    ATMO.wx = list.map(({ current: c = {} }) => {
+      const wet = (c.weather_code >= 51 && c.weather_code <= 67) || (c.weather_code >= 80 && c.weather_code <= 99);
+      return { rain: c.precipitation > 0.05 || wet ? clamp(0.25 + (c.precipitation || 0) / 4, 0.25, 1) : 0, cloud: clamp((c.cloud_cover ?? 0) / 100, 0, 1), storm: c.weather_code >= 95 };
+    });
+  } catch (e) { console.warn('weather', e); }
+}
+if (Q_RAIN === null && !TEST) { fetchWeather(); setInterval(fetchWeather, 15 * 60 * 1000); }
+window.__setWeather = (list) => { ATMO.wx = list; }; // tests feed fake Open-Meteo results through this
+
+// rain: streaks around the camera, fixed in the world so they do not swim when the camera moves
+const RAIN_N = LOW ? 2200 : 6000;
+const rainMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, fog: true,
+  uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uRain: { value: 0 }, uCol: { value: new THREE.Color(0.7, 0.75, 0.8) } }]),
+  vertexShader: `attribute vec3 aSeed; uniform float uTime; uniform float uRain; varying float vA; varying float vX;
+    #include <fog_pars_vertex>
+    void main(){
+      const float BOX = 64.0, HGT = 36.0;
+      float speed = 34.0 + aSeed.y * 12.0, len = 0.9 + aSeed.z * 0.8;
+      vec3 c;
+      c.y = cameraPosition.y - HGT * 0.45 + mod(aSeed.y * HGT * 7.0 - uTime * speed, HGT);
+      c.x = cameraPosition.x + mod(aSeed.x * BOX - cameraPosition.x, BOX) - BOX * 0.5;
+      c.z = cameraPosition.z + mod(aSeed.z * BOX * 3.1 - cameraPosition.z, BOX) - BOX * 0.5;
+      vec3 dir = normalize(vec3(0.12, -1.0, 0.05)), view = normalize(c - cameraPosition);
+      vec3 right = normalize(cross(dir, view));
+      vec3 p = c + right * position.x * 0.045 - dir * position.y * len;
+      float d = distance(c, cameraPosition);
+      vA = step(fract(aSeed.x * 13.17 + aSeed.z * 7.73), uRain) * smoothstep(1.5, 4.0, d) * (1.0 - smoothstep(20.0, 34.0, d));
+      vX = position.x * 2.0;
+      vec4 mvPosition = viewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mvPosition;
+      #include <fog_vertex>
+    }`,
+  fragmentShader: `uniform vec3 uCol; varying float vA; varying float vX;
+    #include <fog_pars_fragment>
+    void main(){ if (vA <= 0.0) discard; gl_FragColor = vec4(uCol, vA * 0.32 * (1.0 - abs(vX)));
+      #include <colorspace_fragment>
+      #include <fog_fragment>
+    }`,
+});
+rainMat.uniforms.uTime = SH.uTime;
+const rain = (() => {
+  const g = new THREE.InstancedBufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([-0.5, 0, 0, 0.5, 0, 0, 0.5, 1, 0, -0.5, 1, 0], 3)); g.setIndex([0, 1, 2, 0, 2, 3]);
+  const seed = new Float32Array(RAIN_N * 3); for (let i = 0; i < seed.length; i++) seed[i] = Math.random();
+  g.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seed, 3)); g.instanceCount = RAIN_N;
+  const m = new THREE.Mesh(g, rainMat); m.frustumCulled = false; m.renderOrder = 5; m.visible = false; scene.add(m); return m;
+})();
+
+const _sun = new THREE.Vector3(), _moon = new THREE.Vector3(), _key = new THREE.Vector3(), _c1 = new THREE.Color(), _c2 = new THREE.Color();
+let lastLamp = -1;
+function updateAtmo(dt, camY) {
+  const A = ATMO, k = STATE.s.k;
+  // time
+  const ms = nowMs(), fixedE = TIME_MODES[A.timeMode];
+  A.e = fixedE ?? sunElevation(ms, STOP_LL[k][0], STOP_LL[k][1]);
+  const vn = new Date(ms + 7 * 36e5); A.clock = `${String(vn.getUTCHours()).padStart(2, '0')}:${String(vn.getUTCMinutes()).padStart(2, '0')}`;
+  // weather: fixed look, URL override or the place being flown over; eased so moving between stops changes it gradually
+  let tr = 0, tc = 0, storm = false;
+  if (WX_MODES[A.wxMode]) [tr, tc] = WX_MODES[A.wxMode];
+  else if (Q_RAIN !== null) { tr = Q_RAIN; tc = Q_CLOUD ?? Math.max(Q_RAIN > 0 ? 0.9 : 0.1, 0); }
+  else if (A.wx) { const w = A.wx[k] || A.wx[0]; tr = w.rain; tc = w.cloud; storm = w.storm; }
+  if (Q_CLOUD !== null && !WX_MODES[A.wxMode]) tc = Q_CLOUD;
+  const ease = 1 - Math.exp(-dt / (TEST ? 0.05 : 2.5));
+  A.rain += (tr - A.rain) * ease; A.cloud += (tc - A.cloud) * ease;
+  // blend the looks by sun height, then pull towards overcast and rain
+  let i = 0; while (i < LOOKS.length - 2 && A.e > LOOKS[i + 1].e) i++;
+  const L0 = LOOKS[i], L1 = LOOKS[i + 1], t = smooth(L0.e, L1.e, A.e), L = A.look;
+  for (const key in L0) if (key !== 'e') { if (L0[key].isColor) L[key].copy(L0[key]).lerp(L1[key], t); else L[key] = lerp(L0[key], L1[key], t); }
+  const dayF = smooth(-6, 10, A.e), oc = A.cloud * 0.85, wet = A.rain;
+  const over = (j) => _c1.copy(OVERCAST.night[j]).lerp(OVERCAST.day[j], dayF);
+  L.top.lerp(over(0), oc); L.mid.lerp(over(1), oc); L.hor.lerp(over(2), oc);
+  L.wlo.lerp(over(2), oc * 0.8); L.whi.lerp(over(1), oc * 0.8); L.deep.multiplyScalar(1 - 0.3 * wet);
+  // lightning in heavy night rain
+  A.flash = Math.max(0, A.flash - dt * 6);
+  if (wet > 0.55 && dayF < 0.5 && !TEST) { A.nextFlash -= dt; if (A.nextFlash < 0) { A.flash = 1; A.nextFlash = (storm ? 3 : 7) + Math.random() * 9; setTimeout(() => { A.flash = 0.8; }, 140); } }
+  // sky, fog, background
+  const sk = sky.material.uniforms;
+  sk.top.value.copy(L.top); sk.mid.value.copy(L.mid); sk.horizon.value.copy(L.hor).lerp(_c2.setRGB(0.8, 0.85, 1), A.flash * 0.5);
+  scene.fog.color.copy(L.hor).lerp(L.mid, 0.25); scene.background.copy(scene.fog.color);
+  A.fogK = (1 - 0.15 * dayF) * (1 + 1.4 * wet);
+  STARS_MAT.opacity = 0.8 * (1 - dayF) * (1 - A.cloud);
+  moonGroup.visible = (1 - dayF) * (1 - A.cloud) > 0.03; MOON_HALO.opacity = 0.4 * (1 - A.cloud);
+  // sun: low in front of the camera at dawn and dusk (glitter on the water), swinging to the side as it climbs
+  const az = lerp(0.45, 2.1, smooth(8, 35, A.e)), el = (Math.max(A.e, -2) * Math.PI) / 180;
+  _sun.copy(fwd).applyAxisAngle(_v3.set(0, 1, 0), -az).multiplyScalar(Math.cos(el)).setY(Math.sin(el)).normalize();
+  _moon.copy(moonGroup.position).sub(camera.position).normalize();
+  // what shines on the water (moon or sun, in front) and what lights the scene (from behind and to the side, so landmarks are lit)
+  _key.copy(_moon).lerp(_sun, smooth(-6, 0, A.e)).normalize();
+  const lightUp = lerp(420, 60 + 520 * Math.sin(Math.max(el, 0.12)), dayF);
+  _v3.copy(fwd).multiplyScalar(-260).addScaledVector(left, 320).setY(lightUp).normalize();
+  sk.uSunDir.value.copy(_sun); sk.uSunCol.value.copy(L.sun).multiplyScalar(1 - A.cloud * 0.9); sk.uSunDisc.value = smooth(-1, 2, A.e) * (1 - A.cloud);
+  // lights
+  HEMI.color.copy(L.hs); HEMI.groundColor.copy(L.hg); A.hemi = L.hemi * (1 + 0.1 * A.cloud);
+  moonLight.color.copy(L.key); moonLight.intensity = L.keyI * (1 - 0.75 * A.cloud) + A.flash * 2;
+  moonLight.position.copy(camera.position).addScaledVector(_v3, 500); moonLight.target.position.copy(camera.position).addScaledVector(fwd, 60);
+  warmFill.intensity = 0.35 * (1 - dayF * 0.7);
+  renderer.toneMappingExposure = L.exp + 0.08 * A.cloud;
+  if (bloomPass) { bloomPass.strength = L.bloom; bloomPass.threshold = lerp(0.82, 0.92, dayF); }
+  // water
+  const wu = water.material.uniforms;
+  wu.uDeep.value.copy(L.deep); wu.uShallow.value.copy(L.shallow); wu.uSkyLo.value.copy(L.wlo); wu.uSkyHi.value.copy(L.whi);
+  wu.uMoonCol.value.copy(L.spec).multiplyScalar((1 - 0.85 * A.cloud) * (1 - 0.5 * wet)); wu.uMoonDir.value.copy(_key); wu.uRain.value = wet;
+  // artificial lights fade out by day
+  SH.uLamp.value = L.lamp;
+  if (Math.abs(L.lamp - lastLamp) > 0.01) {
+    lastLamp = L.lamp;
+    WINDOW_MAT.emissiveIntensity = 0.85 * lerp(0.1, 1, L.lamp);
+    for (const f of FIELDS) if (f.mesh) f.mesh.material.color.setScalar(lerp(0.3, 1, L.lamp));
+  }
+  impMat.uniforms.uLight.value.copy(L.hs).lerp(_c2.setRGB(1, 1, 1), 0.7).multiplyScalar(0.25 * A.hemi + 0.12 * moonLight.intensity);
+  // rain and wet ground
+  WET.value = Math.min(1, wet * 1.6);
+  rainMat.uniforms.uRain.value = wet; rain.visible = wet > 0.02 && camY < 160;
+  rainMat.uniforms.uCol.value.setRGB(0.55, 0.6, 0.66).lerp(_c2.setRGB(0.85, 0.88, 0.92), dayF);
+  // the image-based light follows the sky, rebuilt only when it changed enough
+  A.envT -= dt;
+  if (A.envT <= 0 && (Math.abs(A.e - A.envE) > 2.5 || Math.abs(A.cloud - A.envC) > 0.1)) { A.envE = A.e; A.envC = A.cloud; A.envT = TEST ? 0 : 2; rebuildEnv(); }
+  updateSkyChip();
+}
+const skyChip = $('#sky'), wxChip = $('#wx'), clockEl = $('#clock');
+let chipText = '';
+function updateSkyChip() {
+  const A = ATMO, place = STOP_NAMES[STATE.s.k];
+  const w = A.rain > 0.6 ? 'mưa to' : A.rain > 0.12 ? 'mưa' : A.cloud > 0.65 ? 'nhiều mây' : A.e > 0 ? 'nắng' : 'trời quang';
+  const txt = `${A.timeMode === 'real' ? A.clock : TIME_LABEL[A.timeMode]} · ${place} · ${w}`;
+  if (txt !== chipText && clockEl) { chipText = txt; clockEl.textContent = txt; }
+}
+const cycle = (obj, cur) => { const ks = Object.keys(obj); return ks[(ks.indexOf(cur) + 1) % ks.length]; };
+skyChip?.addEventListener('click', () => { ATMO.timeMode = cycle(TIME_MODES, ATMO.timeMode); skyChip.textContent = TIME_LABEL[ATMO.timeMode]; });
+wxChip?.addEventListener('click', () => { ATMO.wxMode = cycle(WX_MODES, ATMO.wxMode); wxChip.textContent = WX_LABEL[ATMO.wxMode]; });
+
 // ---------------------------------------------------------------- UI
 const PANELS = $$('.panel').map((el) => ({ el, k: el.dataset.k, o: -1 }));
 const DOTS = $$('.rail .dot');
@@ -1451,21 +1644,19 @@ function step(u, dt) {
   } else camera.clearViewOffset();
   SH.uScale.value = (renderer.getPixelRatio() * VH * (1 + shiftY)) / (2 * Math.tan((camera.fov * Math.PI) / 360));
   // atmosphere follows altitude
-  scene.fog.density = lerp(0.0042, 0.00016, smooth(25, 420, camY));
+  scene.fog.density = lerp(0.0042, 0.00016, smooth(25, 420, camY)) * ATMO.fogK;
   sky.position.copy(camera.position);
   camera.getWorldDirection(fwd); fwd.y = 0; if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, 1); fwd.normalize();
   left.set(fwd.z, 0, -fwd.x);
   moonGroup.position.copy(camera.position).addScaledVector(fwd, 2600).addScaledVector(left, 700).add(_v3.set(0, 900, 0));
-  moonLight.position.copy(camera.position).addScaledVector(fwd, -260).addScaledVector(left, 320).add(_v3.set(0, 420, 0));
-  moonLight.target.position.copy(camera.position).addScaledVector(fwd, 60);
-  water.material.uniforms.uMoonDir.value.copy(moonGroup.position).sub(camera.position).normalize();
+  updateAtmo(dt, camY);
   // lights on the current landmark
   const s = STATE.s, k = s.k, near = STATE.phase === 'journey' ? s.wb : STATE.phase === 'intro' ? smooth(0.6, 1, STATE.tI) : 1 - smooth(0, 0.4, STATE.tE);
-  heroLight.intensity = 2.6 * near; heroLight.target.position.copy(HERO[k]);
+  heroLight.intensity = 2.6 * near * lerp(0.25, 1, SH.uLamp.value); heroLight.target.position.copy(HERO[k]);
   heroLight.position.copy(camera.position).add(_v3.set(0, 12, 0)).addScaledVector(fwd, -10);
-  warmLight.intensity = 140 * near; warmLight.position.copy(WARM[k]);
+  warmLight.intensity = 140 * near * lerp(0.2, 1, SH.uLamp.value); warmLight.position.copy(WARM[k]);
   // overview layer
-  ribbonMat.uniforms.uAlpha.value = ov; water.material.uniforms.uGlintAmt.value = 1 - smooth(40, 260, camY); HEMI.intensity = lerp(0.85, 1.8, ov); markerMat.uniforms.uAlpha.value = ov; coastMat.opacity = 0.4 * ov;
+  ribbonMat.uniforms.uAlpha.value = ov; water.material.uniforms.uGlintAmt.value = 1 - smooth(40, 260, camY); HEMI.intensity = ATMO.hemi * lerp(1, 2.1, ov) + ATMO.flash * 3; markerMat.uniforms.uAlpha.value = ov; coastMat.opacity = 0.4 * ov;
   ribbonMat.uniforms.uLit.value = STATE.phase === 'end' ? smooth(0.15, 0.85, STATE.tE) * 0.985 : STATE.phase === 'journey' ? STATE.ujour * 0.985 : 0;
   OV.visible = ov > 0.01; markers.pts.visible = ov > 0.01;
   SH.uBoost.value = lerp(1, 2.6, ov);
@@ -1485,6 +1676,8 @@ requestAnimationFrame(frame);
 // test hooks
 window.__fly = {
   ready: Promise.all([...MODEL_JOBS, ...TEX_JOBS]),
+  atmo: () => ({ e: +ATMO.e.toFixed(1), rain: +ATMO.rain.toFixed(2), cloud: +ATMO.cloud.toFixed(2), clock: ATMO.clock }),
+  setTime(mode) { ATMO.timeMode = mode; }, setWx(mode) { ATMO.wxMode = mode; },
   trees: () => ({ total: TREES.x.length, near: NEAR_TREES.map((l) => l[0]?.count ?? 0), uNear: impMat.uniforms.uNear.value }),
   shot(u, t = 10) { curU = targetU = u; T = t; writeU(u); step(u, 0.016); step(u, 0.5); step(u, 0.5); step(u, 0.5); step(u, 0.5); },
   uOfStop, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, tier: TIER, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }),
