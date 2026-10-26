@@ -10,6 +10,7 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | Storyboard 11 chặng và bản điện thoại | Xong, ảnh ở `docs/storyboard` |
 | CV nhanh song ngữ Việt / Anh | Xong, ở `prototype/quick-cv` |
 | Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
+| Cây, mặt nước, địa hình | Rừng 4 loại cây từ EZ-Tree (MIT), mặt nước có normal map, vệt trăng và bọt sóng, địa hình có đá / thảm thực vật / cát bằng shader. Nguồn và giấy phép ở `docs/MODELS.md`. |
 | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện Thành phố | Đã làm trên Meshy, **chưa có file**. Code đã chừa sẵn chỗ. |
 | Chợ Bến Thành | Cần làm lại màu (Retexture) trên Meshy |
 | Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` |
@@ -25,7 +26,9 @@ prototype/fly/                       bản bay liên tục: app.js (cảnh + má
 prototype/storyboard-scene/          cảnh tĩnh dùng để chụp storyboard
 prototype/quick-cv/                  trang CV nhanh
 prototype/model-viewer/              trang xem từng model theo mức
+assets/textures/                     normal map mặt nước, ảnh impostor của cây
 tools/                               xử lý model (gltf-transform, meshoptimizer, sharp) và chụp thử bằng Playwright
+tools/trees/                         sinh cây bằng EZ-Tree (`npm run trees`)
 ```
 
 ## Chạy bản bay thử

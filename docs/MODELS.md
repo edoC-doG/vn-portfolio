@@ -65,3 +65,32 @@ bash run_all.sh /đường/dẫn/thư-mục-file-meshy
 3. Nén texture WebP.
 4. `quantize`.
 5. Xuất ra 3 mức.
+
+## Cây, mặt nước và địa hình (nguồn mở)
+
+| Thành phần | Nguồn | Giấy phép | File |
+|---|---|---|---|
+| 4 loại cây: sồi, tần bì (rừng lá rộng), thông (Hà Giang, Tây Nguyên), bụi | [EZ-Tree](https://github.com/dgreenheck/ez-tree) của Daniel Greenheck, sinh từ các preset rồi rút gọn. Texture vỏ cây gốc từ Poly Haven và texturecan (CC0). | MIT | `assets/models/{mid,low}/tree-*.glb`, `assets/textures/tree-impostors.png` |
+| Normal map mặt nước | three.js `examples/textures/waternormals.jpg` | MIT | `assets/textures/waternormals.jpg` |
+| Đá, thảm thực vật, cát ướt trên địa hình, núi đá vôi | Shader tự viết (noise), không dùng texture ngoài | — | `prototype/fly/app.js` (`natureMaterial`) |
+
+Sinh lại cây (cần Chromium cho Playwright):
+
+```bash
+cd tools && npm install
+CHROME_PATH=/đường/dẫn/chrome npm run trees
+```
+
+`tools/trees/kinds.js` khai báo loại cây và mức chi tiết. Mỗi cây được chuẩn hóa vào khối 1 × 1 × 1, gốc ở y = 0.
+
+| Mức | Tam giác (cành + lá) | Dung lượng |
+|---|---|---|
+| mid | 3,2k – 5,9k | 200 – 340 KB |
+| low | 0,6k – 2,2k | 50 – 125 KB |
+
+Ảnh impostor (`tree-impostors.png`, 2048 × 256) chụp mỗi loại từ trước và từ bên, 256 px mỗi góc.
+
+Cách vẽ rừng trong bản bay thử:
+- Khoảng 2.600 cây (mức thấp 1.500). Mật độ theo chặng (`FOREST`), tỉ lệ thông theo chặng (`PINE`), có khoảng trống theo noise.
+- Không trồng cây trên công trình, bệ, ruộng bậc thang, các khu bằng phẳng (Ba Đình, phố Hội An) và trên đường nhìn từ máy quay tới công trình của mỗi chặng.
+- Cây xa: hai tấm ảnh bắt chéo, mỗi khối địa hình một draw call. Cây gần (trong 56 đơn vị, tối đa 120 cây): mesh thật, chuyển sang bằng dither nên không bị giật. Mức thấp chỉ dùng ảnh.

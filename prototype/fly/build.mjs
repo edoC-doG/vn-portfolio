@@ -2,6 +2,7 @@
 //   dist/index.html   page with the script inlined (what gets published)
 //   dist/_local.html  same page wrapped in a full document, for local testing
 //   dist/models/{low,mid}/*.txt  base64 copies of assets/models (the hosting used for previews cannot serve .glb)
+//   dist/textures/*.txt          base64 copies of assets/textures
 import fs from 'fs';
 import path from 'path';
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -16,5 +17,10 @@ for (const tier of ['low', 'mid']) {
   const src = path.join(here, '../../assets/models', tier), dst = path.join(dist, 'models', tier);
   fs.mkdirSync(dst, { recursive: true });
   for (const f of fs.readdirSync(src).filter((f) => f.endsWith('.glb'))) fs.writeFileSync(path.join(dst, f.replace('.glb', '.txt')), fs.readFileSync(path.join(src, f)).toString('base64'));
+}
+{
+  const src = path.join(here, '../../assets/textures'), dst = path.join(dist, 'textures');
+  fs.mkdirSync(dst, { recursive: true });
+  for (const f of fs.readdirSync(src).filter((f) => /\.(jpe?g|png|webp)$/.test(f))) fs.writeFileSync(path.join(dst, f.replace(/\.\w+$/, '.txt')), fs.readFileSync(path.join(src, f)).toString('base64'));
 }
 console.log('built', (out.length / 1024).toFixed(1), 'KB page + models');

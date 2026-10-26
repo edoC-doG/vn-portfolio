@@ -27,13 +27,14 @@ const all = {
 };
 const want = list ? list.split(',') : Object.keys(all);
 fs.mkdirSync('shots', { recursive: true });
+await page.evaluate((u) => window.__fly.shot(u), all[want[0]]); await page.waitForTimeout(500); // warm-up: the first frame after loading is not settled yet
 for (const name of want) {
   const u = all[name];
   const t1 = Date.now();
   await page.evaluate((u) => window.__fly.shot(u), u);
   await page.waitForTimeout(400); // let the rail label's CSS transition settle
   await page.screenshot({ path: `shots/${mode}-${name}.png` });
-  const info = await page.evaluate(() => window.__fly.info());
+  const info = await page.evaluate(() => ({ ...window.__fly.info(), ...(window.__fly.trees ? window.__fly.trees() : {}) }));
   console.log(name, u.toFixed(4), JSON.stringify(info), ((Date.now() - t1) / 1000).toFixed(1) + 's');
 }
 console.log([...new Set(errs)].slice(0, 20).join('\n'));

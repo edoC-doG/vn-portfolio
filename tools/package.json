@@ -4,9 +4,11 @@
   "scripts": {
     "models": "bash run_all.sh",
     "fly:build": "node ../prototype/fly/build.mjs",
-    "fly:shots": "node ../prototype/fly/shots.mjs"
+    "fly:shots": "node ../prototype/fly/shots.mjs",
+    "trees": "node trees/bake.mjs"
   },
   "dependencies": {
+    "@dgreenheck/ez-tree": "^1.1.0",
     "@gltf-transform/cli": "^4.5.1",
     "@gltf-transform/core": "^4.5.1",
     "@gltf-transform/extensions": "^4.5.1",

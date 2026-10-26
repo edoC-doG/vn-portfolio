@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/","ez-tree":"/node_modules/@dgreenheck/ez-tree/build/ez-tree.es.js"}}</script>
+</head><body><canvas id="c"></canvas>
+<script type="module">
+// Generates the forest trees with EZ-Tree (MIT, github.com/dgreenheck/ez-tree) and hands them to bake.mjs:
+//  - one GLB per kind and level, normalised so the tree fits a 1 x 1 x 1 box standing on y = 0
+//  - one impostor atlas: every kind seen from the front and from the side, 256 px per view, transparent background
+import * as THREE from 'three';
+import { Tree } from 'ez-tree';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { KINDS, LEVELS } from './kinds.js';
+
+function make(kind, L) {
+  const t = new Tree(); t.loadPreset(kind.preset);
+  const o = t.options;
+  if (kind.seed !== undefined) o.seed = kind.seed;
+  if (kind.leafTint !== undefined) o.leaves.tint = kind.leafTint;
+  if (kind.barkTint !== undefined) o.bark.tint = kind.barkTint;
+  o.leaves.count = Math.max(1, Math.round(o.leaves.count * L.leaf * (kind.leaf ?? 1)));
+  o.leaves.size *= L.size;
+  for (const k in o.branch.sections) o.branch.sections[k] = Math.max(1, Math.round(o.branch.sections[k] * L.sec));
+  for (const k in o.branch.segments) o.branch.segments[k] = Math.max(3, Math.round(o.branch.segments[k] * L.seg));
+  if (L.maxLevels !== undefined) o.branch.levels = Math.min(o.branch.levels, L.maxLevels);
+  if (L.child !== undefined) { const d = o.branch.levels - 1; o.branch.children[d] = Math.max(1, Math.round(o.branch.children[d] * L.child)); }
+  t.generate();
+  const m = t.branchesMesh.material;
+  if (!L.normal) { m.normalMap = null; } m.aoMap = null; m.roughnessMap = null; m.needsUpdate = true;
+  // fit in a unit box: trunk at the origin, base on y = 0
+  const box = new THREE.Box3().setFromObject(t);
+  const s = 1 / Math.max(box.max.y - box.min.y, 2 * Math.max(-box.min.x, box.max.x), 2 * Math.max(-box.min.z, box.max.z));
+  const g = new THREE.Group(); g.name = 'tree-' + kind.name; t.scale.setScalar(s); t.position.y = -box.min.y * s; g.add(t);
+  g.updateMatrixWorld(true);
+  return { g, tris: `${t.branchesMesh.geometry.index.count / 3}+${t.leavesMesh.geometry.index.count / 3}` };
+}
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const b64 = (buf) => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+
+window.bake = async () => {
+  const out = { glb: {}, tris: {} };
+  const built = {};
+  for (const [lvl, L] of Object.entries(LEVELS)) for (const kind of KINDS) built[lvl + '/' + kind.name] = make(kind, L);
+  await wait(2500); // leaf and bark textures decode asynchronously
+  const ex = new GLTFExporter();
+  for (const [key, { g, tris }] of Object.entries(built)) {
+    out.glb[key] = b64(await ex.parseAsync(g, { binary: true }));
+    out.tris[key] = tris;
+  }
+  // impostor atlas from the mid trees
+  const C = 256, cols = KINDS.length * 2, canvas = document.getElementById('c');
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: false, preserveDrawingBuffer: true });
+  r.setPixelRatio(1); r.setSize(C * cols, C, false); r.outputColorSpace = THREE.SRGBColorSpace; r.setClearColor(0x000000, 0); r.setScissorTest(true);
+  const cam = new THREE.OrthographicCamera(-0.5, 0.5, 1, 0, -5, 5);
+  KINDS.forEach((kind, i) => {
+    const s = new THREE.Scene(); s.add(built['mid/' + kind.name].g.clone());
+    s.add(new THREE.HemisphereLight(0xffffff, 0x3a4436, 1.5)); const d = new THREE.DirectionalLight(0xffffff, 1.5); d.position.set(0.4, 1, 0.6); s.add(d);
+    [[0, 0, 2], [2, 0, 0]].forEach(([x, y, z], v) => {
+      cam.position.set(x, y, z); cam.lookAt(0, 0, 0);
+      const col = i * 2 + v; r.setViewport(col * C, 0, C, C); r.setScissor(col * C, 0, C, C); r.clear(); r.render(s, cam);
+    });
+  });
+  out.atlas = canvas.toDataURL('image/png').split(',')[1];
+  return out;
+};
+window.ready = true;
+</script></body></html>
