@@ -1,0 +1,363 @@
+<title>Từ Lũng Cú đến Cà Mau</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Phudu:wght@600;700&display=swap">
+<style>
+  /* Layout: a full-screen night river in 3D; one floating panel per stop sits opposite the landmark; the stop rail runs along the bottom. Phone: panels become a bottom sheet. */
+  :root {
+    --night: #0a1418;
+    --ink: #e6eeec;
+    --body: #c9d6d4;
+    --muted: #a9bdba;
+    --coral: #f07261;
+    --gold: #d9ae5a;
+    --amber: #ffb347;
+    --panel: rgba(8, 19, 22, 0.84);
+    --line: rgba(230, 238, 236, 0.13);
+    --dot: #6e8584;
+    --dot-past: #b9c9c6;
+    --on-coral: #1a0e0b;
+    --f-display: 'Phudu', 'Be Vietnam Pro', system-ui, sans-serif;
+    --f-body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --f-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    --gut-l: max(32px, env(safe-area-inset-left, 0px));
+    --gut-r: max(32px, env(safe-area-inset-right, 0px));
+    color-scheme: dark;
+  }
+  html, body { background: var(--night); color: var(--ink); }
+  body { margin: 0; font-family: var(--f-body); font-size: 15px; line-height: 1.55; overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+  #gl { position: fixed; inset: 0 auto auto 0; width: 100vw; height: 100vh; height: 100lvh; display: block; touch-action: pan-y; }
+  #track { height: 2800vh; height: 2800lvh; }
+
+  /* top bar */
+  .top { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: calc(18px + env(safe-area-inset-top, 0px)) var(--gut-r) 0 var(--gut-l); pointer-events: none; }
+  .top > * { pointer-events: auto; }
+  .mark { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: 0.04em; color: var(--ink); text-decoration: none; }
+  .mark span { color: var(--coral); }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(230, 238, 236, 0.24); background: rgba(8, 19, 22, 0.6); color: var(--ink);
+    border-radius: 999px; padding: 7px 14px; font: 500 13px var(--f-body); text-decoration: none; cursor: pointer; }
+  .pill:hover { border-color: rgba(230, 238, 236, 0.5); }
+  .pill.on { background: var(--ink); color: #0d1718; border-color: var(--ink); }
+  .pill svg { width: 12px; height: 12px; }
+  .pill .i-pause { display: none; }
+  .pill.on .i-play { display: none; }
+  .pill.on .i-pause { display: block; }
+
+  .hud { position: fixed; z-index: 5; top: calc(62px + env(safe-area-inset-top, 0px)); left: var(--gut-l); display: flex; gap: 14px; align-items: center;
+    font: 400 11px var(--f-mono); letter-spacing: 0.04em; color: var(--muted); }
+  .sw { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; color: var(--body); }
+  .sw input { appearance: none; -webkit-appearance: none; width: 28px; height: 16px; border-radius: 999px; background: rgba(230, 238, 236, 0.22); position: relative; margin: 0; cursor: pointer; transition: background 0.2s; }
+  .sw input::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); transition: transform 0.2s; }
+  .sw input:checked { background: var(--coral); }
+  .sw input:checked::after { transform: translateX(12px); }
+  #loading { color: var(--gold); }
+
+  /* panels */
+  .panel { position: fixed; z-index: 4; top: calc(96px + env(safe-area-inset-top, 0px)); width: min(440px, 38vw); box-sizing: border-box; max-height: calc(100% - 200px); overflow: auto;
+    padding: 26px 28px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px;
+    opacity: 0; visibility: hidden; pointer-events: none; will-change: opacity, transform; scrollbar-width: thin; }
+  .panel.live { pointer-events: auto; }
+  .panel[data-side="left"] { left: var(--gut-l); }
+  .panel[data-side="right"] { right: var(--gut-r); }
+  .panel.intro { opacity: 1; visibility: visible; pointer-events: auto; background: none; border: 0; padding: 0; top: auto; bottom: calc(132px + env(safe-area-inset-bottom, 0px)); width: min(560px, 46vw); max-height: none; overflow: visible; }
+  .panel.small { width: min(340px, 30vw); padding: 18px 22px; gap: 6px; }
+  .panel p, .panel h1, .panel h2, .panel h3, .panel ol, .panel ul, .panel dl, .panel dd { margin: 0; }
+  .kicker { font: 500 12px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+  .display { font-family: var(--f-display); font-weight: 600; font-size: 34px; line-height: 1.05; text-wrap: balance; }
+  .intro .display { font-weight: 700; font-size: clamp(46px, 6.4vw, 80px); line-height: 0.98; letter-spacing: -0.01em; }
+  .name { font-weight: 700; font-size: 42px; }
+  .lead { font-size: 18px; color: var(--body); max-width: 30em; }
+  .role { font-size: 17px; font-weight: 500; }
+  .panel p.txt { color: var(--body); }
+  .mono { font: 400 13px var(--f-mono); color: var(--muted); }
+  .label { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .rule { height: 1px; background: var(--line); }
+  .seen { display: flex; gap: 8px; align-items: baseline; font: 400 12px var(--f-mono); color: var(--muted); padding-top: 4px; border-top: 1px solid var(--line); }
+  .seen::before { content: ''; flex: 0 0 auto; width: 6px; height: 6px; transform: rotate(45deg) translateY(-1px); background: var(--gold); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: 10px; font: 600 14px var(--f-body); text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+  .btn.primary { background: var(--coral); color: var(--on-coral); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: rgba(230, 238, 236, 0.35); font-weight: 500; }
+  .btn.ghost:hover { border-color: var(--ink); }
+  .hint { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .hint svg { width: 14px; height: 14px; animation: nudge 1.8s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateY(3px); } }
+  .xp { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .xp li { display: flex; flex-direction: column; gap: 1px; padding-left: 14px; border-left: 2px solid rgba(240, 114, 97, 0.35); }
+  .xp li:first-child { border-left-color: var(--coral); }
+  .xp .hd { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .xp b { font-weight: 600; font-size: 15px; }
+  .xp time { font: 400 12px var(--f-mono); color: var(--coral); white-space: nowrap; }
+  .xp .rl { font-size: 13px; color: var(--ink); }
+  .xp .ds { font-size: 13px; color: var(--body); }
+  .proj { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .proj li { display: flex; gap: 12px; padding: 9px 10px; border-radius: 10px; }
+  .proj li:first-child { background: rgba(240, 114, 97, 0.1); border: 1px solid rgba(240, 114, 97, 0.35); }
+  .proj .lt { flex: 0 0 auto; width: 11px; height: 13px; margin-top: 4px; border-radius: 50%; background: var(--l, #ff7a52); box-shadow: 0 0 10px var(--l, #ff7a52); }
+  .proj b { display: block; font-weight: 600; font-size: 15px; }
+  .proj span.ds { display: block; font-size: 13px; color: var(--body); }
+  .proj span.st { display: block; font: 400 11px var(--f-mono); color: var(--muted); }
+  .ways { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+  .ways li { display: flex; gap: 12px; font-size: 14px; color: var(--body); }
+  .ways li::before { content: ''; flex: 0 0 auto; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: var(--amber); }
+  .ways b { color: var(--ink); font-weight: 600; }
+  .stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+  .stats .n { font-family: var(--f-display); font-weight: 700; font-size: 30px; color: var(--ink); line-height: 1.1; }
+  .stats .t { font-size: 14px; color: var(--body); }
+  .skills { display: flex; flex-direction: column; gap: 9px; }
+  .skills dt { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
+  .skills dd { font-size: 14px; color: var(--body); }
+  .email { font-size: 17px; font-weight: 500; color: var(--ink); user-select: all; }
+  a.link { color: var(--ink); text-decoration-color: rgba(230, 238, 236, 0.35); text-underline-offset: 3px; }
+  a.link:hover { color: var(--coral); }
+  .btn:focus-visible, .pill:focus-visible, .dot:focus-visible, a:focus-visible, .sw input:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  /* stop rail */
+  .rail { position: fixed; z-index: 5; left: var(--gut-l); right: var(--gut-r); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); height: 22px; display: flex; justify-content: space-between; align-items: center; }
+  .rail::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: rgba(230, 238, 236, 0.18); }
+  .rail .fill { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: rgba(240, 114, 97, 0.7); transform-origin: left center; transform: scaleX(0); }
+  .dot { position: relative; width: 22px; height: 22px; margin: 0 -7px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+  .dot i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); transition: all 0.25s; }
+  .dot.past i { background: var(--dot-past); }
+  .dot.cur i { width: 14px; height: 14px; background: var(--coral); box-shadow: 0 0 0 4px rgba(240, 114, 97, 0.25); }
+  .dot:hover i { background: var(--ink); }
+  .rail .now { position: absolute; bottom: 24px; transform: translateX(-50%); font: 500 11px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--coral); white-space: nowrap; transition: left 0.3s; pointer-events: none; }
+  .rail .now[data-edge="start"] { transform: translateX(-7px); }
+  .rail .now[data-edge="end"] { transform: translateX(calc(-100% + 7px)); }
+
+  .map-label { position: fixed; left: 0; top: 0; z-index: 3; font: 500 12px var(--f-mono); letter-spacing: 0.04em; color: #ffd9a0; white-space: nowrap; pointer-events: none; opacity: 0; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9); }
+  .nogl-msg { display: none; }
+  .nogl .nogl-msg { display: block; color: var(--amber); }
+
+  @media (max-width: 760px) {
+    :root { --gut-l: max(16px, env(safe-area-inset-left, 0px)); --gut-r: max(16px, env(safe-area-inset-right, 0px)); }
+    .top { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+    .pill { padding: 6px 11px; font-size: 12px; }
+    .hud { top: calc(50px + env(safe-area-inset-top, 0px)); font-size: 10px; gap: 10px; }
+    .panel, .panel.small { left: var(--gut-l); right: var(--gut-r); width: auto; top: auto; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); max-height: 46%; padding: 16px 18px 18px; border-radius: 18px; gap: 9px; }
+    .panel.intro { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); width: auto; max-height: none; }
+    .intro .display { font-size: 46px; }
+    .lead { font-size: 15px; }
+    .display { font-size: 26px; }
+    .name { font-size: 32px; }
+    .panel p.txt, .ways li, .skills dd { font-size: 13px; }
+    .xp { gap: 9px; }
+    .xp .ds, .proj span.st { display: none; }
+    .proj li { padding: 7px 8px; }
+    .rail { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .rail .now { font-size: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hint svg { animation: none; } }
+</style>
+
+<canvas id="gl" aria-label="Cảnh 3D hành trình dọc dải đất hình chữ S"></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="mark" href="#top" aria-label="Về đầu trang">L<span>N</span>M</a>
+  <div class="actions">
+    <button class="pill" id="play" type="button" aria-pressed="false">
+      <svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor"/></svg>
+      <svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h2.5v9H2.5zM7 1.5h2.5v9H7z" fill="currentColor"/></svg>
+      <span class="lbl">Tự chạy</span>
+    </button>
+    <a class="pill" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">CV nhanh ↗</a>
+  </div>
+</header>
+<div class="hud">
+  <span id="fps">– khung/giây</span>
+  <label class="sw"><input type="checkbox" id="light"> Chế độ nhẹ</label>
+  <span id="loading" hidden></span>
+</div>
+
+<section class="panel intro" data-k="intro" data-side="left" id="top">
+  <p class="kicker">Portfolio của Nguyễn Minh Long</p>
+  <h1 class="display">Từ Lũng Cú<br>đến Cà Mau</h1>
+  <p class="lead">Một hành trình dọc đất nước, cũng là chặng đường làm nghề của một kỹ sư full-stack .NET và React.</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="play">Bắt đầu hành trình</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">Xem CV nhanh</a>
+  </div>
+  <p class="hint"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>Cuộn hoặc vuốt để bay, hoặc bấm Tự chạy</p>
+  <p class="nogl-msg">Trình duyệt này không mở được cảnh 3D. Bạn vẫn xem được toàn bộ thông tin ở trang CV nhanh.</p>
+</section>
+
+<section class="panel" data-k="0" data-side="right">
+  <p class="kicker">Chặng 01 / 11 · Lũng Cú</p>
+  <h2 class="display name">Nguyễn Minh Long</h2>
+  <p class="role">Kỹ sư Full-stack (.NET / React)</p>
+  <p class="txt">Hơn 4 năm thiết kế và xây dựng hệ thống phân tán cho khách hàng tài chính, chuỗi cung ứng, hàng tiêu dùng nhanh và logistics. Làm trọn từ kiến trúc backend đến khi chạy production.</p>
+  <p class="mono">.NET Core · Next.js · AWS · TP. Hồ Chí Minh</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-go="4">Xem dự án</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">CV nhanh</a>
+  </div>
+  <p class="seen">Cột cờ Lũng Cú, ruộng bậc thang Hà Giang</p>
+</section>
+
+<section class="panel" data-k="1" data-side="left">
+  <p class="kicker">Chặng 02 / 11 · Hà Nội</p>
+  <h2 class="display">Giới thiệu</h2>
+  <p class="txt">Mình là kỹ sư full-stack, làm backend .NET Core và frontend Next.js/React. Ở vị trí Sub-Lead, mình phụ trách tài liệu thiết kế kỹ thuật và chuẩn hóa cách dùng AI trong quy trình phát triển của team.</p>
+  <div class="rule"></div>
+  <p class="label">Học vấn</p>
+  <div>
+    <p style="font-weight:600">Đại học FPT TP. Hồ Chí Minh</p>
+    <p class="txt">Cử nhân Kỹ thuật phần mềm</p>
+    <p class="mono">07/2019 – 12/2022</p>
+  </div>
+  <p class="txt">Tiếng Việt bản ngữ, tiếng Anh làm việc chuyên nghiệp.</p>
+  <p class="seen">Lăng Bác, Hồ Gươm với Tháp Rùa và cầu Thê Húc</p>
+</section>
+
+<section class="panel small" data-k="2" data-side="right">
+  <p class="kicker">Chặng 03 / 11 · Hạ Long</p>
+  <p class="label">Chặng đường từ 2021</p>
+  <div class="stats">
+    <span class="n">4</span><span class="t">công ty</span>
+    <span class="n">4+</span><span class="t">năm kinh nghiệm</span>
+    <span class="n" style="font-size:20px">Bridgestone, L'Oréal</span><span class="t">khách hàng hiện tại</span>
+  </div>
+  <p class="seen">Vịnh Hạ Long, thuyền buồm giữa núi đá vôi</p>
+</section>
+
+<section class="panel" data-k="3" data-side="left">
+  <p class="kicker">Chặng 04 / 11 · Huế</p>
+  <h2 class="display">Kinh nghiệm</h2>
+  <ol class="xp">
+    <li><span class="hd"><b>CTNP Company</b><time>12/2024 – nay</time></span><span class="rl">Full-stack Engineer, Sub-Lead</span><span class="ds">.NET Core và Next.js cho hai dự án khách hàng song song, team 6–12 người.</span></li>
+    <li><span class="hd"><b>Great Sun Ltd</b><time>12/2023 – 11/2024</time></span><span class="rl">Full-stack Engineer</span><span class="ds">ERP đa nền tảng từ backend trên AWS đến frontend React.</span></li>
+    <li><span class="hd"><b>Vihat Company Inc.</b><time>07/2022 – 01/2023</time></span><span class="rl">Software Engineer · Hợp đồng</span><span class="ds">CRM desktop Electron + React, gọi điện thời gian thực WebRTC/SIP.</span></li>
+    <li><span class="hd"><b>FPT Software</b><time>01/2021 – 12/2021</time></span><span class="rl">Software Engineer</span><span class="ds">ERP cho khách hàng điện tử Nhật Bản, team Scrum 12 người.</span></li>
+  </ol>
+  <p class="seen">Tháp Phước Duyên chùa Thiên Mụ, cầu Trường Tiền, nón lá trên sông Hương</p>
+</section>
+
+<section class="panel" data-k="4" data-side="left">
+  <p class="kicker">Chặng 05 / 11 · Đà Nẵng, Hội An</p>
+  <h2 class="display">Dự án tiêu biểu</h2>
+  <ul class="proj">
+    <li><span class="lt"></span><span><b>Bridgestone · Identity &amp; Access Platform</b><span class="ds">Identity.API: Google, JWT, phân quyền. Chuyển dealer portal sang Next.js 15.</span><span class="st">.NET Core · JWT · Next.js 15 · shadcn/ui</span></span></li>
+    <li><span class="lt" style="--l:#ffb347"></span><span><b>Bridgestone · Order System Platform</b><span class="ds">5+ module backend, luồng duyệt nhiều cấp, test trên 80%.</span><span class="st">.NET Core · Next.js · React Query · Zod</span></span></li>
+    <li><span class="lt"></span><span><b>L'Oréal · FC Tool &amp; FFM Tool</b><span class="ds">Bảo trì hai backend desktop, đề xuất chuyển sang web.</span></span></li>
+    <li><span class="lt" style="--l:#ffb347"></span><span><b>Garage ERP Platform</b><span class="ds">20+ REST API cho 10+ chi nhánh, check-in thời gian thực.</span></span></li>
+  </ul>
+  <p class="seen">Cầu Vàng, cầu Rồng, phố đèn lồng Hội An và thuyền thúng</p>
+</section>
+
+<section class="panel" data-k="5" data-side="right">
+  <p class="kicker">Chặng 06 / 11 · Tây Nguyên</p>
+  <h2 class="display">Cách làm việc</h2>
+  <ul class="ways">
+    <li><span><b>Thiết kế trước khi code.</b> Viết và giữ tài liệu thiết kế kỹ thuật cho dự án.</span></li>
+    <li><span><b>Dùng AI có quy chuẩn.</b> Chuẩn hóa cách dùng GitHub Copilot và Claude Code trong team.</span></li>
+    <li><span><b>Test đầy đủ.</b> Jest và React Testing Library, độ phủ trên 80% ở Order System.</span></li>
+    <li><span><b>Agile/Scrum.</b> Jira, Git, Docker, GitHub Actions và GitLab CI.</span></li>
+  </ul>
+  <p class="seen">Nhà rông, cồng chiêng bên đống lửa, đồi cà phê</p>
+</section>
+
+<section class="panel" data-k="6" data-side="left">
+  <p class="kicker">Chặng 07 / 11 · Nha Trang</p>
+  <h2 class="display">Chứng chỉ</h2>
+  <div>
+    <p style="font-weight:600">HackerRank: SQL, CSS, JavaScript, React</p>
+    <p class="mono">HackerRank · 05/2024</p>
+  </div>
+  <div class="rule"></div>
+  <div>
+    <p style="font-weight:600">Professional Front-end Developer</p>
+    <p class="mono">Cybersoft Academy · 03/2021</p>
+  </div>
+  <p class="seen">Tháp Bà Ponagar, đảo và đèn thuyền câu mực</p>
+</section>
+
+<section class="panel small" data-k="7" data-side="right">
+  <p class="kicker">Chặng 08 / 11 · Phan Thiết</p>
+  <p class="display" style="font-size:24px">Tháp nước Phan Thiết</p>
+  <p class="txt">Biểu tượng của thành phố biển. Đồi cát Mũi Né ở một bên, thuyền thúng của làng chài ở bên kia.</p>
+</section>
+
+<section class="panel" data-k="8" data-side="left">
+  <p class="kicker">Chặng 09 / 11 · Sài Gòn</p>
+  <h2 class="display">Hiện tại</h2>
+  <div>
+    <p style="font-size:17px;font-weight:600">CTNP Company</p>
+    <p class="txt">Full-stack Engineer, Sub-Lead · TP. Hồ Chí Minh</p>
+    <p class="mono" style="color:var(--coral)">12/2024 – nay</p>
+  </div>
+  <div class="rule"></div>
+  <p class="label">Đang làm cho</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">Bridgestone Việt Nam:</b> Identity &amp; Access Platform, Order System Platform</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">L'Oréal Việt Nam:</b> FC Tool &amp; FFM Tool</p>
+  <p class="seen">Chợ Bến Thành, Landmark 81, Bitexco</p>
+</section>
+
+<section class="panel" data-k="9" data-side="right">
+  <p class="kicker">Chặng 10 / 11 · Miền Tây</p>
+  <h2 class="display">Kỹ năng</h2>
+  <dl class="skills">
+    <div><dt>Backend</dt><dd>.NET Core, ASP.NET Core, EF Core, CQRS/MediatR, Clean Architecture, C#</dd></div>
+    <div><dt>Frontend</dt><dd>React, Next.js, TypeScript, Tailwind CSS, shadcn/ui</dd></div>
+    <div><dt>Dữ liệu &amp; messaging</dt><dd>SQL Server, RabbitMQ, Redis, SignalR</dd></div>
+    <div><dt>DevOps &amp; Cloud</dt><dd>AWS (EC2, Lambda, S3), Docker, GitHub Actions, GitLab CI</dd></div>
+    <div><dt>Công cụ &amp; quy trình</dt><dd>Git, Jest/RTL, Jira, Agile/Scrum, GitHub Copilot, Claude Code</dd></div>
+  </dl>
+  <p class="seen">Chợ nổi, rặng dừa, nhà sàn ven sông, cầu khỉ</p>
+</section>
+
+<section class="panel" data-k="10" data-side="left">
+  <p class="kicker">Chặng 11 / 11 · Mũi Cà Mau</p>
+  <h2 class="display">Liên hệ</h2>
+  <p class="txt">Hết đất liền, nhưng chưa hết đường. Cùng xây sản phẩm tiếp theo nhé.</p>
+  <div>
+    <p class="label">Email</p>
+    <p class="email">longnminhse@gmail.com</p>
+  </div>
+  <div>
+    <p class="label">LinkedIn</p>
+    <a class="link" href="https://www.linkedin.com/in/longnminhse" target="_blank" rel="noopener">linkedin.com/in/longnminhse</a>
+  </div>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="copy">Chép email</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">Xem CV nhanh</a>
+  </div>
+  <p class="seen">Biểu tượng con tàu Mũi Cà Mau, rừng đước</p>
+</section>
+
+<section class="panel" data-k="end" data-side="left">
+  <p class="kicker">Hết hành trình</p>
+  <h2 class="display">11 chặng, hơn 4 năm, một dải đất hình chữ S</h2>
+  <p class="txt">Cảm ơn bạn đã đi cùng. Nếu bạn đang tìm người cho một sản phẩm .NET và Next.js, mình rất muốn nghe.</p>
+  <p class="email">longnminhse@gmail.com</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="copy">Chép email</button>
+    <button class="btn ghost" type="button" data-act="restart">Đi lại từ Lũng Cú</button>
+  </div>
+</section>
+
+<nav class="rail" aria-label="Các chặng">
+  <span class="fill"></span>
+  <button class="dot" type="button" aria-label="Chặng 1, Lũng Cú"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 2, Hà Nội"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 3, Hạ Long"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 4, Huế"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 5, Đà Nẵng và Hội An"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 6, Tây Nguyên"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 7, Nha Trang"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 8, Phan Thiết"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 9, Sài Gòn"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 10, Miền Tây"><i></i></button>
+  <button class="dot" type="button" aria-label="Chặng 11, Mũi Cà Mau"><i></i></button>
+  <span class="now"></span>
+</nav>
+<div id="track" aria-hidden="true"></div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script type="module">
+/*APP*/
+</script>

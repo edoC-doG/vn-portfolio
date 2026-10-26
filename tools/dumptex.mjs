@@ -1,0 +1,10 @@
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import sharp from 'sharp';
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+const doc = await io.read(process.argv[2]);
+const m = doc.getRoot().listMaterials()[0];
+const base = m.getBaseColorTexture(), mr = m.getMetallicRoughnessTexture();
+await sharp(Buffer.from(base.getImage())).resize(512,512).toFile(process.argv[3]+'_base.png');
+await sharp(Buffer.from(mr.getImage())).resize(512,512).toFile(process.argv[3]+'_mr.png');
+console.log('factors', m.getBaseColorFactor(), m.getMetallicFactor(), m.getRoughnessFactor());

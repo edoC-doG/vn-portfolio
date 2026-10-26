@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"/tools/node_modules/three/build/three.module.js","three/addons/":"/tools/node_modules/three/examples/jsm/"}}</script>
+<style>body{margin:0;background:#888}</style></head><body>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const params = new URLSearchParams(location.search);
+const slugs = params.get('slugs').split(',');
+const cell = +(params.get('cell')||240);
+const views = (params.get('views')||'models/high:0.75,models/high:3.89,models/mid:0.75,models/low:0.75').split(',').map(v=>{const [t,a]=v.split(':');return [t,+a];}); const cols = views.length;
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(cell * cols, cell * slugs.length, false);
+renderer.setScissorTest(true);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const loader = new GLTFLoader();
+const envTex = params.get('env') ? new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture : null;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+let tris = 0;
+for (let r = 0; r < slugs.length; r++) {
+  for (let c = 0; c < cols; c++) {
+    const [tier, ang] = views[c];
+    const gltf = await loader.loadAsync(`/${tier}/${slugs[r]}.glb`);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(c % 2 ? 0x9aa3a3 : 0xb7bfbe);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x445555, 1.6));
+    const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(2, 3, 2); scene.add(d);
+    if (envTex) { scene.environment = envTex; scene.environmentIntensity = 0.35; }
+    scene.add(gltf.scene);
+    const box = new THREE.Box3().setFromObject(gltf.scene);
+    const center = box.getCenter(new THREE.Vector3()); const size = box.getSize(new THREE.Vector3());
+    const rad = size.length() / 2;
+    const cam = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+    cam.position.set(center.x + Math.sin(ang) * rad * 2.6, center.y + rad * 0.9, center.z + Math.cos(ang) * rad * 2.6);
+    cam.lookAt(center);
+    const y = (slugs.length - 1 - r) * cell;
+    renderer.setViewport(c * cell, y, cell, cell); renderer.setScissor(c * cell, y, cell, cell);
+    renderer.render(scene, cam);
+  }
+}
+document.title = 'DONE';
+</script></body></html>

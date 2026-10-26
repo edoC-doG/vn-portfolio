@@ -1,0 +1,325 @@
+<title>Kho model hành trình</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Phudu:wght@600;700&display=swap">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<style>
+/* Layout: model list beside one 3D stage; the stage keeps a fixed night-river look, the page follows the viewer's theme. */
+:root {
+  --bg: #F4F6F4; --surface: #FFFFFF; --ink: #142426; --muted: #566768; --line: #D5DDDB;
+  --accent: #B8322A; --gold: #9A6B16;
+  --ok-bg: #E2F0E4; --ok-fg: #24613A; --warn-bg: #FBEBD3; --warn-fg: #8A4B06; --off-bg: #E9ECEB; --off-fg: #66706F;
+  --stage: #0F1B1D;
+  --font-display: "Phudu", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1415; --surface: #132123; --ink: #E6EEEC; --muted: #93A6A5; --line: #23393B;
+    --accent: #F07261; --gold: #D9AE5A;
+    --ok-bg: #173323; --ok-fg: #8FD3A6; --warn-bg: #3A2A12; --warn-fg: #F2C27A; --off-bg: #1C2A2C; --off-fg: #8A9A99;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1415; --surface: #132123; --ink: #E6EEEC; --muted: #93A6A5; --line: #23393B;
+  --accent: #F07261; --gold: #D9AE5A;
+  --ok-bg: #173323; --ok-fg: #8FD3A6; --warn-bg: #3A2A12; --warn-fg: #F2C27A; --off-bg: #1C2A2C; --off-fg: #8A9A99;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; padding-inline: 16px; padding-block: 24px 48px; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 72rem; margin: 0 auto; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin: 0 0 6px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+.lede { margin: 10px 0 0; color: var(--muted); max-width: 62ch; }
+
+.totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 20px 0 0; border-block: 1px solid var(--line); }
+.totals div { padding: 10px 14px 10px 0; min-width: 0; }
+.totals div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+.totals dt { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.totals dd { margin: 2px 0 0; font-family: var(--font-mono); font-size: 15px; font-variant-numeric: tabular-nums; }
+.totals small { display: block; font-family: var(--font-body); font-size: 12px; color: var(--muted); }
+
+.layout { display: grid; grid-template-columns: 17.5rem minmax(0, 1fr); gap: 24px; margin-top: 24px; align-items: start; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.list button {
+  width: 100%; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 8px;
+  padding: 8px 10px; display: grid; grid-template-columns: 1.8rem minmax(0, 1fr) auto; gap: 8px; align-items: center; cursor: pointer;
+}
+.list button:hover:not(:disabled) { background: var(--surface); border-color: var(--line); }
+.list button[aria-current="true"] { background: var(--surface); border-color: var(--ink); }
+.list button:disabled { cursor: default; opacity: .7; }
+.num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.nm { font-weight: 500; font-size: 14px; display: block; min-width: 0; }
+.stop { font-size: 12px; color: var(--muted); display: block; }
+.chip { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.chip.warn { background: var(--warn-bg); color: var(--warn-fg); }
+.chip.off { background: var(--off-bg); color: var(--off-fg); }
+
+.stage-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; max-height: 70vh; border-radius: 12px; overflow: hidden; background: var(--stage); max-width: 100%; }
+#stage { display: block; width: 100%; height: 100%; touch-action: none; }
+.stage-msg { position: absolute; inset: auto 0 0 0; padding: 10px 14px; font-size: 13px; color: #CFE0DD; background: linear-gradient(transparent, rgba(5, 12, 13, .7)); pointer-events: none; }
+.stage-title { position: absolute; top: 12px; left: 14px; color: #EAF2F0; pointer-events: none; }
+.stage-title b { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; display: block; line-height: 1.1; }
+.stage-title span { font-size: 12px; color: #A9C0BC; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.toggle input { accent-color: var(--accent); }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 14px 0 0; border-block: 1px solid var(--line); }
+.stats div { padding: 10px 12px 10px 0; min-width: 0; }
+.stats div + div { padding-left: 12px; border-left: 1px solid var(--line); }
+.stats dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stats dd { margin: 2px 0 0; font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.usage { margin: 12px 0 0; font-size: 14px; padding: 8px 12px; border-radius: 8px; background: var(--off-bg); color: var(--off-fg); }
+.usage[hidden] { display: none !important; }
+.review { margin: 14px 0 0; display: flex; gap: 10px; align-items: flex-start; }
+.review p { margin: 0; max-width: 62ch; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .viewer { order: -1; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .stats div:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+  .totals { grid-template-columns: minmax(0, 1fr); }
+  .totals div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .stage-wrap { aspect-ratio: 1 / 1; }
+}
+</style>
+
+<div class="wrap">
+  <p class="kicker">Model 3D · Từ Lũng Cú đến Cà Mau</p>
+  <h1>Kho model hành trình</h1>
+  <p class="lede">Mỗi model Meshy đã được xuất ra ba bản cho ba mức máy. Bản Cao dùng texture 2048 và lớp chi tiết bề mặt, bản Trung bình giữ nguyên đường nối texture nên không bị vỡ hình. Chọn một model, đổi giữa các bản Cao, Trung bình, Thấp, và kéo để xoay hoặc chụm hai ngón để phóng to.</p>
+
+  <dl class="totals" id="totals"></dl>
+
+  <div class="layout">
+    <ul class="list" id="list" aria-label="Danh sách model"></ul>
+
+    <div class="viewer">
+      <div class="stage-wrap">
+        <canvas id="stage" aria-label="Khung xem model 3D"></canvas>
+        <div class="stage-title"><b id="st-name"></b><span id="st-stop"></span></div>
+        <div class="stage-msg" id="st-msg">Đang tải…</div>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Bản model">
+          <button type="button" data-tier="high" aria-pressed="false">Cao</button>
+          <button type="button" data-tier="mid" aria-pressed="true">Trung bình</button>
+          <button type="button" data-tier="low" aria-pressed="false">Thấp</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="spin" checked> Tự xoay</label>
+      </div>
+      <dl class="stats">
+        <div><dt>Tam giác</dt><dd id="s-tris"></dd></div>
+        <div><dt>Dung lượng</dt><dd id="s-size"></dd></div>
+        <div><dt>Texture</dt><dd id="s-tex"></dd></div>
+        <div><dt>Hiện từ mức</dt><dd id="s-min"></dd></div>
+      </dl>
+      <p class="usage" id="usage" hidden></p>
+      <div class="review"><span class="chip" id="r-chip"></span><p id="r-note"></p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.MODELS = [
+  { slug: "cot-co-lung-cu", name: "Cột cờ Lũng Cú", stop: "Lũng Cú", min: 0, status: "ok", note: "Đạt. Lá cờ trong model đứng yên. Mình sẽ cắt phần cờ ra và thay bằng lá cờ làm bằng code để bay theo gió. Bản Thấp được giữ khoảng 5 nghìn tam giác để chân tháp không bị vỡ." },
+  { slug: "lang-bac", name: "Lăng Bác", stop: "Hà Nội", min: 0, status: "ok", note: "Đạt. Hàng cột và mái nhiều bậc rõ ở bản Cao và Trung bình. Dòng chữ trên mặt lăng sẽ thêm bằng code." },
+  { slug: "thap-rua", name: "Tháp Rùa", stop: "Hà Nội", min: 1, status: "ok", note: "Đạt. Bản Thấp bị thủng vài chỗ nhưng không dùng tới, vì Tháp Rùa chỉ hiện từ mức Trung bình." },
+  { slug: "thuyen-buom", name: "Thuyền buồm", stop: "Hạ Long", min: 0, status: "ok", note: "Đạt. Thuyền hai buồm, giữ dáng tốt ở cả ba bản." },
+  { slug: "thap-phuoc-duyen", name: "Tháp Phước Duyên", stop: "Huế", min: 0, status: "ok", note: "Đạt. Bảy tầng tháp vẫn đếm được ở bản Thấp. Bản Cao thấy rõ hoa văn ở từng tầng." },
+  { slug: "cau-vang", name: "Cầu Vàng", stop: "Đà Nẵng", min: 1, status: "ok", note: "Đạt. Đôi bàn tay và thân cầu cong rõ ở cả ba bản." },
+  { slug: null, name: "Chùa Cầu", stop: "Hội An", min: 0, status: "off", note: "" },
+  { slug: "thuyen-thung", name: "Thuyền thúng", stop: "Hội An", min: 1, status: "ok", note: "Đạt. Ngôi sao đủ năm cánh, vàng trên nền đỏ, các sọc xanh rõ." },
+  { slug: "nha-rong", name: "Nhà rông", stop: "Tây Nguyên", min: 0, status: "ok", note: "Đạt. Bản Thấp được giữ khoảng 6 nghìn tam giác để mái không bị thủng, vì nhà rông hiện trên mọi máy." },
+  { slug: "cong-chieng", name: "Cồng chiêng", stop: "Tây Nguyên", min: 1, status: "ok", note: "Đạt. Mặt chiêng có độ bóng kim loại nhẹ, được chỉnh riêng cho model này." },
+  { slug: "thap-ba-ponagar", name: "Tháp Bà Ponagar", stop: "Nha Trang", min: 0, status: "ok", note: "Đạt. Model là cả một khối đồi có đất bên dưới, nên trong cảnh mình sẽ đặt nó lún vào sườn đồi, đúng như cụm tháp thật nằm trên đồi. Bản Thấp được giữ khoảng 6 nghìn tam giác." },
+  { slug: "thap-nuoc-phan-thiet", name: "Tháp nước Phan Thiết", stop: "Phan Thiết", min: 0, status: "ok", note: "Đạt. Mái ba tầng và các ô trang trí trên thân tháp rõ ở bản Cao." },
+  { slug: "cho-ben-thanh", name: "Chợ Bến Thành", stop: "Sài Gòn", min: 0, status: "warn", note: "Cần làm lại màu. File gửi lần hai giống hệt file đầu, nên bản Retexture chưa được áp dụng. Texture hiện tại có tường trắng loang và mái đỏ lốm đốm, nhìn chưa ra chợ Bến Thành. Bản Cao của model này nặng hơn các model khác vì lưới gốc khó giảm hơn." },
+  { slug: null, name: "Nhà thờ Đức Bà", stop: "Sài Gòn", min: 2, status: "off", note: "" },
+  { slug: null, name: "Bưu điện Thành phố", stop: "Sài Gòn", min: 2, status: "off", note: "" },
+  { slug: "ghe-cho-noi", name: "Ghe chợ nổi", stop: "Miền Tây", min: 0, status: "ok", note: "Đạt. Trên boong có ít hàng hóa dù prompt ghi không có trái cây, nhìn từ xa không ảnh hưởng." },
+  { slug: "mui-ca-mau", name: "Biểu tượng con tàu", stop: "Mũi Cà Mau", min: 0, status: "ok", note: "Đạt. Chữ MŨI CÀ MAU trên buồm đọc được. Dòng chữ nhỏ bên dưới bị AI viết sai, nhưng trong cảnh nhìn từ xa không thấy." }
+];
+window.STATS = {"thuyen-buom":{"high":[12693,1176824,2048],"mid":[12693,506232,1024],"low":[2999,167040,512]},"cong-chieng":{"high":[50000,2298280,2048],"mid":[15000,690788,1024],"low":[2996,184568,512]},"mui-ca-mau":{"high":[50000,2109704,2048],"mid":[15000,684916,1024],"low":[3000,189468,512]},"lang-bac":{"high":[50000,2434412,2048],"mid":[15000,780820,1024],"low":[3000,169188,512]},"cau-vang":{"high":[49998,2313736,2048],"mid":[15000,721020,1024],"low":[2988,162540,512]},"thuyen-thung":{"high":[49980,2224132,2048],"mid":[14998,706928,1024],"low":[2998,173804,512]},"cot-co-lung-cu":{"high":[49996,2752608,2048],"mid":[16988,903144,1024],"low":[4892,252764,512]},"ghe-cho-noi":{"high":[49992,2344872,2048],"mid":[14998,745628,1024],"low":[2980,166212,512]},"thap-rua":{"high":[49995,2884480,2048],"mid":[20813,1085780,1024],"low":[2972,192872,512]},"thap-nuoc-phan-thiet":{"high":[50000,2687636,2048],"mid":[15000,882312,1024],"low":[2996,215568,512]},"thap-phuoc-duyen":{"high":[49984,2598904,2048],"mid":[14999,847612,1024],"low":[2990,189660,512]},"cho-ben-thanh":{"high":[79794,4381388,2048],"mid":[23898,1153312,1024],"low":[2974,200996,512]},"nha-rong":{"high":[49982,2185588,2048],"mid":[20032,866572,1024],"low":[5928,243656,512]},"thap-ba-ponagar":{"high":[49902,2949684,2048],"mid":[23906,1077324,1024],"low":[5844,249040,512]}};
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const MODELS = window.MODELS, STATS = window.STATS;
+const TIERS = ["low", "mid", "high"];
+const TIER_NAME = { low: "Thấp", mid: "Trung bình", high: "Cao" };
+const MIN_NAME = ["Mọi máy", "Trung bình trở lên", "Chỉ máy mạnh"];
+const STATUS = { ok: ["ok", "Đạt"], warn: ["warn", "Cần làm lại"], off: ["off", "Chưa nhận"] };
+const fmtMB = b => (b / 1e6).toLocaleString("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " MB";
+const fmtN = n => n.toLocaleString("vi-VN");
+
+// Totals: what a device of each tier would download for the whole journey.
+const totals = document.getElementById("totals");
+TIERS.forEach((t, rank) => {
+  let bytes = 0, count = 0;
+  MODELS.forEach(m => { if (m.slug && m.min <= rank) { bytes += STATS[m.slug][t][1]; count++; } });
+  const div = document.createElement("div");
+  div.innerHTML = `<dt>Máy ${TIER_NAME[t].toLowerCase()}</dt><dd>${fmtMB(bytes)}</dd><small>${count} model, tải dần theo từng chặng</small>`;
+  totals.appendChild(div);
+});
+
+// List
+const list = document.getElementById("list");
+MODELS.forEach((m, i) => {
+  const li = document.createElement("li");
+  const [cls, label] = STATUS[m.status];
+  li.innerHTML = `<button type="button" ${m.slug ? "" : "disabled"} data-i="${i}">
+    <span class="num">${String(i + 1).padStart(2, "0")}</span>
+    <span><span class="nm">${m.name}</span><span class="stop">${m.stop}</span></span>
+    <span class="chip ${cls}">${label}</span></button>`;
+  list.appendChild(li);
+});
+
+// Three.js stage
+const canvas = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0f1b1d);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.35;
+scene.add(new THREE.HemisphereLight(0xcfe3e0, 0x1d2b2c, 0.9));
+const key = new THREE.DirectionalLight(0xffe2b8, 2.4); key.position.set(2, 3, 1.6); key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.01;
+Object.assign(key.shadow.camera, { left: -1.2, right: 1.2, top: 1.2, bottom: -1.2, near: 0.5, far: 8 }); scene.add(key);
+const rim = new THREE.DirectionalLight(0x8fb8ff, 0.9); rim.position.set(-2, 1.5, -2.5); scene.add(rim);
+const ground = new THREE.Mesh(new THREE.CircleGeometry(1.4, 64), new THREE.MeshStandardMaterial({ color: 0x1a2a2c, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+const camera = new THREE.PerspectiveCamera(35, 4 / 3, 0.01, 50);
+camera.position.set(1.6, 1.0, 1.9);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
+controls.minDistance = 0.4; controls.maxDistance = 6; controls.maxPolarAngle = Math.PI * 0.49;
+controls.addEventListener("start", () => { controls.autoRotate = false; document.getElementById("spin").checked = false; });
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+
+let running = true;
+document.addEventListener("visibilitychange", () => { running = !document.hidden; if (running) loop(); });
+function loop() { if (!running) return; controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); }
+loop();
+
+const loader = new GLTFLoader();
+let current = null, currentIndex = -1, tier = window.matchMedia("(min-width: 900px)").matches ? "high" : "mid", reqId = 0;
+
+function disposeObject(obj) {
+  obj.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) {
+      (Array.isArray(o.material) ? o.material : [o.material]).forEach(mat => {
+        for (const k in mat) { const v = mat[k]; if (v && v.isTexture) v.dispose(); }
+        mat.dispose();
+      });
+    }
+  });
+}
+
+function frame(obj) {
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+  const r = size.length() / 2;
+  const dist = r / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.05;
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  controls.target.copy(center);
+  camera.position.copy(center).addScaledVector(dir, dist);
+  camera.near = dist / 100; camera.far = dist * 20; camera.updateProjectionMatrix();
+}
+
+function updatePanel() {
+  const m = MODELS[currentIndex];
+  const s = STATS[m.slug][tier];
+  document.getElementById("st-name").textContent = m.name;
+  document.getElementById("st-stop").textContent = m.stop + " · bản " + TIER_NAME[tier];
+  document.getElementById("s-tris").textContent = fmtN(s[0]);
+  document.getElementById("s-size").textContent = fmtMB(s[1]);
+  document.getElementById("s-tex").textContent = s[2] + " px";
+  document.getElementById("s-min").textContent = MIN_NAME[m.min];
+  const usage = document.getElementById("usage");
+  const rank = TIERS.indexOf(tier);
+  if (rank < m.min) {
+    usage.hidden = false;
+    usage.textContent = `Bản ${TIER_NAME[tier]} của model này không dùng trên web: model chỉ hiện từ mức ${MIN_NAME[m.min].toLowerCase()}.`;
+  } else usage.hidden = true;
+  const [cls, label] = STATUS[m.status];
+  const chip = document.getElementById("r-chip"); chip.className = "chip " + cls; chip.textContent = label;
+  document.getElementById("r-note").textContent = m.note;
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.tier === tier));
+  list.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", +b.dataset.i === currentIndex));
+}
+
+async function show(i, keepCamera) {
+  currentIndex = i; updatePanel();
+  const m = MODELS[i], id = ++reqId;
+  const msg = document.getElementById("st-msg");
+  msg.hidden = false; msg.textContent = "Đang tải bản " + TIER_NAME[tier] + "…";
+  try {
+    const res = await fetch(`models/${tier}/${m.slug}.txt`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const b64 = (await res.text()).trim();
+    const raw = atob(b64), bin = new Uint8Array(raw.length);
+    for (let k = 0; k < raw.length; k++) bin[k] = raw.charCodeAt(k);
+    const gltf = await loader.parseAsync(bin.buffer, '');
+    if (id !== reqId) { disposeObject(gltf.scene); return; }
+    if (current) { scene.remove(current); disposeObject(current); }
+    current = gltf.scene; current.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); scene.add(current);
+    if (!keepCamera) frame(current);
+    msg.textContent = "Kéo để xoay · chụm hoặc lăn chuột để phóng to";
+  } catch (e) {
+    if (id === reqId) msg.textContent = "Không tải được model này. Thử tải lại trang.";
+  }
+}
+
+list.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  show(+b.dataset.i, false);
+});
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+  tier = b.dataset.tier; show(currentIndex, true);
+}));
+document.getElementById("spin").addEventListener("change", e => { controls.autoRotate = e.target.checked; });
+
+resize();
+show(0, false);
+</script>

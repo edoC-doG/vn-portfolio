@@ -1,0 +1,417 @@
+<title>Long Nguyen Minh CV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Phudu:wght@500;600;700&display=swap">
+<style>
+/* Layout: one reading column; experience drawn as a river line with a lantern dot on the current role. */
+:root {
+  --bg: #F4F6F4;
+  --surface: #FFFFFF;
+  --ink: #142426;
+  --muted: #566768;
+  --line: #D5DDDB;
+  --accent: #B8322A;
+  --accent-soft: #F6E3E0;
+  --gold: #9A6B16;
+  --font-display: "Phudu", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1718; --surface: #132123; --ink: #E6EEEC; --muted: #93A6A5;
+    --line: #23393B; --accent: #F07261; --accent-soft: #3A1F1C; --gold: #D9AE5A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1718; --surface: #132123; --ink: #E6EEEC; --muted: #93A6A5;
+  --line: #23393B; --accent: #F07261; --accent-soft: #3A1F1C; --gold: #D9AE5A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-inline: 16px; padding-block: 0 48px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line); }
+a:hover { text-decoration-color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 10px 16px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.bar-inner { max-width: 46rem; margin: 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mono-mark { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+.mono-mark span { color: var(--accent); }
+.bar-tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 2px; background: var(--surface); }
+.seg button {
+  border: 0; background: transparent; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 6px;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg svg { width: 12px; height: 14px; }
+
+.note3d { max-width: 46rem; margin: 10px auto 0; font-size: 13px; color: var(--muted); }
+.note3d[hidden] { display: none !important; }
+
+main { max-width: 46rem; margin: 0 auto; }
+.intro { padding-block: 40px 8px; }
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin: 0 0 10px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 7vw, 3.4rem); line-height: 1.02; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.role { font-size: 1.1rem; font-weight: 500; margin: 8px 0 0; }
+.contact { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 16px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--muted); }
+.contact li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.copy-btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
+  padding: 1px 8px; font-size: 12px; cursor: pointer; color: var(--muted);
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--ink); }
+.email-text { color: var(--ink); user-select: all; overflow-wrap: anywhere; }
+
+.summary { margin: 20px 0 0; max-width: 62ch; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 24px 0 0; border-block: 1px solid var(--line); }
+.facts div { padding: 12px 14px 12px 0; min-width: 0; }
+.facts div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+.facts dt { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 500; font-size: 14px; }
+
+section { padding-top: 36px; }
+h2 {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.35rem; margin: 0 0 16px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+h2::after { content: ""; flex: 1; height: 1px; background: var(--line); transform: translateY(-4px); }
+
+.river { list-style: none; margin: 0; padding: 0 0 0 22px; position: relative; display: grid; gap: 22px; }
+.river::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--line); border-radius: 2px; }
+.river li { position: relative; }
+.river li::before {
+  content: ""; position: absolute; left: -22px; top: 7px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--muted);
+}
+.river li.now::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+.row-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+.row-head h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.when { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.desc { margin: 6px 0 0; }
+
+.projects { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+.projects ul { margin: 6px 0 0; padding-left: 18px; }
+.projects ul li { margin: 3px 0; }
+.projects ul li::marker { color: var(--accent); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.tags li { font-family: var(--font-mono); font-size: 11.5px; padding: 1px 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+
+.skills { margin: 0; display: grid; gap: 10px; }
+.skills div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 12px; }
+.skills dt { font-weight: 600; font-size: 14px; }
+.skills dd { margin: 0; font-size: 14px; color: var(--ink); }
+
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.plain h3 { margin: 0; font-size: 15px; font-weight: 600; }
+
+footer { max-width: 46rem; margin: 48px auto 0; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px;
+  max-width: calc(100% - 32px);
+}
+
+@media (max-width: 640px) {
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .facts div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .skills div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .two { grid-template-columns: minmax(0, 1fr); }
+  .when { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seg button { transition: background .15s, color .15s; }
+}
+</style>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="mono-mark" aria-hidden="true">L<span>N</span>M</div>
+    <div class="bar-tools">
+      <div class="seg" role="group" id="mode-group" aria-label="View">
+        <button type="button" id="btn-3d" aria-pressed="false">
+          <svg viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9 1.5C4 1.5 2.5 4.5 6 7s2 5.5-3 5.5"/></svg>
+          <span data-i18n="mode3d"></span>
+        </button>
+        <button type="button" id="btn-cv" aria-pressed="true"><span data-i18n="modeCv"></span></button>
+      </div>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="lang-vi" aria-pressed="true">VI</button>
+        <button type="button" id="lang-en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </div>
+  <p class="note3d" id="note3d" hidden data-i18n="note3d"></p>
+</div>
+
+<main id="cv"></main>
+<footer id="foot"></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const DATA = {
+  email: "longnminhse@gmail.com",
+  linkedin: "https://www.linkedin.com/in/longnminhse",
+  vi: {
+    ui: {
+      mode3d: "Hành trình 3D", modeCv: "CV nhanh", kicker: "Bản CV nhanh",
+      summary: "Giới thiệu", exp: "Kinh nghiệm", proj: "Dự án tiêu biểu", skills: "Kỹ năng",
+      edu: "Học vấn", cert: "Chứng chỉ", present: "nay",
+      copy: "Chép", copied: "Đã chép email", copyFail: "Không chép tự động được. Email đã được chọn sẵn, bạn bấm Ctrl+C để chép.",
+      note3d: "Cảnh 3D đang được dựng. Trên trang thật, nút này đưa bạn về hành trình Từ Lũng Cú đến Cà Mau.",
+      factNow: "Hiện tại", factSince: "Đi làm từ", factStack: "Stack chính",
+      footer: "Bản rút gọn của portfolio, dành cho người chỉ cần xem thông tin chính. Cập nhật 10/2026."
+    },
+    name: "Nguyễn Minh Long",
+    role: "Kỹ sư Full-stack (.NET / React)",
+    location: "TP. Hồ Chí Minh",
+    summary: "Kỹ sư full-stack với hơn 4 năm thiết kế và xây dựng hệ thống phân tán cho khách hàng trong các ngành tài chính, chuỗi cung ứng, hàng tiêu dùng nhanh và logistics. Làm trọn từ kiến trúc backend đến khi chạy production, trong môi trường Agile/Scrum.",
+    facts: ["Full-stack Engineer, Sub-Lead tại CTNP", "2021", ".NET Core · Next.js · AWS"],
+    exp: [
+      { co: "CTNP Company", title: "Full-stack Engineer, Sub-Lead · Toàn thời gian", from: "2024-12", to: null,
+        desc: "Full-stack (.NET Core backend, Next.js/React frontend) cho hai dự án khách hàng chạy song song, team 6–12 người. Phụ trách tài liệu thiết kế kỹ thuật và chuẩn hóa cách dùng AI trong quy trình phát triển của team." },
+      { co: "Great Sun Ltd", title: "Full-stack Engineer · Toàn thời gian", from: "2023-12", to: "2024-11",
+        desc: "Xây dựng và vận hành hệ thống ERP đa nền tảng từ đầu đến cuối, từ backend trên AWS đến frontend React chạy production, quy trình dựa trên Git và Docker." },
+      { co: "Vihat Company Inc.", title: "Software Engineer · Hợp đồng", from: "2022-07", to: "2023-01",
+        desc: "Phát triển CRM desktop đa nền tảng (Electron + React), phụ trách tính năng gọi điện thời gian thực WebRTC/SIP trong một team nhỏ." },
+      { co: "FPT Software Hồ Chí Minh", title: "Software Engineer · Toàn thời gian", from: "2021-01", to: "2021-12",
+        desc: "Phát triển hệ thống ERP quy mô lớn cho một khách hàng điện tử Nhật Bản ở các module kho, nhân sự và tài chính, trong team Scrum 12 người. Triển khai ứng dụng bằng Docker." }
+    ],
+    proj: [
+      { name: "Bridgestone Việt Nam · Identity & Access Platform", role: "Full-stack Engineer", from: "2024-12", to: null,
+        points: ["Xây dựng backend Identity.API: đăng nhập Google, cấp và làm mới JWT, ghi log kiểm toán, quản lý người dùng, vai trò và quyền.",
+                 "Chuyển dealer portal từ Angular sang Next.js 15, làm luồng xác thực và design system riêng trên shadcn/ui."],
+        tags: [".NET Core", "JWT", "Next.js 15", "shadcn/ui"] },
+      { name: "Bridgestone Việt Nam · Order System Platform", role: "Full-stack Engineer", from: "2024-12", to: null,
+        points: ["Xây dựng từ đầu 5+ module backend: AR Aging, Invoice Payment, E-Invoice, Earning Calculator, Monitoring.",
+                 "Thiết kế luồng duyệt nhiều cấp và bộ quy tắc phân quyền theo từng dòng dữ liệu cho dealer, nhà phân phối và admin.",
+                 "Xây dựng frontend Next.js (DataTable dùng chung, React Hook Form + Zod, React Query), độ phủ test trên 80%."],
+        tags: [".NET Core", "Next.js", "React Query", "Zod"] },
+      { name: "L'Oréal Việt Nam · FC Tool & FFM Tool", role: "Backend Engineer", from: "2024-12", to: null,
+        points: ["Bảo trì hai backend desktop cũ và đề xuất kế hoạch chuyển sang kiến trúc web."],
+        tags: [".NET", "Hiện đại hóa hệ thống"] },
+      { name: "Garage ERP Platform", role: "Full-stack Engineer · Team 4 người", from: "2023-12", to: "2024-11",
+        points: ["Xây dựng backend và 20+ REST API (.NET Core) cho hệ thống quản lý garage dùng tại 10+ chi nhánh, xác thực JWT, cập nhật check-in thời gian thực bằng Socket.io.",
+                 "Làm toàn bộ frontend React (Vite, Redux Toolkit, Chart.js), chia nhỏ code theo route."],
+        tags: [".NET Core", "Socket.io", "React", "Redux Toolkit"] }
+    ],
+    skills: [
+      ["Backend", ".NET Core, ASP.NET Core, EF Core, CQRS/MediatR, Clean Architecture, C#"],
+      ["Frontend", "React, Next.js, TypeScript, Tailwind CSS, shadcn/ui"],
+      ["Dữ liệu & messaging", "SQL Server, RabbitMQ, Redis, SignalR"],
+      ["DevOps & Cloud", "AWS (EC2, Lambda, S3), Docker, GitHub Actions, GitLab CI"],
+      ["Công cụ & quy trình", "Git, Jest/RTL, Jira, Agile/Scrum, GitHub Copilot, Claude Code"],
+      ["Ngôn ngữ", "Tiếng Việt (bản ngữ), tiếng Anh (làm việc chuyên nghiệp)"]
+    ],
+    edu: [{ name: "Đại học FPT TP. Hồ Chí Minh", sub: "Cử nhân Kỹ thuật phần mềm", from: "2019-07", to: "2022-12" }],
+    cert: [
+      { name: "HackerRank: SQL, CSS, JavaScript, React", sub: "HackerRank", date: "2024-05" },
+      { name: "Professional Front-end Developer", sub: "Cybersoft Academy", date: "2021-03" }
+    ]
+  },
+  en: {
+    ui: {
+      mode3d: "3D journey", modeCv: "Quick CV", kicker: "Quick CV",
+      summary: "Summary", exp: "Experience", proj: "Selected projects", skills: "Skills",
+      edu: "Education", cert: "Certifications", present: "Present",
+      copy: "Copy", copied: "Email copied", copyFail: "Couldn't copy automatically. The email is selected, press Ctrl+C to copy it.",
+      note3d: "The 3D scene is being built. On the live site, this button takes you back to the journey from Lung Cu to Ca Mau.",
+      factNow: "Current role", factSince: "Working since", factStack: "Main stack",
+      footer: "A short version of the portfolio for readers who only need the key facts. Updated October 2026."
+    },
+    name: "Long Nguyen Minh",
+    role: "Full-stack Engineer (.NET / React)",
+    location: "Ho Chi Minh City, Vietnam",
+    summary: "Full-stack engineer with 4+ years designing and building distributed systems for financial services, supply chain, FMCG and logistics clients. Works across the stack, from backend architecture to production, in Agile/Scrum teams.",
+    facts: ["Full-stack Engineer, Sub-Lead at CTNP", "2021", ".NET Core · Next.js · AWS"],
+    exp: [
+      { co: "CTNP Company", title: "Full-stack Engineer, Sub-Lead · Full-time", from: "2024-12", to: null,
+        desc: "Full-stack engineer (.NET Core backend, Next.js/React frontend) across two concurrent client engagements with teams of 6–12. Owns technical design docs and standardizes AI-assisted development practices across the team." },
+      { co: "Great Sun Ltd", title: "Full-stack Engineer · Full-time", from: "2023-12", to: "2024-11",
+        desc: "Built and operated a multi-platform ERP system end to end, from AWS-hosted backend services to a production React frontend, using Git- and Docker-based workflows." },
+      { co: "Vihat Company Inc.", title: "Software Engineer · Contract", from: "2022-07", to: "2023-01",
+        desc: "Contributed to a cross-platform desktop CRM (Electron + React), working on real-time WebRTC/SIP calling features in a small team." },
+      { co: "FPT Software Ho Chi Minh", title: "Software Engineer · Full-time", from: "2021-01", to: "2021-12",
+        desc: "Worked on a large-scale ERP system for a Japanese electronics client across inventory, HR and finance modules in a 12-person Scrum team, and deployed containerized applications with Docker." }
+    ],
+    proj: [
+      { name: "Bridgestone Vietnam · Identity & Access Platform", role: "Full-stack Engineer", from: "2024-12", to: null,
+        points: ["Built the Identity.API backend: Google sign-in, JWT issuance and refresh, audit logging, and user, role and permission management.",
+                 "Migrated the dealer portal from Angular to Next.js 15, building the auth flow and a custom design system on shadcn/ui."],
+        tags: [".NET Core", "JWT", "Next.js 15", "shadcn/ui"] },
+      { name: "Bridgestone Vietnam · Order System Platform", role: "Full-stack Engineer", from: "2024-12", to: null,
+        points: ["Built 5+ backend modules from scratch: AR Aging, Invoice Payment, E-Invoice, Earning Calculator and Monitoring.",
+                 "Designed a multi-level approval workflow and a row-level access rule engine for dealers, distributors and admins.",
+                 "Built the Next.js frontend (shared DataTable, React Hook Form + Zod, React Query) with 80%+ test coverage."],
+        tags: [".NET Core", "Next.js", "React Query", "Zod"] },
+      { name: "L'Oréal Vietnam · FC Tool & FFM Tool", role: "Backend Engineer", from: "2024-12", to: null,
+        points: ["Maintains two legacy desktop backends and proposed a plan to modernize them into a web-based architecture."],
+        tags: [".NET", "Modernization"] },
+      { name: "Garage ERP Platform", role: "Full-stack Engineer · Team of 4", from: "2023-12", to: "2024-11",
+        points: ["Built the backend and 20+ REST APIs (.NET Core) for a garage management system used across 10+ locations, with JWT auth and Socket.io real-time check-in updates.",
+                 "Built the React frontend end to end (Vite, Redux Toolkit, Chart.js) with route-level code splitting."],
+        tags: [".NET Core", "Socket.io", "React", "Redux Toolkit"] }
+    ],
+    skills: [
+      ["Backend", ".NET Core, ASP.NET Core, EF Core, CQRS/MediatR, Clean Architecture, C#"],
+      ["Frontend", "React, Next.js, TypeScript, Tailwind CSS, shadcn/ui"],
+      ["Data & messaging", "SQL Server, RabbitMQ, Redis, SignalR"],
+      ["DevOps & cloud", "AWS (EC2, Lambda, S3), Docker, GitHub Actions, GitLab CI"],
+      ["Tools & practices", "Git, Jest/RTL, Jira, Agile/Scrum, GitHub Copilot, Claude Code"],
+      ["Languages", "Vietnamese (native), English (professional working proficiency)"]
+    ],
+    edu: [{ name: "FPT University Ho Chi Minh City", sub: "Bachelor's degree, Software Engineering", from: "2019-07", to: "2022-12" }],
+    cert: [
+      { name: "HackerRank: SQL, CSS, JavaScript, React", sub: "HackerRank", date: "2024-05" },
+      { name: "Professional Front-end Developer", sub: "Cybersoft Academy", date: "2021-03" }
+    ]
+  }
+};
+
+const MONTHS_EN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let lang = "vi";
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function fmt(ym) {
+  const [y, m] = ym.split("-").map(Number);
+  return lang === "vi" ? `${String(m).padStart(2, "0")}/${y}` : `${MONTHS_EN[m - 1]} ${y}`;
+}
+function range(from, to) {
+  return `${fmt(from)} – ${to ? fmt(to) : DATA[lang].ui.present}`;
+}
+
+function render() {
+  const d = DATA[lang], u = d.ui;
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = u[el.dataset.i18n]; });
+  document.getElementById("lang-vi").setAttribute("aria-pressed", lang === "vi");
+  document.getElementById("lang-en").setAttribute("aria-pressed", lang === "en");
+
+  document.getElementById("cv").innerHTML = `
+    <div class="intro">
+      <p class="kicker">${esc(u.kicker)}</p>
+      <h1>${esc(d.name)}</h1>
+      <p class="role">${esc(d.role)}</p>
+      <ul class="contact">
+        <li>${esc(d.location)}</li>
+        <li><span class="email-text" id="email-text">${esc(DATA.email)}</span>
+            <button type="button" class="copy-btn" id="copy-email">${esc(u.copy)}</button></li>
+        <li><a href="${DATA.linkedin}" target="_blank" rel="noopener">linkedin.com/in/longnminhse</a></li>
+      </ul>
+      <p class="summary">${esc(d.summary)}</p>
+      <dl class="facts">
+        <div><dt>${esc(u.factNow)}</dt><dd>${esc(d.facts[0])}</dd></div>
+        <div><dt>${esc(u.factSince)}</dt><dd>${esc(d.facts[1])}</dd></div>
+        <div><dt>${esc(u.factStack)}</dt><dd>${esc(d.facts[2])}</dd></div>
+      </dl>
+    </div>
+
+    <section aria-labelledby="h-exp">
+      <h2 id="h-exp">${esc(u.exp)}</h2>
+      <ol class="river">
+        ${d.exp.map(e => `
+          <li class="${e.to ? "" : "now"}">
+            <div class="row-head"><h3>${esc(e.co)}</h3><span class="when">${range(e.from, e.to)}</span></div>
+            <p class="sub">${esc(e.title)}</p>
+            <p class="desc">${esc(e.desc)}</p>
+          </li>`).join("")}
+      </ol>
+    </section>
+
+    <section aria-labelledby="h-proj">
+      <h2 id="h-proj">${esc(u.proj)}</h2>
+      <ul class="projects">
+        ${d.proj.map(p => `
+          <li>
+            <div class="row-head"><h3>${esc(p.name)}</h3><span class="when">${range(p.from, p.to)}</span></div>
+            <p class="sub">${esc(p.role)}</p>
+            <ul>${p.points.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+            <ul class="tags">${p.tags.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+          </li>`).join("")}
+      </ul>
+    </section>
+
+    <section aria-labelledby="h-skills">
+      <h2 id="h-skills">${esc(u.skills)}</h2>
+      <dl class="skills">
+        ${d.skills.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}
+      </dl>
+    </section>
+
+    <section class="two">
+      <div>
+        <h2>${esc(u.edu)}</h2>
+        <ul class="plain">${d.edu.map(e => `
+          <li><h3>${esc(e.name)}</h3><p class="sub">${esc(e.sub)}</p><span class="when">${range(e.from, e.to)}</span></li>`).join("")}
+        </ul>
+      </div>
+      <div>
+        <h2>${esc(u.cert)}</h2>
+        <ul class="plain">${d.cert.map(c => `
+          <li><h3>${esc(c.name)}</h3><p class="sub">${esc(c.sub)} · <span class="when">${fmt(c.date)}</span></p></li>`).join("")}
+        </ul>
+      </div>
+    </section>`;
+  document.getElementById("foot").textContent = u.footer;
+  document.getElementById("copy-email").addEventListener("click", copyEmail);
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function selectEmail() {
+  const el = document.getElementById("email-text");
+  const r = document.createRange(); r.selectNodeContents(el);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function copyEmail() {
+  const u = DATA[lang].ui;
+  try {
+    navigator.clipboard.writeText(DATA.email).then(() => toast(u.copied), () => { selectEmail(); toast(u.copyFail); });
+  } catch (e) { selectEmail(); toast(u.copyFail); }
+}
+
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem("cv-lang", l); } catch (e) {}
+  render();
+}
+
+(function init() {
+  let saved = null;
+  try { saved = localStorage.getItem("cv-lang"); } catch (e) {}
+  const hash = (location.hash || "").replace("#", "");
+  if (hash === "en" || hash === "vi") lang = hash;
+  else if (saved === "en" || saved === "vi") lang = saved;
+  else lang = (navigator.language || "").toLowerCase().startsWith("vi") ? "vi" : "en";
+  render();
+  document.getElementById("lang-vi").addEventListener("click", () => setLang("vi"));
+  document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
+  document.getElementById("btn-3d").addEventListener("click", () => {
+    const n = document.getElementById("note3d"); n.hidden = !n.hidden;
+  });
+})();
+</script>
