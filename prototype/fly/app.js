@@ -1361,16 +1361,16 @@ const rainMat = new THREE.ShaderMaterial({
       c.z = cameraPosition.z + mod(aSeed.z * BOX * 3.1 - cameraPosition.z, BOX) - BOX * 0.5;
       vec3 dir = normalize(vec3(0.12, -1.0, 0.05)), view = normalize(c - cameraPosition);
       vec3 right = normalize(cross(dir, view));
-      vec3 p = c + right * position.x * 0.045 - dir * position.y * len;
+      vec3 p = c + right * position.x * 0.03 - dir * position.y * len;
       float d = distance(c, cameraPosition);
-      vA = step(fract(aSeed.x * 13.17 + aSeed.z * 7.73), uRain) * smoothstep(1.5, 4.0, d) * (1.0 - smoothstep(20.0, 34.0, d));
+      vA = step(fract(aSeed.x * 13.17 + aSeed.z * 7.73), uRain) * smoothstep(3.0, 7.0, d) * (1.0 - smoothstep(20.0, 34.0, d)); // no fat streaks right at the lens
       vX = position.x * 2.0;
       vec4 mvPosition = viewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mvPosition;
       #include <fog_vertex>
     }`,
   fragmentShader: `uniform vec3 uCol; varying float vA; varying float vX;
     #include <fog_pars_fragment>
-    void main(){ if (vA <= 0.0) discard; gl_FragColor = vec4(uCol, vA * 0.32 * (1.0 - abs(vX)));
+    void main(){ if (vA <= 0.0) discard; gl_FragColor = vec4(uCol, vA * 0.22 * (1.0 - abs(vX)));
       #include <colorspace_fragment>
       #include <fog_fragment>
     }`,
