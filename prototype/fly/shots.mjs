@@ -33,7 +33,7 @@ for (const name of want) {
   const t1 = Date.now();
   await page.evaluate((u) => window.__fly.shot(u), u);
   await page.waitForTimeout(400); // let the rail label's CSS transition settle
-  await page.screenshot({ path: `shots/${mode}-${name}.png` });
+  await page.screenshot({ path: `shots/${mode}-${name}.png`, timeout: 180000 });
   const info = await page.evaluate(() => ({ ...window.__fly.info(), ...(window.__fly.trees ? window.__fly.trees() : {}) }));
   console.log(name, u.toFixed(4), JSON.stringify(info), ((Date.now() - t1) / 1000).toFixed(1) + 's');
 }

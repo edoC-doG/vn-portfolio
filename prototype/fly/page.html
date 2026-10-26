@@ -113,6 +113,8 @@
   .stats .n { font-family: var(--f-display); font-weight: 700; font-size: 30px; color: var(--ink); line-height: 1.1; }
   .stats .t { font-size: 14px; color: var(--body); }
   .test *, .test *::before, .test *::after { transition: none !important; }
+  .here { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 999px; background: var(--coral); color: #10191a; letter-spacing: 0.04em; }
+  .panel.now { border-color: rgba(240, 114, 97, 0.45); }
   .clients { font-family: var(--f-display); font-weight: 700; font-size: 20px; color: var(--ink); }
   .skills { display: flex; flex-direction: column; gap: 9px; }
   .skills dt { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
@@ -196,71 +198,75 @@
 </section>
 
 <section class="panel" data-k="0" data-side="right">
-  <p class="kicker">Chặng 01 / 11 · Lũng Cú</p>
+  <p class="kicker">Chặng 01 / 11 · Lũng Cú · Khởi hành</p>
   <h2 class="display name">Nguyễn Minh Long</h2>
   <p class="role">Kỹ sư Full-stack (.NET / React)</p>
-  <p class="txt">Hơn 4 năm thiết kế và xây dựng hệ thống phân tán cho khách hàng tài chính, chuỗi cung ứng, hàng tiêu dùng nhanh và logistics. Làm trọn từ kiến trúc backend đến khi chạy production.</p>
-  <p class="mono">.NET Core · Next.js · AWS · TP. Hồ Chí Minh</p>
+  <p class="txt">Thiết kế và xây dựng hệ thống phân tán cho khách hàng tài chính, chuỗi cung ứng, hàng tiêu dùng nhanh và logistics. Làm trọn từ kiến trúc backend đến khi chạy production.</p>
+  <p class="txt">Mỗi công ty mình từng làm là một điểm dừng trên đường vào Nam. Điểm xuất phát là Đại học FPT, năm 2019.</p>
   <div class="row">
-    <button class="btn primary" type="button" data-go="4">Xem dự án</button>
+    <button class="btn primary" type="button" data-go="4">Tới chặng hiện tại</button>
     <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">CV nhanh</a>
   </div>
   <p class="seen">Cột cờ Lũng Cú, ruộng bậc thang Hà Giang</p>
 </section>
-
 <section class="panel" data-k="1" data-side="left">
-  <p class="kicker">Chặng 02 / 11 · Hà Nội</p>
-  <h2 class="display">Giới thiệu</h2>
-  <p class="txt">Mình là kỹ sư full-stack, làm backend .NET Core và frontend Next.js/React. Ở vị trí Sub-Lead, mình phụ trách tài liệu thiết kế kỹ thuật và chuẩn hóa cách dùng AI trong quy trình phát triển của team.</p>
+  <p class="kicker">Chặng 02 / 11 · Hà Nội · 2021</p>
+  <h2 class="display">FPT Software</h2>
+  <p class="role">Software Engineer · Toàn thời gian</p>
+  <p class="mono">01/2021 – 12/2021</p>
+  <p class="txt">Phát triển hệ thống ERP quy mô lớn cho một khách hàng điện tử Nhật Bản ở các module kho, nhân sự và tài chính, trong team Scrum 12 người. Triển khai ứng dụng bằng Docker.</p>
   <div class="rule"></div>
-  <p class="label">Học vấn</p>
-  <div>
-    <p style="font-weight:600">Đại học FPT TP. Hồ Chí Minh</p>
-    <p class="txt">Cử nhân Kỹ thuật phần mềm</p>
-    <p class="mono">07/2019 – 12/2022</p>
-  </div>
-  <p class="txt">Tiếng Việt bản ngữ, tiếng Anh làm việc chuyên nghiệp.</p>
+  <p class="label">Cùng năm</p>
+  <p class="txt">Chứng chỉ Professional Front-end Developer, Cybersoft Academy (03/2021).</p>
   <p class="seen">Lăng Bác, Hồ Gươm với Tháp Rùa và cầu Thê Húc</p>
 </section>
-
-<section class="panel small" data-k="2" data-side="right">
-  <p class="kicker">Chặng 03 / 11 · Hạ Long</p>
-  <p class="label">Chặng đường từ 2021</p>
-  <div class="stats">
-    <span class="n">4</span><span class="t">công ty</span>
-    <span class="n">4+</span><span class="t">năm kinh nghiệm</span>
-  </div>
-  <p class="label">Khách hàng hiện tại</p>
-  <p class="clients">Bridgestone, L'Oréal</p>
+<section class="panel" data-k="2" data-side="right">
+  <p class="kicker">Chặng 03 / 11 · Hạ Long · 2022</p>
+  <h2 class="display">Vihat</h2>
+  <p class="role">Software Engineer · Hợp đồng</p>
+  <p class="mono">07/2022 – 01/2023</p>
+  <p class="txt">Phát triển CRM desktop đa nền tảng (Electron + React), phụ trách tính năng gọi điện thời gian thực WebRTC/SIP trong một team nhỏ.</p>
+  <div class="rule"></div>
+  <p class="label">Cùng lúc</p>
+  <p class="txt">Tốt nghiệp Cử nhân Kỹ thuật phần mềm, Đại học FPT TP. Hồ Chí Minh (12/2022).</p>
   <p class="seen">Vịnh Hạ Long, thuyền buồm giữa núi đá vôi</p>
 </section>
-
 <section class="panel" data-k="3" data-side="left">
-  <p class="kicker">Chặng 04 / 11 · Huế</p>
-  <h2 class="display">Kinh nghiệm</h2>
-  <ol class="xp">
-    <li><span class="hd"><b>CTNP Company</b><time>12/2024 – nay</time></span><span class="rl">Full-stack Engineer, Sub-Lead</span><span class="ds">.NET Core và Next.js cho hai dự án khách hàng song song, team 6–12 người.</span></li>
-    <li><span class="hd"><b>Great Sun Ltd</b><time>12/2023 – 11/2024</time></span><span class="rl">Full-stack Engineer</span><span class="ds">ERP đa nền tảng từ backend trên AWS đến frontend React.</span></li>
-    <li><span class="hd"><b>Vihat Company Inc.</b><time>07/2022 – 01/2023</time></span><span class="rl">Software Engineer · Hợp đồng</span><span class="ds">CRM desktop Electron + React, gọi điện thời gian thực WebRTC/SIP.</span></li>
-    <li><span class="hd"><b>FPT Software</b><time>01/2021 – 12/2021</time></span><span class="rl">Software Engineer</span><span class="ds">ERP cho khách hàng điện tử Nhật Bản, team Scrum 12 người.</span></li>
-  </ol>
+  <p class="kicker">Chặng 04 / 11 · Huế · 2023</p>
+  <h2 class="display">Great Sun</h2>
+  <p class="role">Full-stack Engineer · Toàn thời gian</p>
+  <p class="mono">12/2023 – 11/2024</p>
+  <p class="txt">Xây dựng và vận hành hệ thống ERP đa nền tảng từ đầu đến cuối, từ backend trên AWS đến frontend React chạy production, quy trình dựa trên Git và Docker.</p>
+  <div class="rule"></div>
+  <p class="label">Dự án</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">Garage ERP Platform:</b> 20+ REST API .NET Core cho 10+ chi nhánh, check-in thời gian thực bằng Socket.io, toàn bộ frontend React.</p>
   <p class="seen">Tháp Phước Duyên chùa Thiên Mụ, cầu Trường Tiền, nón lá trên sông Hương</p>
 </section>
-
-<section class="panel" data-k="4" data-side="left">
-  <p class="kicker">Chặng 05 / 11 · Đà Nẵng, Hội An</p>
+<section class="panel now" data-k="4" data-side="left">
+  <p class="kicker">Chặng 05 / 11 · Đà Nẵng, Hội An · <span class="here">Bạn đang ở đây</span></p>
+  <h2 class="display">CTNP</h2>
+  <p class="role">Full-stack Engineer, Sub-Lead · Toàn thời gian</p>
+  <p class="mono" style="color:var(--coral)">12/2024 – nay</p>
+  <p class="txt">Full-stack (.NET Core backend, Next.js/React frontend) cho hai dự án khách hàng chạy song song, team 6–12 người. Phụ trách tài liệu thiết kế kỹ thuật và chuẩn hóa cách dùng AI trong quy trình phát triển của team.</p>
+  <div class="rule"></div>
+  <p class="label">Đang làm cho</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">Bridgestone Việt Nam:</b> Identity &amp; Access Platform, Order System Platform</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">L'Oréal Việt Nam:</b> FC Tool &amp; FFM Tool</p>
+  <p class="seen">Cầu Vàng, cầu Rồng, phố đèn lồng Hội An và thuyền thúng</p>
+</section>
+<section class="panel" data-k="5" data-side="right">
+  <p class="kicker">Chặng 06 / 11 · Tây Nguyên</p>
   <h2 class="display">Dự án tiêu biểu</h2>
   <ul class="proj">
-    <li><span class="lt"></span><span><b>Bridgestone · Identity &amp; Access Platform</b><span class="ds">Identity.API: Google, JWT, phân quyền. Chuyển dealer portal sang Next.js 15.</span><span class="st">.NET Core · JWT · Next.js 15 · shadcn/ui</span></span></li>
-    <li><span class="lt" style="--l:#ffb347"></span><span><b>Bridgestone · Order System Platform</b><span class="ds">5+ module backend, luồng duyệt nhiều cấp, test trên 80%.</span><span class="st">.NET Core · Next.js · React Query · Zod</span></span></li>
+    <li><span class="lt"></span><span><b>Bridgestone · Identity &amp; Access Platform</b><span class="ds">Identity.API: đăng nhập Google, JWT, log kiểm toán, phân quyền. Chuyển dealer portal từ Angular sang Next.js 15.</span><span class="st">.NET Core · JWT · Next.js 15 · shadcn/ui</span></span></li>
+    <li><span class="lt" style="--l:#ffb347"></span><span><b>Bridgestone · Order System Platform</b><span class="ds">5+ module backend, luồng duyệt nhiều cấp, phân quyền theo dòng dữ liệu, test trên 80%.</span><span class="st">.NET Core · Next.js · React Query · Zod</span></span></li>
     <li><span class="lt"></span><span><b>L'Oréal · FC Tool &amp; FFM Tool</b><span class="ds">Bảo trì hai backend desktop, đề xuất chuyển sang web.</span></span></li>
     <li><span class="lt" style="--l:#ffb347"></span><span><b>Garage ERP Platform</b><span class="ds">20+ REST API cho 10+ chi nhánh, check-in thời gian thực.</span></span></li>
   </ul>
-  <p class="seen">Cầu Vàng, cầu Rồng, phố đèn lồng Hội An và thuyền thúng</p>
+  <p class="seen">Nhà rông, cồng chiêng bên đống lửa, đồi cà phê</p>
 </section>
-
-<section class="panel" data-k="5" data-side="right">
-  <p class="kicker">Chặng 06 / 11 · Tây Nguyên</p>
+<section class="panel" data-k="6" data-side="left">
+  <p class="kicker">Chặng 07 / 11 · Nha Trang</p>
   <h2 class="display">Cách làm việc</h2>
   <ul class="ways">
     <li><span><b>Thiết kế trước khi code.</b> Viết và giữ tài liệu thiết kế kỹ thuật cho dự án.</span></li>
@@ -268,47 +274,10 @@
     <li><span><b>Test đầy đủ.</b> Jest và React Testing Library, độ phủ trên 80% ở Order System.</span></li>
     <li><span><b>Agile/Scrum.</b> Jira, Git, Docker, GitHub Actions và GitLab CI.</span></li>
   </ul>
-  <p class="seen">Nhà rông, cồng chiêng bên đống lửa, đồi cà phê</p>
-</section>
-
-<section class="panel" data-k="6" data-side="left">
-  <p class="kicker">Chặng 07 / 11 · Nha Trang</p>
-  <h2 class="display">Chứng chỉ</h2>
-  <div>
-    <p style="font-weight:600">HackerRank: SQL, CSS, JavaScript, React</p>
-    <p class="mono">HackerRank · 05/2024</p>
-  </div>
-  <div class="rule"></div>
-  <div>
-    <p style="font-weight:600">Professional Front-end Developer</p>
-    <p class="mono">Cybersoft Academy · 03/2021</p>
-  </div>
   <p class="seen">Tháp Bà Ponagar, đảo và đèn thuyền câu mực</p>
 </section>
-
-<section class="panel small" data-k="7" data-side="right">
+<section class="panel" data-k="7" data-side="right">
   <p class="kicker">Chặng 08 / 11 · Phan Thiết</p>
-  <p class="display" style="font-size:24px">Tháp nước Phan Thiết</p>
-  <p class="txt">Biểu tượng của thành phố biển. Đồi cát Mũi Né ở một bên, thuyền thúng của làng chài ở bên kia.</p>
-</section>
-
-<section class="panel" data-k="8" data-side="left">
-  <p class="kicker">Chặng 09 / 11 · Sài Gòn</p>
-  <h2 class="display">Hiện tại</h2>
-  <div>
-    <p style="font-size:17px;font-weight:600">CTNP Company</p>
-    <p class="txt">Full-stack Engineer, Sub-Lead · TP. Hồ Chí Minh</p>
-    <p class="mono" style="color:var(--coral)">12/2024 – nay</p>
-  </div>
-  <div class="rule"></div>
-  <p class="label">Đang làm cho</p>
-  <p class="txt"><b style="color:var(--ink);font-weight:600">Bridgestone Việt Nam:</b> Identity &amp; Access Platform, Order System Platform</p>
-  <p class="txt"><b style="color:var(--ink);font-weight:600">L'Oréal Việt Nam:</b> FC Tool &amp; FFM Tool</p>
-  <p class="seen">Chợ Bến Thành, Landmark 81, Bitexco</p>
-</section>
-
-<section class="panel" data-k="9" data-side="right">
-  <p class="kicker">Chặng 10 / 11 · Miền Tây</p>
   <h2 class="display">Kỹ năng</h2>
   <dl class="skills">
     <div><dt>Backend</dt><dd>.NET Core, ASP.NET Core, EF Core, CQRS/MediatR, Clean Architecture, C#</dd></div>
@@ -317,13 +286,42 @@
     <div><dt>DevOps &amp; Cloud</dt><dd>AWS (EC2, Lambda, S3), Docker, GitHub Actions, GitLab CI</dd></div>
     <div><dt>Công cụ &amp; quy trình</dt><dd>Git, Jest/RTL, Jira, Agile/Scrum, GitHub Copilot, Claude Code</dd></div>
   </dl>
+  <p class="seen">Tháp nước Phan Thiết, đồi cát Mũi Né, thuyền thúng</p>
+</section>
+<section class="panel" data-k="8" data-side="left">
+  <p class="kicker">Chặng 09 / 11 · Sài Gòn</p>
+  <h2 class="display">Học vấn và chứng chỉ</h2>
+  <div>
+    <p style="font-weight:600">Đại học FPT TP. Hồ Chí Minh</p>
+    <p class="txt">Cử nhân Kỹ thuật phần mềm</p>
+    <p class="mono">07/2019 – 12/2022</p>
+  </div>
+  <div class="rule"></div>
+  <div>
+    <p style="font-weight:600">HackerRank: SQL, CSS, JavaScript, React</p>
+    <p class="mono">HackerRank · 05/2024</p>
+  </div>
+  <div>
+    <p style="font-weight:600">Professional Front-end Developer</p>
+    <p class="mono">Cybersoft Academy · 03/2021</p>
+  </div>
+  <p class="txt">Tiếng Việt bản ngữ, tiếng Anh làm việc chuyên nghiệp.</p>
+  <p class="seen">Chợ Bến Thành, Landmark 81, Bitexco</p>
+</section>
+<section class="panel" data-k="9" data-side="right">
+  <p class="kicker">Chặng 10 / 11 · Miền Tây</p>
+  <h2 class="display">Điều mình tìm ở chặng tới</h2>
+  <ul class="ways">
+    <li><span><b>Sản phẩm thật, người dùng thật.</b> Một đội làm sản phẩm .NET và Next.js chạy production.</span></li>
+    <li><span><b>Đi sâu kiến trúc.</b> Được thiết kế hệ thống từ đầu, không chỉ làm theo thiết kế có sẵn.</span></li>
+    <li><span><b>Dẫn dắt kỹ thuật.</b> Tiếp tục vai trò kiểu Sub-Lead: tài liệu, review, cách làm chung của team.</span></li>
+  </ul>
   <p class="seen">Chợ nổi, rặng dừa, nhà sàn ven sông, cầu khỉ</p>
 </section>
-
 <section class="panel" data-k="10" data-side="left">
   <p class="kicker">Chặng 11 / 11 · Mũi Cà Mau</p>
-  <h2 class="display">Liên hệ</h2>
-  <p class="txt">Hết đất liền, nhưng chưa hết đường. Cùng xây sản phẩm tiếp theo nhé.</p>
+  <h2 class="display">Điểm đến tiếp theo</h2>
+  <p class="txt">Hết đất liền, nhưng chưa hết đường. Mình đang tìm điểm đến tiếp theo. Nếu đội của bạn đang cần một kỹ sư .NET và Next.js, mình rất muốn nghe.</p>
   <div>
     <p class="label">Email</p>
     <p class="email">longnminhse@gmail.com</p>
@@ -338,11 +336,10 @@
   </div>
   <p class="seen">Biểu tượng con tàu Mũi Cà Mau, rừng đước</p>
 </section>
-
 <section class="panel" data-k="end" data-side="left">
-  <p class="kicker">Hết hành trình</p>
-  <h2 class="display">11 chặng, hơn 4 năm, một dải đất hình chữ S</h2>
-  <p class="txt">Cảm ơn bạn đã đi cùng. Nếu bạn đang tìm người cho một sản phẩm .NET và Next.js, mình rất muốn nghe.</p>
+  <p class="kicker">Mũi Cà Mau · điểm cuối của đất liền</p>
+  <h2 class="display">Điểm đến tiếp theo đang chờ</h2>
+  <p class="txt">Cảm ơn bạn đã đi cùng mình từ Lũng Cú tới đây. Nếu bạn có một hành trình mới cho kỹ sư .NET và Next.js, hãy nhắn cho mình.</p>
   <p class="email">longnminhse@gmail.com</p>
   <div class="row">
     <button class="btn primary" type="button" data-act="copy">Chép email</button>

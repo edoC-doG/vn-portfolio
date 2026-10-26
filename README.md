@@ -10,10 +10,13 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | Storyboard 11 chặng và bản điện thoại | Xong, ảnh ở `docs/storyboard` |
 | CV nhanh song ngữ Việt / Anh | Xong, ở `prototype/quick-cv` |
 | Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
+| Câu chuyện và máy quay | Mỗi công ty là một điểm dừng, hiện tại (CTNP) ở Đà Nẵng, Hội An, Cà Mau là "điểm đến tiếp theo". Máy quay nhìn thẳng về phía trước: cuộn là bay tới, công trình từ xa lớn dần rồi lướt qua bên cạnh. Panel phóng to theo chiều sâu. |
+| Giờ và thời tiết | Ngày, đêm theo giờ Việt Nam thật; mưa và mây theo Open-Meteo. Nút đổi giờ và thời tiết ở góc trên. |
+| Khung cảnh quanh địa danh | **Việc tiếp theo.** Danh sách model cần tải ở `docs/ASSETS.md`, bảng khung cảnh từng chặng ở `docs/PLAN.md` mục 4. |
 | Cây, mặt nước, địa hình | Rừng 4 loại cây từ EZ-Tree (MIT), mặt nước có normal map, vệt trăng và bọt sóng, địa hình có đá / thảm thực vật / cát bằng shader. Nguồn và giấy phép ở `docs/MODELS.md`. |
 | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện Thành phố | Đã làm trên Meshy, **chưa có file**. Code đã chừa sẵn chỗ. |
 | Chợ Bến Thành | Cần làm lại màu (Retexture) trên Meshy |
-| Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` |
+| Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` (Mốc D) |
 
 ## Thư mục
 
@@ -21,6 +24,7 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 assets/models/{high,mid,low}/*.glb   model đã xử lý (high 50k tam giác, mid 15k, low 3k)
 docs/PLAN.md                         kế hoạch dựng bản thật
 docs/MODELS.md                       danh sách model, vị trí đặt, số liệu
+docs/ASSETS.md                       danh sách model phụ trợ cần tải, quy tắc giấy phép
 docs/storyboard/*.png                khung hình storyboard (máy tính và điện thoại)
 prototype/fly/                       bản bay liên tục: app.js (cảnh + máy quay), page.html (giao diện + nội dung CV)
 prototype/storyboard-scene/          cảnh tĩnh dùng để chụp storyboard
@@ -39,7 +43,7 @@ node ../prototype/fly/build.mjs    # tạo prototype/fly/dist
 cd ../prototype/fly/dist && python3 -m http.server 8770
 ```
 
-Mở `http://localhost:8770/_local.html`. Thêm `?tier=low` hoặc `?tier=mid` để ép mức hiển thị.
+Mở `http://localhost:8770/_local.html`. Thêm `?tier=low` hoặc `?tier=mid` để ép mức hiển thị, `?time=17:20` để xem một giờ cố định, `?rain=0.8` để xem mưa.
 
 Chụp kiểm tra (cần server ở trên đang chạy):
 

@@ -267,8 +267,9 @@ rebuildEnv(); scene.environmentIntensity = 0.5;
 // Stops follow the real east-west order of each place (east = -x, so north is up when seen from the south), spaced evenly north to south.
 const STOP_NAMES = ['Lũng Cú', 'Hà Nội', 'Hạ Long', 'Huế', 'Đà Nẵng, Hội An', 'Tây Nguyên', 'Nha Trang', 'Phan Thiết', 'Sài Gòn', 'Miền Tây', 'Mũi Cà Mau'];
 const STOP_X = [60, 40, -7, -26, -50, -44, -87, -46, 8, 43, 82].map((x) => x * 1.8); // exaggerated so the S reads from above
+// the route starts out at sea north of Lũng Cú, so the camera has room to fly in toward the flag
 const curve = new THREE.CatmullRomCurve3(
-  [[STOP_X[0] + 4, 30], ...STOP_X.map((x, i) => [x, -110 * i]), [STOP_X[10] + 16, -1175], [STOP_X[10] + 10, -1270]].map(([x, z]) => new THREE.Vector3(x, 0, z)),
+  [[STOP_X[0] + 6, 95], ...STOP_X.map((x, i) => [x, -110 * i]), [STOP_X[10] + 16, -1175], [STOP_X[10] + 10, -1270]].map(([x, z]) => new THREE.Vector3(x, 0, z)),
   false, 'centripetal'
 );
 const N = 1500;
@@ -1035,7 +1036,7 @@ const ribbonMat = new THREE.ShaderMaterial({
     }`,
 });
 {
-  const rc = new THREE.CatmullRomCurve3(curve.getSpacedPoints(400).filter((p, i) => i * (LTOT / 400) <= A_STOP[10] + 60).map((p) => p.clone().setY(1.6)));
+  const rc = new THREE.CatmullRomCurve3(curve.getSpacedPoints(400).filter((p, i) => i * (LTOT / 400) >= A_STOP[0] - 6 && i * (LTOT / 400) <= A_STOP[10] + 60).map((p) => p.clone().setY(1.6)));
   OV.add(new THREE.Mesh(new THREE.TubeGeometry(rc, 600, 2.2, 6), ribbonMat));
 }
 const markerMat = glowMaterial(1); markerMat.uniforms.uLamp = { value: 1 }; // the overview markers stay lit by day
@@ -1076,10 +1077,12 @@ const coastMat = new THREE.MeshBasicMaterial({ color: 0x7fbccc, transparent: tru
 
 // ---------------------------------------------------------------- camera rig
 const SIDE = [1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1]; // where each stop's panel sits: 1 right, -1 left
+// back: how far before the landmark the camera slows down; h: height there; side: how far it slides toward the landmark's bank;
+// look: how much it turns toward the landmark (kept small: the camera mostly looks straight ahead, into the screen)
 const CAMCFG = [
-  { back: 66, h: 21, look: 0.62 }, { back: 52, h: 9, look: 0.55 }, { back: 34, h: 8, look: 0.4 }, { back: 50, h: 10.5, look: 0.5 },
-  { back: 62, h: 22, look: 0.72 }, { back: 48, h: 12, look: 0.5 }, { back: 56, h: 15, look: 0.7 }, { back: 44, h: 9, look: 0.5 },
-  { back: 54, h: 9.5, look: 0.5 }, { back: 30, h: 8, look: 0.4 }, { back: 40, h: 8.5, look: 0.5 },
+  { back: 84, h: 22, side: 4, look: 0.26 }, { back: 64, h: 10, side: 16, look: 0.18 }, { back: 46, h: 8, side: 2, look: 0.15 }, { back: 60, h: 11, side: 14, look: 0.18 },
+  { back: 70, h: 22, side: 16, look: 0.22 }, { back: 64, h: 13, side: 3, look: 0.2 }, { back: 66, h: 15, side: 16, look: 0.2 }, { back: 56, h: 9, side: 14, look: 0.18 },
+  { back: 64, h: 10, side: 16, look: 0.18 }, { back: 42, h: 8, side: 2, look: 0.15 }, { back: 50, h: 8.5, side: 4, look: 0.18 },
 ];
 const ADW = HERO_ALONG.map((al, k) => A_STOP[k] + al - CAMCFG[k].back);
 const A_START = ADW[0], A_END = ADW[10] + 8;
@@ -1109,14 +1112,24 @@ function stopNear(a) {
   const sl = bd < 0 ? 46 : 16;
   return { k, d: bd, wb: Math.exp(-(bd * bd) / 1600), wl: Math.exp(-(bd * bd) / (sl * sl)) };
 }
+// The camera always looks ahead down the route, so scrolling flies into the screen: each landmark appears small in the
+// distance, grows, and passes close by. Near a stop the camera slides toward the landmark's bank (the panel sits on the
+// other side). Height and slide are summed over all stops so nothing jumps when the nearest stop changes.
 function journeyPose(a, pos, look) {
-  const s = stopNear(a), c = CAMCFG[s.k], h = lerp(10.5, c.h, s.wb);
+  const s = stopNear(a);
+  let h = 10.5, off = 0;
+  for (let k = 0; k < 11; k++) {
+    const d = a - ADW[k]; if (Math.abs(d) > 200) continue;
+    const w = Math.exp(-(d * d) / 1600);
+    h += (CAMCFG[k].h - 10.5) * w; off -= SIDE[k] * CAMCFG[k].side * w;
+  }
   pathPoint(a, pos); const i = Math.round(clamp(a / STEP, 0, N));
-  const off = SIDE[s.k] * -3 * s.wb; // drift toward the panel side so the landmark sits clear of it
   pos.x += -TZ[i] * off; pos.z += TX[i] * off; pos.y = h;
-  pathPoint(a + 44, look); look.y = h * 0.5;
-  // phones have no sideways view offset, so turn further toward the landmark (not at the first/last stop, whose poses anchor the intro and outro)
-  look.lerp(HERO[s.k], s.wl * (PHONE && s.k > 0 && s.k < 10 ? Math.min(1, c.look + 0.25) : c.look));
+  pathPoint(a + 70, look); const j = Math.round(clamp((a + 70) / STEP, 0, N));
+  look.x += -TZ[j] * off; look.z += TX[j] * off; look.y = h * 0.62;
+  // phones are narrow, so they turn a little more (not at the first/last stop, whose poses anchor the intro and outro)
+  const c = CAMCFG[s.k];
+  look.lerp(HERO[s.k], s.wl * (PHONE && s.k > 0 && s.k < 10 ? c.look + 0.25 : c.look));
   return s;
 }
 const toOrbit = (pos, T) => { const o = pos.clone().sub(T), d = o.length(); return { d, yaw: Math.atan2(o.x, o.z), pitch: Math.asin(o.y / d) }; };
@@ -1473,25 +1486,27 @@ const DOTS = $$('.rail .dot');
 const railFill = $('.rail .fill'), railLabel = $('.rail .now');
 const LABELS = STOP_NAMES.map((n, k) => { const el = document.createElement('span'); el.className = 'map-label'; el.textContent = n; $('#labels').appendChild(el); return { el, p: (() => { const q = at(k, 0, 0); return v3(q.x, 4, q.z); })() }; });
 const isPhoneLayout = () => matchMedia('(max-width: 760px)').matches;
-function setPanel(p, w) {
-  w = Math.round(w * 50) / 50; if (w === p.o) return; p.o = w;
-  p.el.style.opacity = w; p.el.style.transform = `translate3d(0, ${((1 - w) * 14).toFixed(1)}px, 0)`;
+// panels move in depth with the flight: small and far while approaching, growing past full size as they slide by
+function setPanel(p, w, dir = -1) {
+  w = Math.round(w * 50) / 50; if (w === p.o && dir === p.dir) return; p.o = w; p.dir = dir;
+  const sc = dir < 0 ? 0.8 + 0.2 * w : 1 + 0.12 * (1 - w);
+  p.el.style.opacity = w; p.el.style.transform = `translate3d(0, ${(dir < 0 ? (1 - w) * 10 : 0).toFixed(1)}px, 0) scale(${sc.toFixed(3)})`;
   p.el.style.visibility = w < 0.02 ? 'hidden' : 'visible'; p.el.classList.toggle('live', w > 0.6);
 }
 let railCur = -2;
 function updateUI(u) {
   const st = STATE;
   for (const p of PANELS) {
-    let w = 0;
-    if (p.k === 'intro') w = 1 - smooth(U_HOLD * 0.4, U_HOLD + 0.012, u);
+    let w = 0, dir = -1;
+    if (p.k === 'intro') { w = 1 - smooth(U_HOLD * 0.4, U_HOLD + 0.012, u); dir = 1; }
     else if (p.k === 'end') w = st.phase === 'end' ? smooth(0.55, 0.85, st.tE) : 0;
     else {
       const k = +p.k;
-      if (st.phase === 'journey') { const d = st.a - ADW[k]; w = d < 0 ? 1 - smooth(14, 40, -d) : 1 - smooth(10, 30, d); }
+      if (st.phase === 'journey') { const d = st.a - ADW[k]; w = d < 0 ? 1 - smooth(14, 40, -d) : 1 - smooth(10, 30, d); dir = d < 0 ? -1 : 1; }
       else if (st.phase === 'intro' && k === 0) w = smooth(0.72, 1, st.tI);
-      else if (st.phase === 'end' && k === 10) w = 1 - smooth(0, 0.3, st.tE);
+      else if (st.phase === 'end' && k === 10) { w = 1 - smooth(0, 0.3, st.tE); dir = 1; }
     }
-    setPanel(p, w);
+    setPanel(p, w, dir);
   }
   const cur = st.phase === 'intro' ? (st.tI > 0.7 ? 0 : -1) : st.phase === 'end' ? 11 : st.s.k;
   if (cur !== railCur) {
@@ -1603,8 +1618,10 @@ let last = performance.now(), T = 0, roll = 0, shiftX = 0, shiftY = 0, frames = 
 const fpsEl = $('#fps');
 const tierName = LOW ? 'bản nhẹ' : 'bản đầy đủ';
 const VIS_R = () => (lightMode ? 300 : LOW ? 360 : 440);
+let HOLD = false; // screenshots: once a test frame is set up, the loop stops redrawing so the capture is not starved
 function frame(now) {
   requestAnimationFrame(frame);
+  if (HOLD) return;
   const dt = Math.min(0.05, (now - last) / 1000); last = now; T += dt;
   if (auto) { targetU = Math.min(1, targetU + dt / AUTO_SECONDS); writeU(targetU); if (targetU >= 1) setAuto(false); }
   else targetU = readU();
@@ -1635,7 +1652,7 @@ function step(u, dt) {
   else if (STATE.phase === 'intro') { wp = 1; side = STATE.tI > 0.72 ? SIDE[0] * smooth(0.72, 1, STATE.tI) : -1 * (1 - smooth(0, 0.5, STATE.tI)); }
   else { wp = 1; side = STATE.tE < 0.4 ? SIDE[10] * (1 - smooth(0, 0.4, STATE.tE)) : -1 * smooth(0.5, 0.85, STATE.tE); }
   const phone = isPhoneLayout();
-  const tx = phone ? 0 : 0.2 * wp * side, ty = phone ? (STATE.phase === 'end' ? lerp(0.22, 0.3, smooth(0.5, 0.85, STATE.tE)) : 0.22 * Math.max(wp, 0.6)) : 0;
+  const tx = 0, ty = phone ? (STATE.phase === 'end' ? lerp(0.22, 0.3, smooth(0.5, 0.85, STATE.tE)) : 0.22 * Math.max(wp, 0.6)) : 0;
   shiftX += (tx - shiftX) * (1 - Math.exp(-dt / 0.35)); shiftY += (ty - shiftY) * (1 - Math.exp(-dt / 0.35));
   const ax = Math.abs(shiftX);
   if (ax > 0.002 || shiftY > 0.002) {
@@ -1679,7 +1696,7 @@ window.__fly = {
   atmo: () => ({ e: +ATMO.e.toFixed(1), rain: +ATMO.rain.toFixed(2), cloud: +ATMO.cloud.toFixed(2), clock: ATMO.clock }),
   setTime(mode) { ATMO.timeMode = mode; }, setWx(mode) { ATMO.wxMode = mode; },
   trees: () => ({ total: TREES.x.length, near: NEAR_TREES.map((l) => l[0]?.count ?? 0), uNear: impMat.uniforms.uNear.value }),
-  shot(u, t = 10) { curU = targetU = u; T = t; writeU(u); step(u, 0.016); step(u, 0.5); step(u, 0.5); step(u, 0.5); step(u, 0.5); },
+  shot(u, t = 10) { HOLD = true; curU = targetU = u; T = t; writeU(u); step(u, 0.016); step(u, 0.5); step(u, 0.5); step(u, 0.5); step(u, 0.5); },
   uOfStop, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, tier: TIER, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }),
   U: { U_HOLD, U_INTRO, U_END },
 };
