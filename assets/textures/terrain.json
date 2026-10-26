@@ -1,0 +1,38 @@
+{
+  "rock": {
+    "mean": [
+      0.1705,
+      0.1211,
+      0.0505
+    ],
+    "normal": true,
+    "source": "aerial_rocks_02"
+  },
+  "ground": {
+    "mean": [
+      0.2888,
+      0.1751,
+      0.0537
+    ],
+    "normal": true,
+    "source": "forest_leaves_02"
+  },
+  "field": {
+    "mean": [
+      0.1361,
+      0.0956,
+      0.0369
+    ],
+    "normal": true,
+    "source": "brown_mud_leaves_01"
+  },
+  "sand": {
+    "mean": [
+      0.156,
+      0.1161,
+      0.0949
+    ],
+    "normal": true,
+    "source": "aerial_beach_02"
+  }
+}

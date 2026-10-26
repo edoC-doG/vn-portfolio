@@ -72,7 +72,8 @@ bash run_all.sh /đường/dẫn/thư-mục-file-meshy
 |---|---|---|---|
 | 4 loại cây: sồi, tần bì (rừng lá rộng), thông (Hà Giang, Tây Nguyên), bụi | [EZ-Tree](https://github.com/dgreenheck/ez-tree) của Daniel Greenheck, sinh từ các preset rồi rút gọn. Texture vỏ cây gốc từ Poly Haven và texturecan (CC0). | MIT | `assets/models/{mid,low}/tree-*.glb`, `assets/textures/tree-impostors.png` |
 | Normal map mặt nước | three.js `examples/textures/waternormals.jpg` | MIT | `assets/textures/waternormals.jpg` |
-| Đá, thảm thực vật, cát ướt trên địa hình, núi đá vôi | Shader tự viết (noise), không dùng texture ngoài | — | `prototype/fly/app.js` (`natureMaterial`) |
+| Texture địa hình: đá `aerial_rocks_02`, đất rừng `forest_leaves_02`, ruộng `brown_mud_leaves_01`, cát `aerial_beach_02` | [Poly Haven](https://polyhaven.com) (bản gốc ở `assets/incoming/`) | CC0 | `assets/textures/terrain-*.jpg` (512 px, màu + normal), `terrain.json` |
+| Cách trộn các lớp trên địa hình, núi đá vôi | Shader tự viết: đá chiếu 3 phía ở sườn dốc, ruộng ở đất thấp bằng phẳng, đất rừng ở sườn đồi, cát ở mép nước | — | `prototype/fly/app.js` (`natureMaterial`) |
 
 Sinh lại cây (cần Chromium cho Playwright):
 
@@ -94,3 +95,12 @@ Cách vẽ rừng trong bản bay thử:
 - Khoảng 2.600 cây (mức thấp 1.500). Mật độ theo chặng (`FOREST`), tỉ lệ thông theo chặng (`PINE`), có khoảng trống theo noise.
 - Không trồng cây trên công trình, bệ, ruộng bậc thang, các khu bằng phẳng (Ba Đình, phố Hội An) và trên đường nhìn từ máy quay tới công trình của mỗi chặng.
 - Cây xa: hai tấm ảnh bắt chéo, mỗi khối địa hình một draw call. Cây gần (trong 56 đơn vị, tối đa 120 cây): mesh thật, chuyển sang bằng dither nên không bị giật. Mức thấp chỉ dùng ảnh.
+
+Xử lý lại texture địa hình (chọn bộ khác thì sửa `tools/textures/terrain.json`):
+
+```bash
+cd tools && pip install OpenEXR numpy pillow   # chỉ cần khi normal map là file .exr
+node textures/process.mjs
+```
+
+Script chia màu texture cho màu trung bình của chính nó, nên texture chỉ thêm chi tiết sáng tối; tông màu từng vùng vẫn lấy từ màu đỉnh của địa hình.

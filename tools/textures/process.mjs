@@ -4,9 +4,12 @@
 //   assets/textures/terrain.json             which layers exist and their average linear colour (the shader divides by it,
 //                                            so a texture adds detail without changing the tint of each region)
 // Usage (from tools/): node textures/process.mjs [incoming dir, default ../assets/incoming]
+// EXR normal maps need Python with OpenEXR, numpy and pillow (pip install OpenEXR numpy pillow).
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+import { execFileSync } from 'child_process';
 const here = path.dirname(new URL(import.meta.url).pathname);
 const incoming = path.resolve(process.argv[2] || path.join(here, '../../assets/incoming'));
 const out = path.join(here, '../../assets/textures');
@@ -20,9 +23,11 @@ const IMG = /\.(jpe?g|png|webp|tiff?|exr)$/i;
 const manifest = {};
 for (const [layer, names] of Object.entries(cfg)) {
   if (layer.startsWith('_')) continue;
-  const dir = names.map((n) => path.join(incoming, n)).find((d) => fs.existsSync(d));
+  // a folder counts only if it holds a colour map directly or in a textures/ subfolder (not just more set folders)
+  const hasColor = (d) => fs.existsSync(d) && fs.readdirSync(d).concat(fs.existsSync(path.join(d, 'textures')) ? fs.readdirSync(path.join(d, 'textures')) : []).some((f) => /(diff|color|albedo)/i.test(f));
+  const dir = names.map((n) => path.join(incoming, n)).find(hasColor);
   if (!dir) { console.log(layer.padEnd(7), 'missing: put one of', names.join(', '), 'in', incoming); continue; }
-  const files = walk(dir).filter((f) => IMG.test(f));
+  const files = walk(dir).filter((f) => IMG.test(f) && !/\.blend/i.test(f));
   const color = pick(files, /(diff|diffuse|color|albedo|basecolor)/i, /(normal|nor_)/i);
   let normal = pick(files, /(nor_gl|normalgl|normal_gl)/i), flipY = false;
   if (!normal) { normal = pick(files, /(nor_dx|normaldx|normal_dx)/i); flipY = !!normal; } // DirectX normals: green channel flipped
@@ -37,6 +42,10 @@ for (const [layer, names] of Object.entries(cfg)) {
   const mean = sum.map((v) => +(v / (data.length / info.channels)).toFixed(4));
   manifest[layer] = { mean, normal: false, source: path.basename(dir) };
   if (normal) {
+    if (/\.exr$/i.test(normal)) { // Poly Haven's Blender downloads ship EXR normals
+      const png = path.join(os.tmpdir(), `terrain-${layer}-n.png`);
+      execFileSync('python3', [path.join(here, 'exr2png.py'), normal, png]); normal = png;
+    }
     let img = sharp(normal).resize(SIZE, SIZE).removeAlpha();
     if (flipY) { const { data, info } = await img.raw().toBuffer({ resolveWithObject: true }); for (let i = 1; i < data.length; i += info.channels) data[i] = 255 - data[i]; img = sharp(data, { raw: info }); }
     await img.jpeg({ quality: 90, mozjpeg: true }).toFile(path.join(out, `terrain-${layer}-n.jpg`));

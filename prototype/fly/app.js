@@ -79,6 +79,28 @@ function M(o) {
   const { roughness = 0.9, metalness = 0, ...rest } = o;
   return LOW ? new THREE.MeshLambertMaterial(rest) : new THREE.MeshStandardMaterial({ roughness, metalness, ...rest });
 }
+// ---------------------------------------------------------------- textures (base64 files, like the models)
+const TEX_JOBS = [];
+function loadTex(name, { mime = 'image/jpeg', placeholder = '#8080ff', srgb = false, repeat = true } = {}) {
+  const ph = document.createElement('canvas'); ph.width = ph.height = 1;
+  const pg = ph.getContext('2d'); pg.fillStyle = placeholder; pg.fillRect(0, 0, 1, 1);
+  const t = new THREE.Texture(ph); t.needsUpdate = true;
+  if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = LOW ? 1 : 4; // the real image replaces the placeholder on load; t.dispose() there makes the GPU copy reallocate at the new size
+  TEX_JOBS.push(fetch(`textures/${name}.txt`)
+    .then((r) => { if (!r.ok) throw new Error(name + ' ' + r.status); return r.text(); })
+    .then((b64) => new Promise((res) => { const img = new Image(); img.onload = () => { t.image = img; t.dispose(); t.needsUpdate = true; res(); }; img.onerror = res; img.src = `data:${mime};base64,${b64.trim()}`; }))
+    .catch((e) => console.warn(e)));
+  return t;
+}
+
+// Terrain textures from assets/incoming, prepared by tools/textures/process.mjs; build.mjs inlines the manifest here.
+// Without them the shader below falls back to noise.
+const TERRAIN_TEX = /*TERRAIN_TEX*/ null;
+const NAT_TEX = !!(TERRAIN_TEX && ['rock', 'ground', 'field', 'sand'].every((l) => TERRAIN_TEX[l]));
+const toSRGBHex = (m) => '#' + m.map((v) => Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055)).toString(16).padStart(2, '0')).join('');
+const NAT_MAPS = {};
 // Terrain, karsts and islands: smooth normals with detail added in the shader. Steep faces become rock with strata,
 // gentle slopes stay vegetated (tinted by the vertex colours), and the waterline turns to wet sand. A procedural bump adds grain.
 const NAT_GLSL = `
@@ -94,11 +116,39 @@ const NAT_GLSL = `
     return normalize(abs(fDet) * surf_norm - vGrad);
   }
   varying vec3 vNatP; varying vec3 vNatN; uniform vec3 uRock; uniform vec3 uSand; uniform float uVeg;
+#ifdef NAT_TEX
+  uniform sampler2D tRock, tGround, tField, tSand; uniform vec3 uRockMean, uGroundMean, uFieldMean, uSandMean;
+  vec3 triC(sampler2D t, vec3 p, vec3 w){ return texture2D(t, p.zy).rgb * w.x + texture2D(t, p.xz).rgb * w.y + texture2D(t, p.xy).rgb * w.z; }
+  // texture relative to its average, mostly as light and dark: a channel the photo barely has (blue in warm rock) must not blow up
+  vec3 rel(vec3 c, vec3 m){ float l = dot(c, vec3(0.2126, 0.7152, 0.0722)) / dot(m, vec3(0.2126, 0.7152, 0.0722)); return mix(vec3(l), c / m, 0.3); }
+#ifdef NAT_TEX_N
+  uniform sampler2D tRockN, tGroundN, tFieldN, tSandN;
+  // whiteout-blended triplanar normal mapping (world space)
+  vec3 triN(sampler2D t, vec3 p, vec3 w, vec3 N, float k){
+    vec3 nx = texture2D(t, p.zy).xyz * 2.0 - 1.0, ny = texture2D(t, p.xz).xyz * 2.0 - 1.0, nz = texture2D(t, p.xy).xyz * 2.0 - 1.0;
+    nx = vec3(nx.xy * k + N.zy, abs(nx.z) * N.x); ny = vec3(ny.xy * k + N.xz, abs(ny.z) * N.y); nz = vec3(nz.xy * k + N.xy, abs(nz.z) * N.z);
+    return normalize(nx.zyx * w.x + ny.xzy * w.y + nz.xyz * w.z);
+  }
+  vec3 topN(sampler2D t, vec2 uv, vec3 N, float k){ vec3 n = texture2D(t, uv).xyz * 2.0 - 1.0; n = vec3(n.xy * k + N.xz, abs(n.z) * N.y); return normalize(n.xzy); }
+#endif
+#endif
 `;
 function natureMaterial({ color = 0xffffff, vertexColors = false, rock = 0x3b3d3a, sand = 0x4f4634, veg = 1, roughness = 0.95 } = {}) {
   const m = M({ color, vertexColors, roughness });
+  if (NAT_TEX) for (const l of ['rock', 'ground', 'field', 'sand']) {
+    NAT_MAPS[l] ??= loadTex('terrain-' + l, { srgb: true, placeholder: toSRGBHex(TERRAIN_TEX[l].mean) });
+    if (!LOW) NAT_MAPS[l + 'N'] ??= loadTex('terrain-' + l + '-n');
+  }
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uRock = { value: new THREE.Color(rock) }; sh.uniforms.uSand = { value: new THREE.Color(sand) }; sh.uniforms.uVeg = { value: veg };
+    if (NAT_TEX) {
+      for (const l of ['rock', 'ground', 'field', 'sand']) {
+        const U = l[0].toUpperCase() + l.slice(1);
+        sh.uniforms['t' + U] = { value: NAT_MAPS[l] }; sh.uniforms['u' + U + 'Mean'] = { value: new THREE.Vector3(...TERRAIN_TEX[l].mean) };
+        if (!LOW) sh.uniforms['t' + U + 'N'] = { value: NAT_MAPS[l + 'N'] };
+      }
+      sh.defines = { ...sh.defines, NAT_TEX: '', ...(LOW ? {} : { NAT_TEX_N: '' }) };
+    }
     sh.vertexShader = 'varying vec3 vNatP; varying vec3 vNatN;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
       vec4 natP = vec4(transformed, 1.0); vec3 natN = objectNormal;
       #ifdef USE_INSTANCING
@@ -116,17 +166,35 @@ function natureMaterial({ color = 0xffffff, vertexColors = false, rock = 0x3b3d3
         float strata = 0.82 + 0.18 * sin(P.y * 1.6 + big * 6.0 + mid * 2.0);
         vec3 rk = uRock * (0.62 + 0.55 * mid) * strata * (0.85 + 0.3 * fine);
         float rockW = smoothstep(0.38, 0.62, slope + (big - 0.5) * 0.35) * uVeg + (1.0 - uVeg);
-        vec3 natC = mix(veg, rk, rockW);
         float sandW = (1.0 - smoothstep(0.35, 1.5, P.y + (mid - 0.5) * 0.8)) * (1.0 - rockW * 0.6);
-        natC = mix(natC, uSand * (0.75 + 0.4 * fine) * mix(0.55, 1.0, smoothstep(-0.2, 0.9, P.y)), sandW);
+        vec3 sandC = uSand * (0.75 + 0.4 * fine);
+        #ifdef NAT_TEX
+          // photo textures divided by their own average: they add detail, the region tint still comes from the vertex colours
+          vec3 tw = pow(abs(WN), vec3(4.0)); tw /= tw.x + tw.y + tw.z;
+          rk = uRock * rel(triC(tRock, P / 11.0, tw), uRockMean) * mix(vec3(1.0), rel(triC(tRock, P / 43.0 + 0.37, tw), uRockMean), 0.35) * (0.8 + 0.4 * big);
+          vec3 gT = rel(texture2D(tGround, P.xz / 7.5).rgb, uGroundMean), fT = rel(texture2D(tField, P.xz / 9.0).rgb, uFieldMean);
+          // fields on low flat land near the river, forest floor elsewhere
+          float fieldW = (1.0 - smoothstep(3.0, 9.0, P.y + (big - 0.5) * 6.0)) * (1.0 - smoothstep(0.12, 0.3, slope));
+          veg = diffuseColor.rgb * (0.7 + 0.5 * big) * mix(mix(vec3(1.0), gT, 0.85), mix(vec3(1.0), fT, 0.85) * vec3(1.05, 1.0, 0.85), fieldW);
+          sandC = uSand * rel(texture2D(tSand, P.xz / 6.0).rgb, uSandMean) * (0.85 + 0.3 * mid);
+        #endif
+        vec3 natC = mix(veg, rk, rockW);
+        natC = mix(natC, sandC * mix(0.55, 1.0, smoothstep(-0.2, 0.9, P.y)), sandW);
         diffuseColor.rgb = natC;`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-${LOW ? '' : `        {
+${LOW ? '' : NAT_TEX ? `        #ifdef NAT_TEX_N
+        {
+          vec3 Nr = triN(tRockN, P / 11.0, tw, WN, 1.0);
+          vec3 Nv = mix(topN(tGroundN, P.xz / 7.5, WN, 0.8), topN(tFieldN, P.xz / 9.0, WN, 0.8), fieldW);
+          vec3 Nw = normalize(mix(mix(Nv, Nr, rockW), topN(tSandN, P.xz / 6.0, WN, 0.6), sandW));
+          normal = normalize((viewMatrix * vec4(Nw, 0.0)).xyz);
+        }
+        #endif` : `        {
           float natH = nn3(vNatP * 0.9) * 0.55 + nn3(vNatP * 3.1) * 0.22 + nn3(vNatP * 9.0) * 0.08;
           normal = natBump(-vViewPosition, normal, vec2(dFdx(natH), dFdy(natH)) * 1.4, faceDirection);
         }`}`);
   };
-  m.customProgramCacheKey = () => 'nature' + (vertexColors ? 'v' : '');
+  m.customProgramCacheKey = () => 'nature' + (vertexColors ? 'v' : '') + (NAT_TEX ? 't' : '');
   return m;
 }
 function bake(list) {
@@ -322,22 +390,6 @@ const TERRAIN = [];
     g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
     const mesh = new THREE.Mesh(g, mat); mesh.userData.zc = za - zLen / 2; scene.add(mesh); TERRAIN.push(mesh);
   }
-}
-
-// ---------------------------------------------------------------- textures (base64 files, like the models)
-const TEX_JOBS = [];
-function loadTex(name, { mime = 'image/jpeg', placeholder = '#8080ff', srgb = false, repeat = true } = {}) {
-  const ph = document.createElement('canvas'); ph.width = ph.height = 1;
-  const pg = ph.getContext('2d'); pg.fillStyle = placeholder; pg.fillRect(0, 0, 1, 1);
-  const t = new THREE.Texture(ph); t.needsUpdate = true;
-  if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = LOW ? 1 : 4; // the real image replaces the placeholder on load; t.dispose() there makes the GPU copy reallocate at the new size
-  TEX_JOBS.push(fetch(`textures/${name}.txt`)
-    .then((r) => { if (!r.ok) throw new Error(name + ' ' + r.status); return r.text(); })
-    .then((b64) => new Promise((res) => { const img = new Image(); img.onload = () => { t.image = img; t.dispose(); t.needsUpdate = true; res(); }; img.onerror = res; img.src = `data:${mime};base64,${b64.trim()}`; }))
-    .catch((e) => console.warn(e)));
-  return t;
 }
 
 // ---------------------------------------------------------------- water
@@ -699,7 +751,7 @@ function addFlag(k, o, rot) {
     }
     g.computeVertexNormals(); return g;
   });
-  const rockMat = natureMaterial({ color: 0x2a4a2c, rock: 0x585c58 });
+  const rockMat = natureMaterial({ color: 0x2a4a2c, rock: 0x5c5f58 });
   bases.forEach((g) => {
     const want = nq(11, 6), mats = [];
     for (let t = 0; t < 60 && mats.length < want; t++) {
