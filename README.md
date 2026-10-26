@@ -9,7 +9,7 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | 14 model Meshy, xử lý thành 3 mức high / mid / low | Xong, nằm ở `assets/models` |
 | Storyboard 11 chặng và bản điện thoại | Xong, ảnh ở `docs/storyboard` |
 | CV nhanh song ngữ Việt / Anh | Xong, ở `prototype/quick-cv` |
-| Bản bay liên tục (`prototype/fly`) | Đang làm. Đã chạy được bản đồ chữ S, đoạn lao xuống Lũng Cú và chặng 1. Lần sửa cuối (đỉnh phía bắc của bản đồ, đường bờ biển) **chưa được chụp kiểm tra**. |
+| Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
 | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện Thành phố | Đã làm trên Meshy, **chưa có file**. Code đã chừa sẵn chỗ. |
 | Chợ Bến Thành | Cần làm lại màu (Retexture) trên Meshy |
 | Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` |
@@ -45,6 +45,8 @@ cd prototype/fly
 node shots.mjs desktop overview,dive1,s01,s05,end
 node shots.mjs phone overview,s01
 ```
+
+Nếu Playwright báo không tìm thấy trình duyệt (phiên bản lệch với Chromium có sẵn), chỉ đường dẫn bằng `CHROME_PATH=/đường/dẫn/chrome node shots.mjs ...`.
 
 Tên khung có sẵn: `overview`, `dive1`, `dive2`, `s01`…`s11`, `dragon`, `hoian`, `between`, `rise`, `end`. Ảnh lưu vào `prototype/fly/shots/`.
 

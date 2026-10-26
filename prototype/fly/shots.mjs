@@ -1,7 +1,7 @@
 import { chromium } from '../../tools/node_modules/playwright/index.mjs'; // run `npm install` in tools/ first
 import fs from 'fs';
 const [mode = 'desktop', list = ''] = process.argv.slice(2);
-const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const ctx = mode === 'phone'
   ? await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true })
   : await browser.newContext({ viewport: { width: 1440, height: 810 }, deviceScaleFactor: 1 });
@@ -31,7 +31,7 @@ for (const name of want) {
   const u = all[name];
   const t1 = Date.now();
   await page.evaluate((u) => window.__fly.shot(u), u);
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(400); // let the rail label's CSS transition settle
   await page.screenshot({ path: `shots/${mode}-${name}.png` });
   const info = await page.evaluate(() => window.__fly.info());
   console.log(name, u.toFixed(4), JSON.stringify(info), ((Date.now() - t1) / 1000).toFixed(1) + 's');

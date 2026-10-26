@@ -108,6 +108,8 @@
   .stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
   .stats .n { font-family: var(--f-display); font-weight: 700; font-size: 30px; color: var(--ink); line-height: 1.1; }
   .stats .t { font-size: 14px; color: var(--body); }
+  .test *, .test *::before, .test *::after { transition: none !important; }
+  .clients { font-family: var(--f-display); font-weight: 700; font-size: 20px; color: var(--ink); }
   .skills { display: flex; flex-direction: column; gap: 9px; }
   .skills dt { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
   .skills dd { font-size: 14px; color: var(--body); }
@@ -220,8 +222,9 @@
   <div class="stats">
     <span class="n">4</span><span class="t">công ty</span>
     <span class="n">4+</span><span class="t">năm kinh nghiệm</span>
-    <span class="n" style="font-size:20px">Bridgestone, L'Oréal</span><span class="t">khách hàng hiện tại</span>
   </div>
+  <p class="label">Khách hàng hiện tại</p>
+  <p class="clients">Bridgestone, L'Oréal</p>
   <p class="seen">Vịnh Hạ Long, thuyền buồm giữa núi đá vôi</p>
 </section>
 

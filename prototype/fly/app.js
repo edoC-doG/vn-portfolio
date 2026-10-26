@@ -12,6 +12,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const Q = new URLSearchParams(location.search);
 const TEST = Q.has('test');
+if (TEST) document.documentElement.classList.add('test'); // screenshots: no CSS transitions caught mid-way
 
 // ---------------------------------------------------------------- device tier
 const coarse = matchMedia('(pointer: coarse)').matches;
@@ -654,7 +655,7 @@ function addFlag(k, o, rot) {
   {
     const b = at(k, 0, 36), L = 64, g = new THREE.Group(); g.position.set(b.x, 0, b.z); g.rotation.y = b.rot; G[k].add(g);
     const deck = [[new THREE.BoxGeometry(L, 0.9, 6), MY(0, 14, 0)]];
-    for (let i = 0; i < 5; i++) deck.push([new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(-L / 2 + 6 + i * ((L - 12) / 4), 5.3, 2.2)], [new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(-L / 2 + 6 + i * ((L - 12) / 4), 5.3, -2.2)]);
+    for (const px of [-26, -14, 14, 26]) deck.push([new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(px, 5.3, 2.2)], [new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(px, 5.3, -2.2)]); // no piers near the flight line
     g.add(new THREE.Mesh(bake(deck), M({ color: 0x2a3634, roughness: 0.8 })));
     const pts = []; for (let i = 0; i <= 60; i++) { const t = i / 60; pts.push(v3(-L / 2 - 2 + t * (L + 4), 17 + 2.6 * Math.sin(t * Math.PI * 4.5 + 0.4), 0)); }
     const dm = M({ color: 0xd9a23a, emissive: 0x9a5a10, emissiveIntensity: 1.1, metalness: 0.4, roughness: 0.4 });
@@ -891,8 +892,8 @@ const coastMat = new THREE.MeshBasicMaterial({ color: 0x7fbccc, transparent: tru
 // ---------------------------------------------------------------- camera rig
 const SIDE = [1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1]; // where each stop's panel sits: 1 right, -1 left
 const CAMCFG = [
-  { back: 50, h: 15, look: 0.5 }, { back: 52, h: 9, look: 0.55 }, { back: 34, h: 8, look: 0.4 }, { back: 50, h: 10.5, look: 0.5 },
-  { back: 58, h: 9, look: 0.5 }, { back: 48, h: 12, look: 0.5 }, { back: 56, h: 10, look: 0.5 }, { back: 44, h: 9, look: 0.5 },
+  { back: 66, h: 21, look: 0.62 }, { back: 52, h: 9, look: 0.55 }, { back: 34, h: 8, look: 0.4 }, { back: 50, h: 10.5, look: 0.5 },
+  { back: 62, h: 22, look: 0.72 }, { back: 48, h: 12, look: 0.5 }, { back: 56, h: 15, look: 0.7 }, { back: 44, h: 9, look: 0.5 },
   { back: 54, h: 9.5, look: 0.5 }, { back: 30, h: 8, look: 0.4 }, { back: 40, h: 8.5, look: 0.5 },
 ];
 const ADW = HERO_ALONG.map((al, k) => A_STOP[k] + al - CAMCFG[k].back);
@@ -917,6 +918,7 @@ function ujAt(a) { const f = clamp(((a - A_START) / (A_END - A_START)) * NTB, 0,
 const uOfStop = (k) => U_INTRO + ujAt(ADW[k]) * (U_END - U_INTRO);
 
 const _pp = new THREE.Vector3(), _la = new THREE.Vector3();
+let PHONE = false; // set in resize()
 function stopNear(a) {
   let k = 0, bd = 1e9; for (let i = 0; i < 11; i++) { const d = a - ADW[i]; if (Math.abs(d) < Math.abs(bd)) { bd = d; k = i; } }
   const sl = bd < 0 ? 46 : 16;
@@ -928,7 +930,8 @@ function journeyPose(a, pos, look) {
   const off = SIDE[s.k] * -3 * s.wb; // drift toward the panel side so the landmark sits clear of it
   pos.x += -TZ[i] * off; pos.z += TX[i] * off; pos.y = h;
   pathPoint(a + 44, look); look.y = h * 0.5;
-  look.lerp(HERO[s.k], s.wl * c.look);
+  // phones have no sideways view offset, so turn further toward the landmark (not at the first/last stop, whose poses anchor the intro and outro)
+  look.lerp(HERO[s.k], s.wl * (PHONE && s.k > 0 && s.k < 10 ? Math.min(1, c.look + 0.25) : c.look));
   return s;
 }
 const toOrbit = (pos, T) => { const o = pos.clone().sub(T), d = o.length(); return { d, yaw: Math.atan2(o.x, o.z), pitch: Math.asin(o.y / d) }; };
@@ -958,8 +961,8 @@ function pose(u, time, pos, look) {
   if (u > U_END) {
     const t = (u - U_END) / (1 - U_END);
     STATE.phase = 'end'; STATE.tE = t; STATE.a = A_END; STATE.ujour = 1;
-    _T.copy(JE.look).lerp(MAP_C, easeIO(clamp((t - 0.1) * 1.4, 0, 1)));
-    const d = Math.exp(lerp(Math.log(OE.d), Math.log(OV_DIST), easeIO(t)));
+    _T.copy(JE.look).lerp(MAP_C, easeIO(clamp((t - 0.3) / 0.7, 0, 1))); // climb first, then pan, so the camera never skims the Sài Gòn towers
+    const d = Math.exp(lerp(Math.log(OE.d), Math.log(OV_DIST * (PHONE ? 2 : 1)), easeIO(t))); // phone: keep the whole map above the end panel
     let y0 = OE.yaw; if (y0 > Math.PI) y0 -= Math.PI * 2;
     const yaw = lerp(y0, Math.PI + 0.03 * Math.sin(time * 0.15) * smooth(0.8, 1, t), smooth(0.08, 0.9, t)), pitch = lerp(OE.pitch, P0, smooth(0, 0.75, t));
     orbitPose(_T, d, yaw, pitch, pos, look);
@@ -1022,7 +1025,9 @@ function updateLabels(ov) {
     if (!show) { if (L.el.style.opacity !== '0') L.el.style.opacity = '0'; continue; }
     _v3.copy(L.p).project(camera);
     const x = (_v3.x * 0.5 + 0.5) * VW, y = (-_v3.y * 0.5 + 0.5) * VH;
-    L.el.style.opacity = ov.toFixed(2); L.el.style.transform = `translate3d(${(x + 14).toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
+    if (!L.w) L.w = L.el.offsetWidth;
+    const lx = x + 14 + L.w > VW - 8 ? x - 14 - L.w : x + 14; // flip to the left near the right edge
+    L.el.style.opacity = ov.toFixed(2); L.el.style.transform = `translate3d(${lx.toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
   }
 }
 const loadingEl = $('#loading');
@@ -1085,7 +1090,7 @@ let VW = 0, VH = 0;
 function resize(force) {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!force && w === VW && Math.abs(h - VH) < (coarse ? 140 : 1)) return;
-  VW = w; VH = h;
+  VW = w; VH = h; PHONE = isPhoneLayout(); for (const L of LABELS) L.w = 0;
   renderer.setSize(w, h, false); composer?.setSize(w, h); bloomPass?.resolution.set(w / 2, h / 2);
   const asp = w / h;
   camera.fov = asp >= 1 ? 40 : clamp((2 * Math.atan(Math.tan((21 * Math.PI) / 180) / asp) * 180) / Math.PI, 40, 78);
@@ -1147,7 +1152,7 @@ function step(u, dt) {
   else if (STATE.phase === 'intro') { wp = 1; side = STATE.tI > 0.72 ? SIDE[0] * smooth(0.72, 1, STATE.tI) : -1 * (1 - smooth(0, 0.5, STATE.tI)); }
   else { wp = 1; side = STATE.tE < 0.4 ? SIDE[10] * (1 - smooth(0, 0.4, STATE.tE)) : -1 * smooth(0.5, 0.85, STATE.tE); }
   const phone = isPhoneLayout();
-  const tx = phone ? 0 : 0.2 * wp * side, ty = phone ? 0.22 * Math.max(wp, 0.6) : 0;
+  const tx = phone ? 0 : 0.2 * wp * side, ty = phone ? (STATE.phase === 'end' ? lerp(0.22, 0.3, smooth(0.5, 0.85, STATE.tE)) : 0.22 * Math.max(wp, 0.6)) : 0;
   shiftX += (tx - shiftX) * (1 - Math.exp(-dt / 0.35)); shiftY += (ty - shiftY) * (1 - Math.exp(-dt / 0.35));
   const ax = Math.abs(shiftX);
   if (ax > 0.002 || shiftY > 0.002) {
