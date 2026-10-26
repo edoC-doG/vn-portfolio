@@ -9,7 +9,10 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(here, 'dist');
 const page = fs.readFileSync(path.join(here, 'page.html'), 'utf8');
 const app = fs.readFileSync(path.join(here, 'app.js'), 'utf8');
-const out = page.replace('/*APP*/', () => app);
+// terrain textures prepared by tools/textures/process.mjs (null when there are none yet: the shader falls back to noise)
+const terrainTex = path.join(here, '../../assets/textures/terrain.json');
+const app2 = app.replace('/*TERRAIN_TEX*/ null', () => (fs.existsSync(terrainTex) ? fs.readFileSync(terrainTex, 'utf8').trim() : 'null'));
+const out = page.replace('/*APP*/', () => app2);
 fs.mkdirSync(dist, { recursive: true });
 fs.writeFileSync(path.join(dist, 'index.html'), out);
 fs.writeFileSync(path.join(dist, '_local.html'), `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>${out}</body></html>`);
