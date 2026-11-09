@@ -29,6 +29,7 @@ const nq = (mid, low) => (LOW ? low : mid);
 const AVAILABLE = new Set(/*MODELS*/ null || ['cot-co-lung-cu', 'lang-bac', 'thap-rua', 'thuyen-buom', 'thap-phuoc-duyen', 'cau-vang', 'thuyen-thung',
   'nha-rong', 'cong-chieng', 'thap-ba-ponagar', 'thap-nuoc-phan-thiet', 'cho-ben-thanh', 'ghe-cho-noi', 'mui-ca-mau']);
 const CREDITS = /*CREDITS*/ null || []; // CC BY authors of the Sketchfab models in use
+const VN_MAP = /*VN_MAP*/ null; // assets/map/vietnam.json: Vietnam and its neighbours, for the overview map
 // null: models and textures are base64 .txt files next to the page (the prototype preview cannot serve .glb);
 // a path such as '/': plain .glb / .jpg / .png files under it (the Next.js site in web/)
 const ASSET_BASE = /*ASSET_BASE*/ null;
@@ -50,6 +51,7 @@ const TXT = {
     time: { real: 'Giờ thật', day: 'Ban ngày', sunset: 'Hoàng hôn', night: 'Ban đêm' },
     wx: { real: 'Thời tiết thật', clear: 'Trời quang', rain: 'Mưa' },
     sky: { heavy: 'mưa to', rain: 'mưa', cloud: 'nhiều mây', sun: 'nắng', clear: 'trời quang' },
+    mapNames: ['Quần đảo Hoàng Sa', 'Quần đảo Trường Sa', 'Biển Đông'], mapNamesShort: ['Hoàng Sa', 'Trường Sa', 'Biển Đông'],
     copy: 'Chép email', copied: 'Đã chép email', selected: 'Đã chọn, nhấn Ctrl+C',
     close: 'Đóng ×', closeAria: 'Đóng', creditsH: 'Ghi công mô hình 3D',
     creditsP: 'Cảnh dùng mô hình từ Sketchfab theo giấy phép CC BY 4.0 của các tác giả dưới đây, cùng texture và mô hình CC0 từ Poly Haven và ambientCG. Các công trình chính làm bằng Meshy.',
@@ -64,6 +66,7 @@ const TXT = {
     time: { real: 'Real time', day: 'Daytime', sunset: 'Sunset', night: 'Night' },
     wx: { real: 'Real weather', clear: 'Clear sky', rain: 'Rain' },
     sky: { heavy: 'heavy rain', rain: 'rain', cloud: 'cloudy', sun: 'sunny', clear: 'clear sky' },
+    mapNames: ['Hoàng Sa (Paracel) Islands', 'Trường Sa (Spratly) Islands', 'East Sea'], mapNamesShort: ['Hoàng Sa', 'Trường Sa', 'East Sea'],
     copy: 'Copy email', copied: 'Email copied', selected: 'Selected, press Ctrl+C',
     close: 'Close ×', closeAria: 'Close', creditsH: '3D model credits',
     creditsP: 'The scene uses Sketchfab models by the authors below, under CC BY 4.0, plus CC0 textures and models from Poly Haven and ambientCG. The main landmarks are made with Meshy.',
@@ -392,6 +395,9 @@ rebuildEnv(); scene.environmentIntensity = 0.5;
 // Stops follow the real east-west order of each place (east = -x, so north is up when seen from the south), spaced evenly north to south.
 const STOP_NAMES = ['Lũng Cú', 'Hà Nội', 'Hạ Long', 'Huế', 'Đà Nẵng, Hội An', 'Tây Nguyên', 'Nha Trang', 'Phan Thiết', 'Sài Gòn', 'Miền Tây', 'Mũi Cà Mau'];
 const STOP_X = [60, 40, -7, -26, -50, -44, -87, -46, 8, 43, 82].map((x) => x * 1.8); // exaggerated so the S reads from above
+// real latitude / longitude of each stop: the sun's height, the weather, and the true-shape overview map
+const STOP_LL = [[23.364, 105.316], [21.028, 105.854], [20.951, 107.08], [16.463, 107.59], [16.054, 108.202], [12.667, 108.038],
+  [12.238, 109.197], [10.928, 108.102], [10.776, 106.7], [10.045, 105.747], [8.604, 104.72]];
 // the route starts out at sea north of Lũng Cú, so the camera has room to fly in toward the flag
 const curve = new THREE.CatmullRomCurve3(
   [[STOP_X[0] + 6, 95], ...STOP_X.map((x, i) => [x, -110 * i]), [STOP_X[10] + 16, -1175], [STOP_X[10] + 10, -1270]].map(([x, z]) => new THREE.Vector3(x, 0, z)),
@@ -543,7 +549,7 @@ const water = new THREE.Mesh(
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
       uTime: { value: 0 }, uDeep: { value: new THREE.Color(0x04121a) }, uShallow: { value: new THREE.Color(0x15403f) },
       uSkyLo: { value: new THREE.Color(0x1f4250) }, uSkyHi: { value: new THREE.Color(0x0b2232) }, uMoonCol: { value: new THREE.Color(0xe8f0ff) },
-      uMoonDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() }, uGlintAmt: { value: 1 }, uRain: { value: 0 },
+      uMoonDir: { value: new THREE.Vector3(0, 0.3, -1).normalize() }, uGlintAmt: { value: 1 }, uRain: { value: 0 }, uShore: { value: 1 },
       tNormal: { value: null }, tDepth: { value: null }, uDepthB: { value: new THREE.Vector4(DEPTH_B.x0, DEPTH_B.z0, 1 / DEPTH_B.w, 1 / DEPTH_B.h) },
     }]),
     vertexShader: `varying vec3 vW;
@@ -552,7 +558,7 @@ const water = new THREE.Mesh(
       #include <fog_vertex>
       }`,
     fragmentShader: `uniform float uTime; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSkyLo; uniform vec3 uSkyHi; uniform vec3 uMoonCol; uniform vec3 uMoonDir;
-      uniform float uGlintAmt; uniform float uRain; uniform sampler2D tNormal; uniform sampler2D tDepth; uniform vec4 uDepthB; varying vec3 vW;
+      uniform float uGlintAmt; uniform float uRain; uniform float uShore; uniform sampler2D tNormal; uniform sampler2D tDepth; uniform vec4 uDepthB; varying vec3 vW;
       #include <fog_pars_fragment>
       float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       float n2(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
@@ -580,6 +586,7 @@ ${LOW ? '' : '               + nm(p / 3.7 + vec2(uTime * 0.026, -uTime * 0.021))
         // depth of the sea floor under this point (deep sea outside the baked area)
         vec2 duv = (p - uDepthB.xy) * uDepthB.zw; float floorY = -6.0;
         if (duv.x > 0.0 && duv.x < 1.0 && duv.y > 0.0 && duv.y < 1.0) floorY = texture2D(tDepth, duv).r * 12.0 - 6.0;
+        floorY = mix(-6.0, floorY, uShore); // no corridor shallows under the overview map
         float depth = max(-floorY, 0.0);
         float fres = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
         vec3 R = reflect(-V, N); R.y = abs(R.y);
@@ -1807,45 +1814,105 @@ const ribbonMat = new THREE.ShaderMaterial({
       #include <colorspace_fragment>
     }`,
 });
+// The overview is a true-shape map of Vietnam (assets/map/vietnam.json, Natural Earth 1:10m), not the flight corridor:
+// the corridor spaces the stops evenly for the journey's pacing, which bends the country out of shape. The map uses the
+// same scale as the corridor and sits so that Lũng Cú and Cà Mau land where the corridor has them, so the dive at the
+// start and the climb at the end hand over from map to terrain without a jump. While the map shows, the terrain sinks
+// under the sea (see the loop).
+const GEO_K = 1100 / (23.364 - 8.604), GEO_KX = GEO_K * Math.cos((16 * Math.PI) / 180);
+const geo = (lon, lat) => [STOP_X[0] - (lon - 105.316) * GEO_KX, (lat - 23.364) * GEO_K]; // -> [x, z]; east is -x, north is +z
+const MAP_STOPS = STOP_LL.map(([lat, lon]) => geo(lon, lat));
+const MAPB = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
+const grow = ([x, z]) => { MAPB.x0 = Math.min(MAPB.x0, x); MAPB.x1 = Math.max(MAPB.x1, x); MAPB.z0 = Math.min(MAPB.z0, z); MAPB.z1 = Math.max(MAPB.z1, z); };
+const coastMat = new THREE.MeshBasicMaterial({ color: 0x7fbccc, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+const mapMat = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, fog: false, side: THREE.DoubleSide, toneMapped: false });
+const MAP_REGIONS = [ // where the land is higher or lower, for the shading of the map (lon, lat, radius in degrees, tone)
+  [104.2, 22.0, 1.6, 'hi'], [103.4, 21.3, 1.0, 'hi'], [105.8, 22.5, 0.9, 'hi'], [105.0, 19.4, 0.8, 'hi'], [106.4, 17.3, 0.7, 'hi'], [107.6, 15.4, 0.8, 'hi'],
+  [108.0, 13.6, 1.1, 'red'], [108.3, 12.2, 0.9, 'red'], [107.6, 11.8, 0.7, 'red'], [108.5, 11.6, 0.6, 'hi'],
+  [106.0, 20.8, 0.9, 'lo'], [105.7, 10.0, 1.4, 'lo'], [106.5, 10.6, 0.8, 'lo'], [105.2, 9.2, 0.7, 'lo']];
+const inRing = (r, lon, lat) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, yi] = r[i], [xj, yj] = r[j]; if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) c = !c; } return c; };
+const inVN = (lon, lat) => VN_MAP.vn.some((r) => inRing(r, lon, lat));
 {
-  const rc = new THREE.CatmullRomCurve3(curve.getSpacedPoints(400).filter((p, i) => i * (LTOT / 400) >= A_STOP[0] - 6 && i * (LTOT / 400) <= A_STOP[10] + 60).map((p) => p.clone().setY(1.6)));
-  OV.add(new THREE.Mesh(new THREE.TubeGeometry(rc, 600, 2.2, 6), ribbonMat));
+  for (const r of VN_MAP.vn) for (const [lon, lat] of r) grow(geo(lon, lat));
+  for (const [lon, lat] of [...VN_MAP.hoangSa, ...VN_MAP.truongSa]) grow(geo(lon, lat));
+  // the land as one textured plane: neighbours dark, Vietnam green with highlands, red-soil plateaus and bright deltas
+  const L0 = 100.4, L1 = 116.6, B0 = 6.4, B1 = 24.6, wU = (L1 - L0) * GEO_KX, hU = (B1 - B0) * GEO_K;
+  const CW = LOW ? 1280 : 2048, CH = Math.round((CW * hU) / wU), cv = document.createElement('canvas'); cv.width = CW; cv.height = CH;
+  const g = cv.getContext('2d'), px = (lon) => ((lon - L0) / (L1 - L0)) * CW, py = (lat) => ((B1 - lat) / (B1 - B0)) * CH, ppd = CW / (L1 - L0);
+  const path = (rings) => { g.beginPath(); for (const r of rings) { r.forEach(([lon, lat], i) => (i ? g.lineTo(px(lon), py(lat)) : g.moveTo(px(lon), py(lat)))); g.closePath(); } };
+  { // neighbours on their own layer, faded out toward the edges so the frame of the map never shows
+    const nc = document.createElement('canvas'); nc.width = CW; nc.height = CH; const n = nc.getContext('2d');
+    n.beginPath(); for (const r of VN_MAP.nb) { r.forEach(([lon, lat], i) => (i ? n.lineTo(px(lon), py(lat)) : n.moveTo(px(lon), py(lat)))); n.closePath(); }
+    n.fillStyle = '#1a2a28'; n.fill(); n.lineWidth = 1.2; n.strokeStyle = 'rgba(120,150,145,0.35)'; n.stroke();
+    n.globalCompositeOperation = 'destination-in';
+    const [vx, vy] = [px(106.5), py(15.5)], fade = n.createRadialGradient(vx, vy, CW * 0.18, vx, vy, CW * 0.52);
+    fade.addColorStop(0, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)'); n.fillStyle = fade; n.fillRect(0, 0, CW, CH);
+    g.drawImage(nc, 0, 0);
+  }
+  path(VN_MAP.vn); g.lineJoin = 'round';
+  g.strokeStyle = 'rgba(110,190,205,0.10)'; g.lineWidth = CW / 180; g.stroke(); g.strokeStyle = 'rgba(110,190,205,0.16)'; g.lineWidth = CW / 420; g.stroke(); // shallow water along the coast
+  g.save(); path(VN_MAP.vn); g.clip();
+  g.fillStyle = '#3c6a43'; g.fillRect(0, 0, CW, CH);
+  const tone = { hi: [52, 78, 50, 0.85], red: [112, 92, 58, 0.55], lo: [104, 150, 82, 0.6] };
+  for (const [lon, lat, rad, t] of MAP_REGIONS) {
+    const [r, gg, b, a] = tone[t], gr = g.createRadialGradient(px(lon), py(lat), 0, px(lon), py(lat), rad * ppd);
+    gr.addColorStop(0, `rgba(${r},${gg},${b},${a})`); gr.addColorStop(1, `rgba(${r},${gg},${b},0)`); g.fillStyle = gr; g.fillRect(0, 0, CW, CH);
+  }
+  for (let i = 0; i < (LOW ? 9000 : 22000); i++) { const v = rand(); g.fillStyle = v < 0.5 ? 'rgba(20,40,24,0.22)' : 'rgba(150,190,120,0.12)'; g.fillRect(rand() * CW, rand() * CH, 1 + rand() * 2, 1 + rand() * 2); } // stippled texture
+  g.restore();
+  path(VN_MAP.vn); g.strokeStyle = 'rgba(217,174,90,0.55)'; g.lineWidth = Math.max(1, CW / 1400); g.stroke(); // the border, gold
+  for (const [lon, lat] of [...VN_MAP.hoangSa, ...VN_MAP.truongSa]) { g.beginPath(); g.arc(px(lon), py(lat), CW / 900, 0, 6.283); g.fillStyle = '#7fb06a'; g.fill(); g.strokeStyle = 'rgba(217,174,90,0.8)'; g.lineWidth = 1; g.stroke(); }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = LOW ? 2 : 8; mapMat.map = tex;
+  const [cx, cz] = geo((L0 + L1) / 2, (B0 + B1) / 2);
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(wU, hU).rotateX(Math.PI / 2).scale(-1, 1, 1), mapMat); plane.position.set(cx, 0.7, cz); plane.renderOrder = 1; OV.add(plane);
+  // a glowing coastline over it
+  const pos = [], idx = [];
+  for (const r of VN_MAP.vn) {
+    const loop = r.map(([lon, lat]) => geo(lon, lat)), base = pos.length / 3, hw = r.length > 200 ? 1.3 : 0.8;
+    for (let i = 0; i < loop.length; i++) {
+      const [x0, z0] = loop[(i - 1 + loop.length) % loop.length], [x1, z1] = loop[i], [x2, z2] = loop[(i + 1) % loop.length];
+      let nx = -(z2 - z0), nz = x2 - x0; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
+      pos.push(x1 + nx * hw, 0.9, z1 + nz * hw, x1 - nx * hw, 0.9, z1 - nz * hw);
+      const j = base + i * 2, jn = base + ((i + 1) % loop.length) * 2; idx.push(j, j + 1, jn, j + 1, jn + 1, jn);
+    }
+  }
+  const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); cg.setIndex(idx);
+  const cm = new THREE.Mesh(cg, coastMat); cm.material.side = THREE.DoubleSide; cm.renderOrder = 2; OV.add(cm);
+}
+{ // the route, through the stops at their real places; lit up to the visitor's progress (uv.x follows the corridor's arc)
+  const a0 = A_STOP[0] - 6, a1 = A_STOP[10] + 60, uAt = MAP_STOPS.map((_, k) => (A_STOP[k] - a0) / (a1 - a0));
+  const rc = new THREE.CatmullRomCurve3(MAP_STOPS.map(([x, z]) => v3(x, 1.6, z)), false, 'centripetal');
+  const S = 900, pts = rc.getPoints(S), pos = [], uv = [], idx = [], hw = 2.0;
+  for (let i = 0; i <= S; i++) {
+    const p = pts[i], q = pts[Math.min(S, i + 1)], o = pts[Math.max(0, i - 1)];
+    let tx = q.x - o.x, tz = q.z - o.z; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
+    const f = (i / S) * 10, k = Math.min(9, Math.floor(f)), u = uAt[k] + (uAt[k + 1] - uAt[k]) * (f - k);
+    pos.push(p.x - tz * hw, 1.6, p.z + tx * hw, p.x + tz * hw, 1.6, p.z - tx * hw); uv.push(u, 0, u, 1);
+    if (i < S) { const j = i * 2; idx.push(j, j + 1, j + 2, j + 1, j + 3, j + 2); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  const m = new THREE.Mesh(g, ribbonMat); m.renderOrder = 3; ribbonMat.side = THREE.DoubleSide; OV.add(m);
 }
 const markerMat = glowMaterial(1); markerMat.uniforms.uLamp = { value: 1 }; // the overview markers stay lit by day
-const markers = field(-1, STOP_NAMES.map((_, k) => { const p = at(k, 0, 0); return { x: p.x, y: 4, z: p.z, c: 0xffc77a, s: 1, halo: 26, tw: 0.4 }; }), { bodies: false, reflect: false, mat: markerMat });
-const MAPB = { x0: 1e9, x1: -1e9, z0: 1e9, z1: -1e9 };
-const coastMat = new THREE.MeshBasicMaterial({ color: 0x7fbccc, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-{
-  const west = [], east = [];
-  const edge = (i, sg) => { let l = 0; while (l < 320 && landIn(i, sg * (l + 1.5)) > 0) l += 1.5; return l; };
-  for (let i = 0; i <= N; i += 5) {
-    const w = edge(i, 1), e = edge(i, -1);
-    if (landIn(i, 0) <= 0 && w < 0.5 && e < 0.5) { if (west.length) break; continue; }
-    west.push([PX[i] - TZ[i] * w, PZ[i] + TX[i] * w]); east.push([PX[i] + TZ[i] * e, PZ[i] - TX[i] * e]);
-  }
-  const loop = [...west, ...east.reverse()];
-  for (const [x, z] of loop) { MAPB.x0 = Math.min(MAPB.x0, x); MAPB.x1 = Math.max(MAPB.x1, x); MAPB.z0 = Math.min(MAPB.z0, z); MAPB.z1 = Math.max(MAPB.z1, z); }
-  const pos = [], idx = [], hw = 2.8;
-  for (let i = 0; i < loop.length; i++) {
-    const [x0, z0] = loop[(i - 1 + loop.length) % loop.length], [x1, z1] = loop[i], [x2, z2] = loop[(i + 1) % loop.length];
-    let nx = -(z2 - z0), nz = x2 - x0; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
-    pos.push(x1 + nx * hw, 0.5, z1 + nz * hw, x1 - nx * hw, 0.5, z1 - nz * hw);
-    const j = i * 2, jn = ((i + 1) % loop.length) * 2; idx.push(j, j + 1, jn, j + 1, jn + 1, jn);
-  }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-  const cm = new THREE.Mesh(g, coastMat); cm.material.side = THREE.DoubleSide; OV.add(cm);
-}
-{
+const markers = field(-1, MAP_STOPS.map(([x, z]) => ({ x, y: 4, z, c: 0xffc77a, s: 1, halo: 26, tw: 0.4 })), { bodies: false, reflect: false, mat: markerMat });
+{ // town lights, densest in the deltas and the big cities; and the islands of the two archipelagos
+  const CITIES = [[105.85, 21.03, 1, 0.55], [106.68, 20.86, 0.6, 0.35], [106.7, 10.78, 1.2, 0.6], [108.2, 16.05, 0.5, 0.3], [107.59, 16.46, 0.3, 0.2],
+    [105.75, 10.03, 0.5, 0.4], [109.19, 12.24, 0.3, 0.2], [106.82, 10.95, 0.4, 0.3], [105.68, 18.67, 0.3, 0.25], [105.78, 19.8, 0.3, 0.25],
+    [109.22, 13.78, 0.25, 0.2], [108.04, 12.67, 0.25, 0.2], [108.44, 11.94, 0.2, 0.15], [107.08, 20.95, 0.25, 0.2], [106.17, 20.42, 0.35, 0.3],
+    [105.43, 10.38, 0.3, 0.3], [105.08, 10.0, 0.2, 0.2], [105.15, 9.18, 0.2, 0.2], [108.1, 10.93, 0.15, 0.15], [108.0, 13.98, 0.15, 0.15],
+    [103.97, 22.48, 0.1, 0.15], [103.02, 21.39, 0.1, 0.15], [106.3, 21.6, 0.2, 0.3], [104.0, 10.2, 0.12, 0.15]];
   const items = [];
-  for (let t = 0; t < 14000 && items.length < nq(1100, 520); t++) {
-    const x = R(MAPB.x0, MAPB.x1), z = R(MAPB.z0, MAPB.z1), y = terrainHeight(x, z);
-    if (y < 0.6 || TH_IN < 8 || Math.abs(TH_LAT) < si(CHAN, TH_A) + 5) continue;
-    let near = 1e9; for (let k = 0; k < 11; k++) { const p = at(k, 0, 0); near = Math.min(near, Math.hypot(p.x - x, p.z - z)); }
-    if (rand() > 0.22 + 0.78 * Math.exp(-((near / 110) ** 2))) continue;
-    items.push({ x, y: y + 0.8, z, c: rand() < 0.85 ? 0xffb86b : 0xffe2b0, s: 0.22, tw: 0.35 });
+  for (let t = 0; t < 60000 && items.length < nq(1300, 560); t++) {
+    const lon = R(102.1, 109.5), lat = R(8.5, 23.4);
+    let w = 0.06; for (const [cl, ca, cw, cr] of CITIES) w += cw * Math.exp(-(((lon - cl) ** 2 + (lat - ca) ** 2) / (cr * cr)));
+    if (rand() > w || !inVN(lon, lat)) continue;
+    const [x, z] = geo(lon, lat); items.push({ x, y: 1.2, z, c: rand() < 0.85 ? 0xffb86b : 0xffe2b0, s: 0.2, tw: 0.35 });
   }
   field(-1, items, { bodies: false, reflect: false });
+  field(-1, [...VN_MAP.hoangSa, ...VN_MAP.truongSa].map(([lon, lat]) => { const [x, z] = geo(lon, lat); return { x, y: 1.2, z, c: 0xcfeeff, s: 0.28, halo: 14, tw: 0.6 }; }), { bodies: false, reflect: false, mat: markerMat });
 }
+// the archipelagos and the sea are named on the map too (see the labels)
+const MAP_NAMES = [[...VN_MAP.hoangSa[0]], [...VN_MAP.truongSa[3]], [111.2, 13.2]].map(([lon, lat]) => geo(lon, lat));
 
 // ---------------------------------------------------------------- camera rig
 const SIDE = [1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1]; // where each stop's panel sits: 1 right, -1 left
@@ -1907,9 +1974,10 @@ function journeyPose(a, pos, look) {
 const toOrbit = (pos, T) => { const o = pos.clone().sub(T), d = o.length(); return { d, yaw: Math.atan2(o.x, o.z), pitch: Math.asin(o.y / d) }; };
 function orbitPose(T, d, yaw, pitch, pos, look) { const cp = Math.cos(pitch); pos.set(T.x + d * cp * Math.sin(yaw), T.y + d * Math.sin(pitch), T.z + d * cp * Math.cos(yaw)); look.copy(T); }
 
-const MAP_C = new THREE.Vector3((MAPB.x0 + MAPB.x1) / 2, 0, (MAPB.z0 + MAPB.z1) / 2);
+const MAP_C = new THREE.Vector3((MAPB.x0 + MAPB.x1) / 2, 0, (MAPB.z0 + MAPB.z1) / 2), MAP_CV = MAP_C.clone(); // MAP_CV: where the overview looks (resize())
 const P0 = 1.36;
 let OV_DIST = 2000;
+const OVT = { k: 1.6, s: 0.02 }; // tall screens: how far back the overview sits and how far the map moves up (fits it between the HUD and the intro text)
 const J0 = { pos: new THREE.Vector3(), look: new THREE.Vector3() }, JE = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
 journeyPose(A_START, J0.pos, J0.look); journeyPose(A_END, JE.pos, JE.look);
 const O1 = toOrbit(J0.pos, J0.look), OE = toOrbit(JE.pos, JE.look);
@@ -1920,7 +1988,7 @@ function pose(u, time, pos, look) {
     const t = u < U_HOLD ? 0 : (u - U_HOLD) / (U_INTRO - U_HOLD);
     STATE.phase = 'intro'; STATE.tI = t; STATE.a = A_START; STATE.ujour = 0;
     const br = (1 - smooth(0, 0.3, t)) * 0.04 * Math.sin(time * 0.15);
-    _T.copy(MAP_C).lerp(J0.look, easeIO(clamp(t * 1.5, 0, 1)));
+    _T.copy(MAP_CV).lerp(J0.look, easeIO(clamp(t * 1.5, 0, 1)));
     const d = Math.exp(lerp(Math.log(OV_DIST), Math.log(O1.d), easeIO(t)));
     let y1 = O1.yaw; if (y1 > Math.PI) y1 -= Math.PI * 2;
     const yaw = lerp(Math.PI + br, y1, smooth(0.12, 0.92, t)), pitch = lerp(P0, O1.pitch, smooth(0.3, 1, t));
@@ -1931,8 +1999,8 @@ function pose(u, time, pos, look) {
   if (u > U_END) {
     const t = (u - U_END) / (1 - U_END);
     STATE.phase = 'end'; STATE.tE = t; STATE.a = A_END; STATE.ujour = 1;
-    _T.copy(JE.look).lerp(MAP_C, easeIO(clamp((t - 0.3) / 0.7, 0, 1))); // climb first, then pan, so the camera never skims the Sài Gòn towers
-    const d = Math.exp(lerp(Math.log(OE.d), Math.log(OV_DIST * (PHONE ? 2 : 1)), easeIO(t))); // phone: keep the whole map above the end panel
+    _T.copy(JE.look).lerp(MAP_CV, easeIO(clamp((t - 0.3) / 0.7, 0, 1))); // climb first, then pan, so the camera never skims the Sài Gòn towers
+    const d = Math.exp(lerp(Math.log(OE.d), Math.log(OV_DIST * (PHONE ? 1.45 : 1)), easeIO(t))); // phone: keep the whole map above the end panel
     let y0 = OE.yaw; if (y0 > Math.PI) y0 -= Math.PI * 2;
     const yaw = lerp(y0, Math.PI + 0.03 * Math.sin(time * 0.15) * smooth(0.8, 1, t), smooth(0.08, 0.9, t)), pitch = lerp(OE.pitch, P0, smooth(0, 0.75, t));
     orbitPose(_T, d, yaw, pitch, pos, look);
@@ -2080,8 +2148,6 @@ if (!LOW) {
 // ---------------------------------------------------------------- time of day and weather
 // Real Vietnam time and real weather by default: the sun's height is computed for the stop being flown over, and the
 // current rain and cloud cover of all 11 places come from Open-Meteo (free, no key). The HUD chips switch to fixed looks.
-const STOP_LL = [[23.364, 105.316], [21.028, 105.854], [20.951, 107.08], [16.463, 107.59], [16.054, 108.202], [12.667, 108.038],
-  [12.238, 109.197], [10.928, 108.102], [10.776, 106.7], [10.045, 105.747], [8.604, 104.72]];
 function sunElevation(ms, lat, lon) {
   const d = new Date(ms), N = (ms - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5;
   const B = ((2 * Math.PI) / 365) * (N - 81), eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B); // minutes
@@ -2268,7 +2334,8 @@ wxChip?.addEventListener('click', () => { ATMO.wxMode = cycle(WX_MODES, ATMO.wxM
 const PANELS = $$('.panel').map((el) => ({ el, k: el.dataset.k, o: -1 }));
 const DOTS = $$('.rail .dot');
 const railFill = $('.rail .fill'), railLabel = $('.rail .now');
-const LABELS = STOP_NAMES.map((n, k) => { const el = document.createElement('span'); el.className = 'map-label'; $('#labels').appendChild(el); return { el, p: (() => { const q = at(k, 0, 0); return v3(q.x, 4, q.z); })() }; });
+const LABEL_SIDE = [1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1]; // 1: right of the marker, -1: left (Hà Nội / Hạ Long, Huế / Đà Nẵng... sit close)
+const LABELS = [...MAP_STOPS, ...MAP_NAMES].map(([x, z], k) => { const el = document.createElement('span'); el.className = k < 11 ? 'map-label' : 'map-label sea'; $('#labels').appendChild(el); return { el, p: v3(x, 4, z), side: LABEL_SIDE[k] }; });
 const isPhoneLayout = () => matchMedia('(max-width: 760px)').matches;
 // panels move in depth with the flight: small and far while approaching, growing past full size as they slide by
 function setPanel(p, w, dir = -1) {
@@ -2278,7 +2345,9 @@ function setPanel(p, w, dir = -1) {
   p.el.style.visibility = w < 0.02 ? 'hidden' : 'visible'; p.el.classList.toggle('live', w > 0.6);
 }
 let railCur = -2;
-langHook(() => { LABELS.forEach((L, k) => { L.el.textContent = tx('stops')[k]; L.w = 0; }); railCur = -2; });
+// phones show the short names of the archipelagos, so a long label never flips over the stops next to it
+const labelText = () => LABELS.forEach((L, k) => { L.el.textContent = k < 11 ? tx('stops')[k] : tx(isPhoneLayout() ? 'mapNamesShort' : 'mapNames')[k - 11]; L.w = 0; });
+langHook(() => { labelText(); railCur = -2; });
 function updateUI(u) {
   const st = STATE;
   for (const p of PANELS) {
@@ -2316,7 +2385,7 @@ function updateLabels(ov) {
     _v3.copy(L.p).project(camera);
     const x = (_v3.x * 0.5 + 0.5) * VW, y = (-_v3.y * 0.5 + 0.5) * VH;
     if (!L.w) L.w = L.el.offsetWidth;
-    const lx = x + 14 + L.w > VW - 8 ? x - 14 - L.w : x + 14; // flip to the left near the right edge
+    let lx = L.side < 0 ? x - 14 - L.w : x + 14; if (lx + L.w > VW - 8) lx = x - 14 - L.w; if (lx < 8) lx = x + 14; // keep on screen
     const hid = introBox && introP.o > 0 && y > introBox.top - 12 && lx < introBox.right && lx + L.w > introBox.left ? introP.o : 0;
     L.el.style.opacity = (ov * (1 - hid)).toFixed(2); L.el.style.transform = `translate3d(${lx.toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
   }
@@ -2396,7 +2465,10 @@ function resize(force) {
   camera.fov = asp >= 1 ? 40 : clamp((2 * Math.atan(Math.tan((21 * Math.PI) / 180) / asp) * 180) / Math.PI, 40, 78);
   camera.aspect = asp; camera.updateProjectionMatrix();
   const vf = (camera.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * asp);
-  OV_DIST = Math.max((MAPB.z1 - MAPB.z0) / 2 / Math.tan(vf / 2), (MAPB.x1 - MAPB.x0) / 2 / Math.tan(hf / 2)) * (asp >= 1 ? 1.1 : 1.16);
+  OV_DIST = Math.max((MAPB.z1 - MAPB.z0) / 2 / Math.tan(vf / 2), (MAPB.x1 - MAPB.x0) / 2 / Math.tan(hf / 2)) * (asp >= 1 ? 1.1 : OVT.k);
+  MAP_CV.copy(MAP_C); if (asp >= 1.2) MAP_CV.x += 0.24 * OV_DIST * Math.tan(hf / 2); // wide screens: the map right of centre, clear of the intro panel
+  else if (asp < 0.8) MAP_CV.z -= OVT.s * OV_DIST * Math.tan(vf / 2);
+  if (typeof labelText === 'function') labelText();
   measure();
 }
 window.addEventListener('resize', () => resize(false));
@@ -2477,18 +2549,22 @@ function step(u, dt) {
   heroLight.position.copy(camera.position).add(_v3.set(0, 12, 0)).addScaledVector(fwd, -10);
   warmLight.intensity = 140 * near * lerp(0.2, 1, SH.uLamp.value); warmLight.position.copy(WARM[k]);
   // overview layer
-  ribbonMat.uniforms.uAlpha.value = ov; water.material.uniforms.uGlintAmt.value = 1 - smooth(40, 260, camY); HEMI.intensity = ATMO.hemi * lerp(1, 2.1, ov) + ATMO.flash * 3; markerMat.uniforms.uAlpha.value = ov; coastMat.opacity = 0.4 * ov;
+  // the true-shape map takes over from the terrain high up: the map fades in while the terrain sinks under the sea
+  const mapA = smooth(230, 560, camY);
+  ribbonMat.uniforms.uAlpha.value = mapA; water.material.uniforms.uGlintAmt.value = 1 - smooth(40, 260, camY); HEMI.intensity = ATMO.hemi * lerp(1, 2.1, ov) + ATMO.flash * 3; markerMat.uniforms.uAlpha.value = mapA; coastMat.opacity = 0.45 * mapA;
+  mapMat.opacity = mapA; mapMat.color.setScalar(lerp(0.62, 1.0, smooth(-6, 10, ATMO.e))); water.material.uniforms.uShore.value = 1 - smooth(200, 320, camY);
+  for (const m of TERRAIN) m.position.y = -95 * mapA;
   ribbonMat.uniforms.uLit.value = STATE.phase === 'end' ? smooth(0.15, 0.85, STATE.tE) * 0.985 : STATE.phase === 'journey' ? STATE.ujour * 0.985 : 0;
-  OV.visible = ov > 0.01; markers.pts.visible = ov > 0.01;
+  OV.visible = mapA > 0.005; markers.pts.visible = mapA > 0.005;
   SH.uBoost.value = lerp(1, 2.6, ov);
   // visibility: only nearby stops and terrain are drawn during the flight
   const low = camY < 320, vr = VIS_R();
   for (let i = 0; i < 11; i++) { const d = Math.hypot(camera.position.x - GCENTER[i].x, camera.position.z - GCENTER[i].y); G[i].visible = low && d < vr; SG[i].visible = d < SG_R(); GC[i].visible = d < GC_R(); }
-  for (const m of TERRAIN) m.visible = !low || Math.abs(m.userData.zc - camera.position.z) < 640;
+  for (const m of TERRAIN) m.visible = mapA < 0.995 && (!low || Math.abs(m.userData.zc - camera.position.z) < 640);
   updateForest(low);
   for (const f of FIELDS) if (f.dyn && (f.k < 0 || G[f.k].visible)) fieldUpdate(f, T);
   for (const a of ANIM) if (G[a.k].visible) a.fn(T);
-  updateUI(u); updateLabels(ov);
+  updateUI(u); updateLabels(smooth(260, 560, camera.position.y));
   if (bloomOn && composer) composer.render(); else renderer.render(scene, camera);
 }
 applyLight();
@@ -2496,6 +2572,8 @@ requestAnimationFrame(frame);
 
 // test hooks
 window.__fly = {
+  setOv: (k, sh) => { OVT.k = k; OVT.s = sh; resize(true); },
+  ovInfo: () => ({ OV_DIST: Math.round(OV_DIST), MAPB, fov: camera.fov, cam: camera.position.toArray().map(Math.round), CV: MAP_CV.toArray().map(Math.round), vw: VW, vh: VH }),
   sh: () => { let c = 0, r = 0; scene.traverse((o) => { if (o.castShadow) c++; if (o.receiveShadow) r++; }); const t = moonLight.target.position, lp = moonLight.position, d = []; scene.traverse((o) => { if (o.castShadow && o.visible) { o.getWorldPosition(_v3); const dist = Math.hypot(_v3.x - t.x, _v3.z - t.z); if (dist < SH_R) d.push(o.name || o.type); } }); return { casters: c, receivers: r, on: renderer.shadowMap.enabled, light: moonLight.castShadow, keyI: +moonLight.intensity.toFixed(2), map: !!moonLight.shadow.map, near: d.length, kinds: [...new Set(d)].slice(0, 6), t: [t.x, t.y, t.z].map((v) => +v.toFixed(1)), l: [lp.x, lp.y, lp.z].map((v) => +v.toFixed(1)), cam: [camera.position.x, camera.position.y, camera.position.z].map((v) => +v.toFixed(1)) }; },
   ready: Promise.all([...MODEL_JOBS, ...TEX_JOBS]),
   atmo: () => ({ e: +ATMO.e.toFixed(1), rain: +ATMO.rain.toFixed(2), cloud: +ATMO.cloud.toFixed(2), clock: ATMO.clock, stop: STATE.s.k, phase: STATE.phase, wx: ATMO.wx ? ATMO.wx.length : 0 }),

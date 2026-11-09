@@ -4,6 +4,7 @@
 //   /*MODELS*/       models present in both tiers (a Meshy slot such as 'nha-hoi-an-1' lights up once its file exists)
 //   /*CREDITS*/      CC BY credits for the Sketchfab models in use, matched through the library lists
 //   /*ASSET_BASE*/   null for base64 .txt files next to the page, or a path such as '/' for plain files
+//   /*VN_MAP*/       the true-shape outline for the overview map, from tools/map/build_map.mjs
 import fs from 'fs';
 import path from 'path';
 
@@ -19,7 +20,8 @@ export function buildData() {
   const props = JSON.parse(fs.readFileSync(path.join(lib, 'props.json'), 'utf8')), sf = JSON.parse(fs.readFileSync(path.join(lib, 'sketchfab.json'), 'utf8'));
   const credits = Object.entries(props).filter(([slug]) => mid.has(slug)).map(([, p]) => sf.find((m) => p.src.includes(m.uid.slice(0, 8))))
     .filter(Boolean).map((m) => ({ name: m.name, author: m.author, url: m.url }));
-  return { terrain, modelList, credits };
+  const vnMap = fs.readFileSync(path.join(root, 'assets/map/vietnam.json'), 'utf8').trim();
+  return { terrain, modelList, credits, vnMap };
 }
 
 export function injectApp(app, { assetBase = null } = {}) {
@@ -28,7 +30,8 @@ export function injectApp(app, { assetBase = null } = {}) {
     .replace('/*TERRAIN_TEX*/ null', () => d.terrain)
     .replace('/*MODELS*/ null', () => JSON.stringify(d.modelList))
     .replace('/*CREDITS*/ null', () => JSON.stringify(d.credits))
-    .replace('/*ASSET_BASE*/ null', () => JSON.stringify(assetBase));
+    .replace('/*ASSET_BASE*/ null', () => JSON.stringify(assetBase))
+    .replace('/*VN_MAP*/ null', () => d.vnMap);
   return { code: out, ...d };
 }
 

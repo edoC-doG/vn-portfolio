@@ -11,6 +11,7 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | CV nhanh song ngữ Việt / Anh | Xong, ở `web/` (`/vi/cv`, `/en/cv`), in ra PDF được. Bản cũ ở `prototype/quick-cv`. |
 | Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
 | Câu chuyện và máy quay | Mỗi công ty là một điểm dừng, hiện tại (CTNP) ở Đà Nẵng, Hội An, Cà Mau là "điểm đến tiếp theo". Máy quay nhìn thẳng về phía trước: cuộn là bay tới, công trình từ xa lớn dần rồi lướt qua bên cạnh. Panel phóng to theo chiều sâu. |
+| Bản đồ tổng quan | Hình chữ S thật từ dữ liệu Natural Earth, có Hoàng Sa, Trường Sa, Biển Đông; chuyển liền sang địa hình khi lao xuống Lũng Cú và khi bay lên ở Cà Mau. |
 | Giờ và thời tiết | Ngày, đêm theo giờ Việt Nam thật; mưa và mây theo Open-Meteo. Nút đổi giờ và thời tiết ở góc trên. |
 | Thư viện asset | Đã tải và kiểm tra: 51 texture, 33 mô hình Poly Haven (CC0), 86 model Sketchfab (CC BY, 74 dùng tốt). Không nằm trong git; lệnh tải lại và ảnh xem trước ở `docs/ASSETS.md`. |
 | Khung cảnh quanh địa danh | Đã lắp đủ cho 11 chặng: 70 model thư viện (xe cộ chạy trên đường, thuyền, nhà, cây, đồ đường phố), phần dựng bằng code (ruộng lúa, thanh long, dừa nước, thác nước, phà, Ngọ Môn tạm…) và lượt chi tiết thứ hai (bậc đá Lũng Cú, cột cờ Ba Đình, tường thành Huế, hoa giấy Hội An, cáp treo Nha Trang, cầu Ba Son, cây bẹo, Hòn Khoai…). Chỗ chừa cho model Meshy ở `docs/MODELS.md`. |
@@ -36,6 +37,7 @@ assets/textures/                     normal map mặt nước, ảnh impostor c�
 tools/                               xử lý model (gltf-transform, meshoptimizer, sharp) và chụp thử bằng Playwright
 tools/trees/                         sinh cây bằng EZ-Tree (`npm run trees`)
 tools/library/                       danh sách thư viện asset (library.json, sketchfab.json) và script tải (fetch.py)
+tools/map/build_map.mjs              tạo assets/map/vietnam.json (đường biên Việt Nam cho bản đồ tổng quan)
 assets/library/                      texture và mô hình đã tải (không commit)
 ```
 

@@ -93,6 +93,7 @@ public/models/{low,mid,high}/  model
 ## 6. Đường bay (đã có trong `prototype/fly/app.js`)
 
 - **Đường sông:** CatmullRom qua 11 chặng. Tọa độ x theo kinh độ thật (phía đông là −x), phóng 1,8 lần để từ trên cao thấy hình chữ S.
+- **Bản đồ tổng quan:** hình Việt Nam thật từ Natural Earth 1:10m (`tools/map/build_map.mjs` → `assets/map/vietnam.json`), có Hoàng Sa, Trường Sa và các nước láng giềng mờ dần ra mép. Hành lang bay xếp các chặng cách đều nên không giữ được hình thật; bản đồ dùng cùng tỉ lệ và đặt sao cho Lũng Cú, Cà Mau trùng với hành lang, nên lúc lao xuống và lúc bay lên địa hình chìm dưới biển còn bản đồ hiện dần, không bị giật.
 - **Đất liền:** heightfield bằng code, rộng hẹp theo từng chặng, núi kiểu ridged, chia 8 khối theo z. Texture Poly Haven cho đá, đất rừng, ruộng, cát.
 - **Tiến độ cuộn u (0 → 1):** 0 – 0,03 toàn bản đồ; 0,03 – 0,085 xoáy xuống Lũng Cú; 0,085 – 0,93 bay dọc sông, chậm lại ở mỗi chặng; 0,93 – 1 bay lên ở Cà Mau.
 - **Giờ và thời tiết:** mặt trời theo giờ Việt Nam và vị trí từng chặng; mưa và mây theo Open-Meteo.
