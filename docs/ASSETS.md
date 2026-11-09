@@ -5,7 +5,7 @@
 | 1. Texture (51 bộ) | **Xong.** Mình đã chọn và tải từ Poly Haven, ambientCG. |
 | 2. Mô hình Poly Haven (33 cái) | **Xong.** Đá, vách núi, cây nhiệt đới, cột điện, dây điện, cục nóng điều hòa, cửa cuốn, ghế nhựa, cầu gỗ… |
 | 3. Model Sketchfab (86 cái) | **Xong.** Mình tải bằng token của bạn và kiểm tra từng cái: 74 tốt, 5 cần xử lý thêm, 7 không dùng. |
-| 4. Meshy | **Bạn làm**: Chùa Cầu, Bưu điện, làm lại màu Chợ Bến Thành (mục 4). |
+| 4. Meshy | **Bạn làm**: tải 3 model đã có, làm 15 model mới theo 4 mức ưu tiên (mục 4). |
 | 5. Không có model tốt | Mình làm bằng code (mục 5). |
 
 Texture và mô hình ở mục 1, 2, 3 không nằm trong git (khoảng 1 GB). Tải lại bất cứ lúc nào bằng:
@@ -155,15 +155,52 @@ Kết quả kiểm tra: ✅ tốt 74, 🔧 cần xử lý thêm 5, ⚠️ yếu 
 
 ## 4. Meshy (bạn làm)
 
-Không có model miễn phí nào đúng các công trình này.
+Chỉ gồm những thứ không có model miễn phí đủ tốt. Xếp theo mức cần, phòng khi credit không đủ cho cả danh sách.
 
-| | Thứ | Prompt tiếng Anh gợi ý |
+### Mức 0: đã làm sẵn trên Meshy, chỉ cần tải về (không tốn credit)
+
+| | Thứ | Ghi chú |
 |---|---|---|
-| [ ] | **Chùa Cầu** (quan trọng nhất) | Japanese Covered Bridge in Hoi An, Vietnam: short arched wooden bridge with a small pagoda temple on one side, yellow walls, red lacquered wood, curved clay tile roof |
-| [ ] | Bưu điện Thành phố | Saigon Central Post Office: French colonial building, yellow facade with white trim, large arched windows, central clock above the entrance |
-| [ ] | Chợ Bến Thành (làm lại màu) | Ben Thanh Market, Saigon: cream and grey market building with a clock tower at the main gate, red roofs |
-| [ ] | Tháp Chăm (nếu muốn) | Cham tower, Po Sah Inu, Phan Thiet: red brick Hindu temple tower, tiered roof, weathered |
-| [ ] | Nhà trình tường Lũng Cú (nếu muốn) | Lo Lo ethnic house in Lung Cu, Ha Giang: rammed earth walls, yin-yang clay tile roof, wooden door, small courtyard with stone fence |
+| [ ] | Chùa Cầu | Hội An là chặng hiện tại, quan trọng nhất |
+| [ ] | Nhà thờ Đức Bà | Bản Sketchfab chỉ có 2 nghìn tam giác, bản Meshy chắc đẹp hơn |
+| [ ] | Bưu điện Thành phố | |
+
+### Mức 1: bắt buộc (khung cảnh chính)
+
+| | Thứ | Prompt |
+|---|---|---|
+| [ ] | Chợ Bến Thành: **làm lại màu** (Retexture) | Ben Thanh Market, Saigon: cream and light grey concrete walls, red tiled roofs, clock tower at the main gate |
+| [ ] | Nhà cổ Hội An, kiểu 1 tầng | Old shophouse in Hoi An ancient town, Vietnam: one storey, faded mustard yellow plaster walls, dark brown wooden doors and shutters, curved yin-yang clay tile roof with moss, red lanterns under the eaves |
+| [ ] | Nhà cổ Hội An, kiểu 2 tầng | Two-storey old shophouse in Hoi An, Vietnam: mustard yellow plaster walls with stains, wooden balcony on the upper floor, dark wooden shutters, clay tile roof, bougainvillea on the facade |
+| [ ] | Nhà ống phố cổ Hà Nội | Narrow tube house in Hanoi old quarter: three storeys, weathered pastel plaster, green wooden shutters, small balconies with iron railings, shop at street level, clay tile roof |
+| [ ] | Nhà phố Sài Gòn | Narrow Saigon townhouse: five storeys, painted concrete facade, balconies with plants and iron railings, roller shutter shop front, air conditioning units, flat roof with water tank |
+| [ ] | Tháp Chăm Pôshanư (Phan Thiết) | Cham tower Po Sah Inu, Phan Thiet, Vietnam: ancient red brick Hindu temple tower, square base, tiered roof, weathered bricks, on a small hill |
+| [ ] | Cổng tam quan chùa Thiên Mụ (Huế) | Three-entrance gate of Thien Mu pagoda, Hue, Vietnam: traditional Vietnamese Buddhist gate, three arched doorways, upturned curved tile roofs, old moss-stained plaster |
+| [ ] | Nhà trình tường Lô Lô (Lũng Cú) | Traditional Lo Lo ethnic house in Lung Cu, Ha Giang, Vietnam: thick rammed earth walls, yin-yang clay tile roof, wooden door, low stone fence around the yard |
+
+### Mức 2: nên có (cảnh đúng chất Việt Nam)
+
+| | Thứ | Prompt |
+|---|---|---|
+| [ ] | Xích lô Việt Nam | Vietnamese cyclo: three-wheeled bicycle taxi, passenger seat in front with a folding canopy, driver pedalling behind, metal frame painted dark red |
+| [ ] | Thuyền rồng sông Hương (Huế) | Dragon boat on the Perfume River in Hue: wooden tourist boat with a carved colourful dragon head at the bow, roofed cabin, red and yellow paint |
+| [ ] | Thuyền câu mực Nha Trang | Vietnamese squid fishing boat: wooden boat painted blue with red and white trim, rows of light bulbs hung over the deck, small wheelhouse |
+| [ ] | Nhà bè làng chài Hạ Long | Floating fisherman house in Ha Long Bay: small wooden house on a raft of plastic floats, corrugated metal roof, fish farm cages around it |
+
+### Mức 3: nếu còn credit
+
+| | Thứ | Prompt |
+|---|---|---|
+| [ ] | Ngọ Môn, Đại Nội Huế | Ngo Mon gate of the Hue Imperial Citadel: massive stone base with three gates, two-tier wooden pavilion above with yellow and green glazed tile roofs |
+| [ ] | Xe Honda Wave | Honda Wave underbone motorcycle, the most common motorbike in Vietnam, red and black |
+| [ ] | Tàu du lịch Hạ Long | Ha Long Bay tourist cruise boat: white multi-deck wooden junk-style ship with brown sails |
+
+### Cách làm và gửi file
+
+- Nếu Meshy cho tạo từ ảnh (Image to 3D), dùng ảnh thật thường ra giống hơn prompt chữ.
+- Xuất **GLB**, có texture. Nếu có ô chọn số polygon, khoảng **50–100 nghìn** là đủ, file nhẹ hơn nhiều.
+- File Meshy thường nặng, quá giới hạn 25 MB khi upload web GitHub. Cách gửi dễ nhất: **bỏ vào một thư mục Google Drive** rồi gửi mình link. Phiên này có kết nối Google Drive nên mình tự tải về được.
+- Thư mục `assets/incoming/meshy/` đang bị git bỏ qua. Nếu đẩy bằng git, dùng `assets/incoming/meshy-new/` (mỗi file dưới 100 MB).
 
 ## 5. Không có model tốt (mình làm bằng code)
 
