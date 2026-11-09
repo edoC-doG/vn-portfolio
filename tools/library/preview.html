@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"/tools/node_modules/three/build/three.module.js","three/addons/":"/tools/node_modules/three/examples/jsm/"}}</script>
+<style>body{margin:0;background:#1a1f22}</style></head><body><canvas id="c"></canvas>
+<script type="module">
+// Renders a contact sheet of library models: one cell per file, framed on its bounding box, with a label.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const files = JSON.parse(decodeURIComponent(location.hash.slice(1)));
+const C = 220, cols = 6, rows = Math.ceil(files.length / cols);
+const r = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+r.setSize(C * cols, (C + 18) * rows, false); r.setScissorTest(true); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
+const env = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
+const loader = new GLTFLoader(), H = (C + 18) * rows;
+const out = [];
+for (let i = 0; i < files.length; i++) {
+  const x = (i % cols) * C, y = H - (Math.floor(i / cols) + 1) * (C + 18) + 18;
+  const s = new THREE.Scene(); s.background = new THREE.Color(i % 2 ? 0x8d9a9c : 0x9fabad); s.environment = env; s.environmentIntensity = 0.6;
+  s.add(new THREE.HemisphereLight(0xffffff, 0x445544, 1.4)); const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(2, 3, 2); s.add(d);
+  let tris = 0;
+  if (!files[i].url) { out.push({ i, skipped: true }); continue; }
+  try {
+    const g = await loader.loadAsync(files[i].url);
+    g.scene.traverse((m) => { if (m.isMesh) tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; });
+    s.add(g.scene);
+    const b = new THREE.Box3().setFromObject(g.scene), c = b.getCenter(new THREE.Vector3()), z = b.getSize(new THREE.Vector3()).length() || 1;
+    const cam = new THREE.PerspectiveCamera(35, 1, z / 100, z * 10); cam.position.copy(c).add(new THREE.Vector3(0.75, 0.45, 1).normalize().multiplyScalar(z * 1.25)); cam.lookAt(c);
+    r.setViewport(x, y, C, C); r.setScissor(x, y, C, C); r.render(s, cam);
+    out.push({ i, tris: Math.round(tris), size: b.getSize(new THREE.Vector3()).toArray().map((v) => +v.toFixed(2)) });
+    // free GPU and JS memory before the next model: big scans would otherwise exhaust the page
+    g.scene.traverse((m) => { if (m.isMesh) { m.geometry.dispose(); for (const mt of [].concat(m.material)) { for (const k in mt) if (mt[k]?.isTexture) mt[k].dispose(); mt.dispose(); } } });
+    r.renderLists.dispose();
+  } catch (e) { out.push({ i, err: String(e).slice(0, 120) }); }
+}
+window.result = out; window.done = true;
+</script></body></html>

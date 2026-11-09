@@ -9,7 +9,8 @@
   "name": "Notre-Dame Cathedral Basilica of Saigon",
   "author": "cgart.com",
   "license": "CC Attribution",
-  "faces": 2187
+  "faces": 2187,
+  "status": "tốt"
  },
  {
   "group": "dia-danh",
@@ -21,7 +22,8 @@
   "name": "Landmark 81",
   "author": "Dave Love SketchFab",
   "license": "CC Attribution",
-  "faces": 15462
+  "faces": 15462,
+  "status": "tốt"
  },
  {
   "group": "dia-danh",
@@ -29,11 +31,12 @@
   "priority": false,
   "uid": "2c4905c6a1fd4fb18981886a77ba4fa9",
   "url": "https://sketchfab.com/3d-models/2c4905c6a1fd4fb18981886a77ba4fa9",
-  "note": "",
+  "note": "Bỏ tấm phông trời đi kèm",
   "name": "Dinh Doc Lap Independence Palace",
   "author": "Hoàng Huy",
   "license": "CC Attribution",
-  "faces": 148496
+  "faces": 148496,
+  "status": "cần xử lý"
  },
  {
   "group": "dia-danh",
@@ -45,7 +48,8 @@
   "name": "One Pillar Pagoda - Vietnam",
   "author": "stephenk232",
   "license": "CC Attribution",
-  "faces": 12924
+  "faces": 12924,
+  "status": "tốt"
  },
  {
   "group": "dia-danh",
@@ -57,7 +61,8 @@
   "name": "Khuê Văn các - Khue Van pavilion",
   "author": "Heli Ton",
   "license": "CC Attribution",
-  "faces": 281122
+  "faces": 281122,
+  "status": "tốt"
  },
  {
   "group": "dia-danh",
@@ -69,7 +74,8 @@
   "name": "Tháp Rùa - Turtle Tower on Hoan Kiem Lake",
   "author": "minhduc26119931",
   "license": "CC Attribution",
-  "faces": 59400
+  "faces": 59400,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -81,7 +87,8 @@
   "name": "Honda Super CUB",
   "author": "Azimut Cheng",
   "license": "CC Attribution",
-  "faces": 136279
+  "faces": 136279,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -93,7 +100,8 @@
   "name": "Yamaha RX115 (White)",
   "author": "ashminggu",
   "license": "CC Attribution",
-  "faces": 6720
+  "faces": 6720,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -105,7 +113,8 @@
   "name": "Free Scanned Asian Motorbike",
   "author": "Aung.Kyaw.Paing",
   "license": "CC Attribution",
-  "faces": 66812
+  "faces": 66812,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -117,7 +126,8 @@
   "name": "Vino",
   "author": "minghauLoh",
   "license": "CC Attribution",
-  "faces": 95599
+  "faces": 95599,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -125,11 +135,12 @@
   "priority": true,
   "uid": "8f5246e6bf854d4cb50dbe0e24e0addc",
   "url": "https://sketchfab.com/3d-models/8f5246e6bf854d4cb50dbe0e24e0addc",
-  "note": "",
+  "note": "Là xe trượt điện, không phải xe tay ga",
   "name": "Scooter",
   "author": "re1monsen",
   "license": "CC Attribution",
-  "faces": 99650
+  "faces": 99650,
+  "status": "bỏ"
  },
  {
   "group": "xe",
@@ -141,7 +152,8 @@
   "name": "Moped - Vespa Piaggio Bravo",
   "author": "Fredrik Johansen",
   "license": "CC Attribution",
-  "faces": 143767
+  "faces": 143767,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -153,7 +165,8 @@
   "name": "Generic Sedan Car",
   "author": "MMC Works",
   "license": "CC Attribution",
-  "faces": 113191
+  "faces": 113191,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -165,7 +178,8 @@
   "name": "Xe Khach Hanoi",
   "author": "Nguyễn Trung Đức",
   "license": "CC Attribution",
-  "faces": 13999
+  "faces": 13999,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -177,7 +191,8 @@
   "name": "Generic Town Bus",
   "author": "own.guest",
   "license": "CC Attribution",
-  "faces": 55542
+  "faces": 55542,
+  "status": "tốt"
  },
  {
   "group": "xe",
@@ -189,7 +204,8 @@
   "name": "Cycle rickshaw",
   "author": "AryPadli",
   "license": "CC Attribution",
-  "faces": 125368
+  "faces": 125368,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -201,7 +217,8 @@
   "name": "Viet Boat",
   "author": "jojo_kyduyen",
   "license": "CC Attribution",
-  "faces": 3594
+  "faces": 3594,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -213,7 +230,8 @@
   "name": "Wooden Boat",
   "author": "donnichols",
   "license": "CC Attribution",
-  "faces": 8770
+  "faces": 8770,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -225,7 +243,8 @@
   "name": "Longtail boat",
   "author": "jorandp",
   "license": "CC Attribution",
-  "faces": 5675
+  "faces": 5675,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -237,7 +256,8 @@
   "name": "Fishing boat",
   "author": "Pabooklas",
   "license": "CC Attribution",
-  "faces": 7244
+  "faces": 7244,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -245,11 +265,12 @@
   "priority": true,
   "uid": "6e33005fba3542a2aa61e187321d465e",
   "url": "https://sketchfab.com/3d-models/6e33005fba3542a2aa61e187321d465e",
-  "note": "",
+  "note": "Tách thuyền khỏi mảng nước",
   "name": "Fishing Boat",
   "author": "Rafael Rodrigues",
   "license": "CC Attribution",
-  "faces": 26682
+  "faces": 26682,
+  "status": "cần xử lý"
  },
  {
   "group": "thuyen",
@@ -261,7 +282,8 @@
   "name": "Old wooden boat",
   "author": "pnhtuan",
   "license": "CC Attribution",
-  "faces": 13310
+  "faces": 13310,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -273,7 +295,8 @@
   "name": "A floating market",
   "author": "daydev",
   "license": "CC Attribution",
-  "faces": 20355
+  "faces": 20355,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -285,7 +308,8 @@
   "name": "Thai floating market props",
   "author": "Biya",
   "license": "CC Attribution",
-  "faces": 31780
+  "faces": 31780,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -297,7 +321,8 @@
   "name": "Chinese Junk Ship Model",
   "author": "BG Builds",
   "license": "CC Attribution",
-  "faces": 43426
+  "faces": 43426,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -309,7 +334,8 @@
   "name": "Chinese Junk Ship",
   "author": "Nisa Nurul Azizah",
   "license": "CC Attribution",
-  "faces": 23440
+  "faces": 23440,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -321,7 +347,8 @@
   "name": "Wooden Kayak & Paddle",
   "author": "Dominik Biały",
   "license": "CC Attribution",
-  "faces": 2872
+  "faces": 2872,
+  "status": "tốt"
  },
  {
   "group": "thuyen",
@@ -329,11 +356,12 @@
   "priority": false,
   "uid": "cda3354816af4a0aa1ca5cfee6c5dcd7",
   "url": "https://sketchfab.com/3d-models/cda3354816af4a0aa1ca5cfee6c5dcd7",
-  "note": "",
+  "note": "Kèm vật ở xa, tách kayak ra",
   "name": "Kayak with Paddle",
   "author": "nayangway",
   "license": "CC Attribution",
-  "faces": 79658
+  "faces": 79658,
+  "status": "cần xử lý"
  },
  {
   "group": "nha",
@@ -341,11 +369,12 @@
   "priority": true,
   "uid": "5507a8fbaeb449d5a91e83f0e202ba1c",
   "url": "https://sketchfab.com/3d-models/5507a8fbaeb449d5a91e83f0e202ba1c",
-  "note": "",
+  "note": "Kiểu khối vuông hoạt hình, lệch tông; nhà Hội An dựng bằng code",
   "name": "Hoi An Accient House",
   "author": "Le.Manh.Cuong",
   "license": "CC Attribution",
-  "faces": 19912
+  "faces": 19912,
+  "status": "yếu"
  },
  {
   "group": "nha",
@@ -353,11 +382,12 @@
   "priority": true,
   "uid": "0b502d56b0854274a0106deb293f0c98",
   "url": "https://sketchfab.com/3d-models/0b502d56b0854274a0106deb293f0c98",
-  "note": "Bộ ghép nhà Hội An, nhẹ",
+  "note": "Bộ ghép nhà Hội An, nhẹ. Low-poly hoạt hình, lệch tông",
   "name": "Modular Hoi An",
   "author": "Son Nguyen",
   "license": "CC Attribution",
-  "faces": 3437
+  "faces": 3437,
+  "status": "yếu"
  },
  {
   "group": "nha",
@@ -365,11 +395,12 @@
   "priority": true,
   "uid": "a7b3525f0a9a439a994bcbfd8caaacaf",
   "url": "https://sketchfab.com/3d-models/a7b3525f0a9a439a994bcbfd8caaacaf",
-  "note": "Nhà ống Hà Nội, rất nhẹ",
+  "note": "Nhà ống Hà Nội, rất nhẹ. Không có texture, phủ texture tường và ngói của thư viện",
   "name": "LowPoly Hanoi Vietnamese Tube House [Game Ready]",
   "author": "RimiChama",
   "license": "CC Attribution",
-  "faces": 1238
+  "faces": 1238,
+  "status": "cần xử lý"
  },
  {
   "group": "nha",
@@ -377,11 +408,12 @@
   "priority": true,
   "uid": "582936c8eac641a885343e91766e71b1",
   "url": "https://sketchfab.com/3d-models/582936c8eac641a885343e91766e71b1",
-  "note": "Nhà Việt những năm 2000",
+  "note": "Nhà Việt những năm 2000. Là nội thất một phòng, không phải mặt ngoài",
   "name": "Vietnamese House in 2000s",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 8490
+  "faces": 8490,
+  "status": "bỏ"
  },
  {
   "group": "nha",
@@ -393,7 +425,8 @@
   "name": "Hanoi House - Igor Ambrósio",
   "author": "Igor Ambrósio",
   "license": "CC Attribution",
-  "faces": 8322
+  "faces": 8322,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -405,7 +438,8 @@
   "name": "Asian Shop Pack Free Gameready",
   "author": "abhayexe",
   "license": "CC Attribution",
-  "faces": 39203
+  "faces": 39203,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -417,7 +451,8 @@
   "name": "Asian Themed Low Poly Night City Buildings",
   "author": "99.Miles",
   "license": "CC Attribution",
-  "faces": 6435
+  "faces": 6435,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -429,7 +464,8 @@
   "name": "City Apartment Building",
   "author": "fredbear1211",
   "license": "CC Attribution",
-  "faces": 40464
+  "faces": 40464,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -441,7 +477,8 @@
   "name": "Modular Apartment Building",
   "author": "jimbogies",
   "license": "CC Attribution",
-  "faces": 11276
+  "faces": 11276,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -453,7 +490,8 @@
   "name": "[FREE]  Atlanta, Corperate Office Building",
   "author": "99.Miles",
   "license": "CC Attribution",
-  "faces": 37290
+  "faces": 37290,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -461,11 +499,12 @@
   "priority": true,
   "uid": "9b571d0a6f34459e91aa38b6ef8e3d93",
   "url": "https://sketchfab.com/3d-models/9b571d0a6f34459e91aa38b6ef8e3d93",
-  "note": "",
+  "note": "Không có texture",
   "name": "Skyscraper",
   "author": "ManySince910",
   "license": "CC Attribution",
-  "faces": 37072
+  "faces": 37072,
+  "status": "bỏ"
  },
  {
   "group": "nha",
@@ -477,7 +516,8 @@
   "name": "Stilt house in DenHung (CanTho - VietNam)",
   "author": "Wang Sh D",
   "license": "CC Attribution",
-  "faces": 6600
+  "faces": 6600,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -489,7 +529,8 @@
   "name": "Small house in DenHung (CanTho - VietNam)",
   "author": "Wang Sh D",
   "license": "CC Attribution",
-  "faces": 8690
+  "faces": 8690,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -501,7 +542,8 @@
   "name": "Thatched Hut on Stilts",
   "author": "rajoelinirinanear",
   "license": "CC Attribution",
-  "faces": 9986
+  "faces": 9986,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -513,7 +555,8 @@
   "name": "Atap (straw) house",
   "author": "1catalogue",
   "license": "CC Attribution",
-  "faces": 2262
+  "faces": 2262,
+  "status": "tốt"
  },
  {
   "group": "nha",
@@ -525,7 +568,8 @@
   "name": "CHINESE TEMPLE",
   "author": "mervemacit",
   "license": "CC Attribution",
-  "faces": 14212
+  "faces": 14212,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -537,7 +581,8 @@
   "name": "Vietnam Electric Pole",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 1826
+  "faces": 1826,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -549,7 +594,8 @@
   "name": "Vintage lamp post",
   "author": "dasmodal",
   "license": "CC Attribution",
-  "faces": 8170
+  "faces": 8170,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -561,7 +607,8 @@
   "name": "Street Lamp",
   "author": "bez_glaza",
   "license": "CC Attribution",
-  "faces": 7810
+  "faces": 7810,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -573,7 +620,8 @@
   "name": "Vietnamese Red Plastic Stool — Game-ready PBR",
   "author": "Saigon Sidewalk Assets",
   "license": "CC Attribution",
-  "faces": 1500
+  "faces": 1500,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -585,7 +633,8 @@
   "name": "Vietnamese Plastic Chair",
   "author": "kiim",
   "license": "CC Attribution",
-  "faces": 3940
+  "faces": 3940,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -597,7 +646,8 @@
   "name": "煎饼车/Gerobak Lumpia",
   "author": "billionlioe",
   "license": "CC Attribution",
-  "faces": 10822
+  "faces": 10822,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -609,7 +659,8 @@
   "name": "Avika Street Food Cart",
   "author": "AVIKA",
   "license": "CC Attribution",
-  "faces": 36653
+  "faces": 36653,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -621,7 +672,8 @@
   "name": "Vietnamese Vegetable Market",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 6733
+  "faces": 6733,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -633,7 +685,8 @@
   "name": "Vietnamese Meat Market stall",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 3689
+  "faces": 3689,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -645,7 +698,8 @@
   "name": "Laundry Clothesline",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 8693
+  "faces": 8693,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -657,7 +711,8 @@
   "name": "Vietnamese Lantern",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 4161
+  "faces": 4161,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -669,7 +724,8 @@
   "name": "Chinese Lantern",
   "author": "Batuhan13",
   "license": "CC Attribution",
-  "faces": 1412
+  "faces": 1412,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -681,7 +737,8 @@
   "name": "Vietnamese _ Non La",
   "author": "NNgan",
   "license": "CC Attribution",
-  "faces": 1512
+  "faces": 1512,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -693,7 +750,8 @@
   "name": "Asian Conical Hat",
   "author": "MushyDay",
   "license": "CC Attribution",
-  "faces": 3234
+  "faces": 3234,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -701,11 +759,12 @@
   "priority": false,
   "uid": "c17584fcc6f4471983319df260a5d5d8",
   "url": "https://sketchfab.com/3d-models/c17584fcc6f4471983319df260a5d5d8",
-  "note": "Bộ người low poly",
+  "note": "Bộ người low poly. Không có texture, dáng chữ T; chỉ dùng làm bóng người ở xa",
   "name": "Low Poly T-Posed People",
   "author": "flyingspringrol",
   "license": "CC Attribution",
-  "faces": 11998
+  "faces": 11998,
+  "status": "cần xử lý"
  },
  {
   "group": "duong-pho",
@@ -717,7 +776,8 @@
   "name": "Standing Asian girl",
   "author": "moonsoulymoon",
   "license": "CC Attribution",
-  "faces": 38860
+  "faces": 38860,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -729,7 +789,8 @@
   "name": "Traditional Vietnamese Hammock",
   "author": "Khoa Nguyen",
   "license": "CC Attribution",
-  "faces": 1458
+  "faces": 1458,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -741,7 +802,8 @@
   "name": "Beach Umbrella",
   "author": "stealth86",
   "license": "CC Attribution",
-  "faces": 3832
+  "faces": 3832,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -753,7 +815,8 @@
   "name": "Beach Chair",
   "author": "stealth86",
   "license": "CC Attribution",
-  "faces": 7376
+  "faces": 7376,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -765,7 +828,8 @@
   "name": "Cable Car",
   "author": "ugarychev",
   "license": "CC Attribution",
-  "faces": 33528
+  "faces": 33528,
+  "status": "tốt"
  },
  {
   "group": "duong-pho",
@@ -777,7 +841,8 @@
   "name": "Ski gongola and lift station detailed drafts",
   "author": "Wilin_Amaurea",
   "license": "CC Attribution",
-  "faces": 36557
+  "faces": 36557,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -789,7 +854,8 @@
   "name": "Free Bamboo Set",
   "author": "JonhGillessen",
   "license": "CC Attribution",
-  "faces": 37834
+  "faces": 37834,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -801,7 +867,8 @@
   "name": "bamboo tree",
   "author": "tojamerlin",
   "license": "CC Attribution",
-  "faces": 184941
+  "faces": 184941,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -813,7 +880,8 @@
   "name": "Coconut Palm",
   "author": "evolveduk",
   "license": "CC Attribution",
-  "faces": 7432
+  "faces": 7432,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -825,7 +893,8 @@
   "name": "Realistic Palm Tree 2 Free",
   "author": "Next Spring",
   "license": "CC Attribution",
-  "faces": 60764
+  "faces": 60764,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -837,7 +906,8 @@
   "name": "Banana tree",
   "author": "1Quad",
   "license": "CC Attribution",
-  "faces": 48232
+  "faces": 48232,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -849,7 +919,8 @@
   "name": "Banana Plant",
   "author": "evolveduk",
   "license": "CC Attribution",
-  "faces": 4402
+  "faces": 4402,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -861,7 +932,8 @@
   "name": "Tropical Plants Pack M02P",
   "author": "MozzarellaARC",
   "license": "CC Attribution",
-  "faces": 46575
+  "faces": 46575,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -869,11 +941,12 @@
   "priority": true,
   "uid": "3579fe79be0d46d49de80d5478a4e3cd",
   "url": "https://sketchfab.com/3d-models/3579fe79be0d46d49de80d5478a4e3cd",
-  "note": "",
+  "note": "Tán hoa hiện thành mảng tối; làm hoa giấy bằng code nếu cần",
   "name": "Bougainvillea",
   "author": "amn009",
   "license": "CC Attribution",
-  "faces": 36609
+  "faces": 36609,
+  "status": "yếu"
  },
  {
   "group": "cay",
@@ -885,7 +958,8 @@
   "name": "Weeping willow tree",
   "author": "adam127",
   "license": "CC Attribution",
-  "faces": 144348
+  "faces": 144348,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -897,7 +971,8 @@
   "name": "Chinese Banyan (Ficus Microcarpa)",
   "author": "Valery.Li",
   "license": "CC Attribution",
-  "faces": 111392
+  "faces": 111392,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -909,7 +984,8 @@
   "name": "LOTUS",
   "author": "Amagi_Arts",
   "license": "CC Attribution",
-  "faces": 55636
+  "faces": 55636,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -921,7 +997,8 @@
   "name": "Water lily",
   "author": "Mariia Melnik",
   "license": "CC Attribution",
-  "faces": 360
+  "faces": 360,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -933,7 +1010,8 @@
   "name": "Coffee Plant Sasha An",
   "author": "xan1",
   "license": "CC Attribution",
-  "faces": 22416
+  "faces": 22416,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -941,11 +1019,12 @@
   "priority": false,
   "uid": "0c5c4cd4e79b4015811914203d599b9d",
   "url": "https://sketchfab.com/3d-models/0c5c4cd4e79b4015811914203d599b9d",
-  "note": "Nhẹ",
+  "note": "Nhẹ. Không có texture",
   "name": "Coffee Plant",
   "author": "neutralize",
   "license": "CC Attribution",
-  "faces": 5244
+  "faces": 5244,
+  "status": "bỏ"
  },
  {
   "group": "cay",
@@ -957,7 +1036,8 @@
   "name": "Mangrove Tree",
   "author": "Nice2meetU2",
   "license": "CC Attribution",
-  "faces": 4268
+  "faces": 4268,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -969,7 +1049,8 @@
   "name": "mangrove tree roots",
   "author": "lucq22",
   "license": "CC Attribution",
-  "faces": 3926
+  "faces": 3926,
+  "status": "tốt"
  },
  {
   "group": "cay",
@@ -981,7 +1062,8 @@
   "name": "Tall Mangrove Tree",
   "author": "Matt Bodner",
   "license": "CC Attribution",
-  "faces": 3096
+  "faces": 3096,
+  "status": "tốt"
  },
  {
   "group": "khac",
@@ -993,7 +1075,8 @@
   "name": "African Elephant Textured",
   "author": "JohnMesplay",
   "license": "CC Attribution",
-  "faces": 53341
+  "faces": 53341,
+  "status": "tốt"
  },
  {
   "group": "khac",
@@ -1005,7 +1088,8 @@
   "name": "Elephant",
   "author": "Rukh3D",
   "license": "CC Attribution",
-  "faces": 1958
+  "faces": 1958,
+  "status": "tốt"
  },
  {
   "group": "khac",
@@ -1017,7 +1101,8 @@
   "name": "3D Scan: Dragon Fruit / Pitaya",
   "author": "Z3D",
   "license": "CC Attribution",
-  "faces": 64124
+  "faces": 64124,
+  "status": "tốt"
  },
  {
   "group": "khac",
@@ -1029,6 +1114,7 @@
   "name": "Fishing net (Rede de pesca)",
   "author": "Alex Martire",
   "license": "CC Attribution",
-  "faces": 112
+  "faces": 112,
+  "status": "tốt"
  }
 ]

@@ -12,7 +12,7 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
 | Câu chuyện và máy quay | Mỗi công ty là một điểm dừng, hiện tại (CTNP) ở Đà Nẵng, Hội An, Cà Mau là "điểm đến tiếp theo". Máy quay nhìn thẳng về phía trước: cuộn là bay tới, công trình từ xa lớn dần rồi lướt qua bên cạnh. Panel phóng to theo chiều sâu. |
 | Giờ và thời tiết | Ngày, đêm theo giờ Việt Nam thật; mưa và mây theo Open-Meteo. Nút đổi giờ và thời tiết ở góc trên. |
-| Thư viện asset | 51 texture và 33 mô hình CC0 đã chọn, tải bằng `python3 tools/library/fetch.py` (không nằm trong git). 86 link model Sketchfab đã lọc giấy phép ở `docs/ASSETS.md`, chờ tải. |
+| Thư viện asset | Đã tải và kiểm tra: 51 texture, 33 mô hình Poly Haven (CC0), 86 model Sketchfab (CC BY, 74 dùng tốt). Không nằm trong git; lệnh tải lại và ảnh xem trước ở `docs/ASSETS.md`. |
 | Khung cảnh quanh địa danh | **Việc tiếp theo.** Bảng khung cảnh từng chặng ở `docs/PLAN.md` mục 4. |
 | Cây, mặt nước, địa hình | Rừng 4 loại cây từ EZ-Tree (MIT), mặt nước có normal map, vệt trăng và bọt sóng, địa hình có đá / thảm thực vật / cát bằng shader. Nguồn và giấy phép ở `docs/MODELS.md`. |
 | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện Thành phố | Đã làm trên Meshy, **chưa có file**. Code đã chừa sẵn chỗ. |
