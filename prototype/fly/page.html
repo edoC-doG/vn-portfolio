@@ -115,6 +115,13 @@
   .test *, .test *::before, .test *::after { transition: none !important; }
   .here { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 999px; background: var(--coral); color: #10191a; letter-spacing: 0.04em; }
   .panel.now { border-color: rgba(240, 114, 97, 0.45); }
+  .link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .link-btn:hover { color: var(--ink); }
+  #credits { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(4, 10, 12, 0.72); padding: 16px; }
+  #credits[hidden] { display: none; }
+  .credits-box { position: relative; width: min(620px, 100%); max-height: 80vh; overflow: auto; background: #0d1719; border: 1px solid rgba(230, 238, 236, 0.18); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .credits-box ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--body); }
+  .credits-box .close { position: absolute; top: 16px; right: 18px; }
   .clients { font-family: var(--f-display); font-weight: 700; font-size: 20px; color: var(--ink); }
   .skills { display: flex; flex-direction: column; gap: 9px; }
   .skills dt { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); }
@@ -164,6 +171,14 @@
 
 <canvas id="gl" aria-label="Cảnh 3D hành trình dọc dải đất hình chữ S"></canvas>
 <div id="labels" aria-hidden="true"></div>
+<div id="credits" hidden>
+  <div class="credits-box">
+    <button class="link-btn close" type="button" data-act="credits" aria-label="Đóng">Đóng ×</button>
+    <h2 class="display" style="font-size:22px">Ghi công mô hình 3D</h2>
+    <p class="txt">Cảnh dùng mô hình từ Sketchfab theo giấy phép CC BY 4.0 của các tác giả dưới đây, cùng texture và mô hình CC0 từ Poly Haven và ambientCG. Các công trình chính làm bằng Meshy.</p>
+    <ul></ul>
+  </div>
+</div>
 
 <header class="top">
   <a class="mark" href="#top" aria-label="Về đầu trang">L<span>N</span>M</a>
@@ -345,6 +360,7 @@
     <button class="btn primary" type="button" data-act="copy">Chép email</button>
     <button class="btn ghost" type="button" data-act="restart">Đi lại từ Lũng Cú</button>
   </div>
+  <p class="mono"><button class="link-btn" type="button" data-act="credits">Ghi công mô hình 3D</button></p>
 </section>
 
 <nav class="rail" aria-label="Các chặng">

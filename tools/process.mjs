@@ -19,7 +19,14 @@ const countTris = (doc) => {
 
 
 function simplifyDoc(d, targetTris, err, permissive) {
+  // the budget is shared out in proportion to each primitive's size (a single-primitive Meshy model gets all of it)
+  const ratio = Math.min(1, targetTris / Math.max(1, countTris(d)));
   for (const m of d.getRoot().listMeshes()) for (const p of m.listPrimitives()) {
+    if (p.getMode() !== 4 || !p.getIndices()) continue; // triangles only
+    const primTris = p.getIndices().getCount() / 3;
+    const primTarget = Math.floor(primTris * ratio);
+    if (primTarget >= primTris || primTris < 12) continue;
+    targetTris = Math.max(4, primTarget);
     const idxAcc = p.getIndices();
     const posAcc = p.getAttribute('POSITION');
     const n = posAcc.getCount();
@@ -77,9 +84,9 @@ await doc.transform(weld());
 
 const tiers = [
   { name: 'high', tris: 50000, tex: 2048, ntex: 1024, normal: true, error: 0.02 },
-  { name: 'mid', tris: 15000, tex: 1024, normal: false, error: 0.05 },
-  { name: 'low', tris: +(process.env.LOWTRIS || 3000), tex: 512, normal: false, error: 0.1 },
-];
+  { name: 'mid', tris: +(process.env.MIDTRIS || 15000), tex: +(process.env.MIDTEX || 1024), normal: false, error: 0.05 },
+  { name: 'low', tris: +(process.env.LOWTRIS || 3000), tex: +(process.env.LOWTEX || 512), normal: false, error: 0.1 },
+].filter((t) => t.name !== 'high' || process.env.HIGH !== '0'); // props skip the high tier (HIGH=0)
 const result = { slug, srcTris, size: size.map(v => +(v * s).toFixed(3)), tiers: {} };
 let work = doc;
 for (const tier of tiers) {

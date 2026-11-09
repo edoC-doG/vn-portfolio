@@ -13,10 +13,9 @@ Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. N
 | Câu chuyện và máy quay | Mỗi công ty là một điểm dừng, hiện tại (CTNP) ở Đà Nẵng, Hội An, Cà Mau là "điểm đến tiếp theo". Máy quay nhìn thẳng về phía trước: cuộn là bay tới, công trình từ xa lớn dần rồi lướt qua bên cạnh. Panel phóng to theo chiều sâu. |
 | Giờ và thời tiết | Ngày, đêm theo giờ Việt Nam thật; mưa và mây theo Open-Meteo. Nút đổi giờ và thời tiết ở góc trên. |
 | Thư viện asset | Đã tải và kiểm tra: 51 texture, 33 mô hình Poly Haven (CC0), 86 model Sketchfab (CC BY, 74 dùng tốt). Không nằm trong git; lệnh tải lại và ảnh xem trước ở `docs/ASSETS.md`. |
-| Khung cảnh quanh địa danh | **Việc tiếp theo.** Bảng khung cảnh từng chặng ở `docs/PLAN.md` mục 4. |
+| Khung cảnh quanh địa danh | **Đã lắp đủ mức tổng quan** cho 11 chặng: 70 model thư viện (xe cộ chạy trên đường, thuyền, nhà, cây, đồ đường phố) và phần dựng bằng code (ruộng lúa, thanh long, dừa nước, thác nước, phà, Ngọ Môn tạm…). Chỗ chừa cho model Meshy ở `docs/MODELS.md`. Còn lại: làm chi tiết từng chặng. |
 | Cây, mặt nước, địa hình | Rừng 4 loại cây từ EZ-Tree (MIT), mặt nước có normal map, vệt trăng và bọt sóng, địa hình có đá / thảm thực vật / cát bằng shader. Nguồn và giấy phép ở `docs/MODELS.md`. |
-| Chùa Cầu, Nhà thờ Đức Bà, Bưu điện Thành phố | Đã làm trên Meshy, **chưa có file**. Code đã chừa sẵn chỗ. |
-| Chợ Bến Thành | Cần làm lại màu (Retexture) trên Meshy |
+| Model Meshy còn chờ | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện (đã làm, chưa có file); làm lại màu Chợ Bến Thành; 10 model mới. Danh sách và prompt ở `docs/ASSETS.md` mục 4, chỗ chừa trong cảnh ở `docs/MODELS.md`. |
 | Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` (Mốc D) |
 
 ## Thư mục

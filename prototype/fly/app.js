@@ -24,9 +24,12 @@ const TIER = Q.get('tier') || ((lightMode || (coarse && smallScreen) || mem <= 4
 const LOW = TIER === 'low';
 const nq = (mid, low) => (LOW ? low : mid);
 
-const AVAILABLE = new Set(['cot-co-lung-cu', 'lang-bac', 'thap-rua', 'thuyen-buom', 'thap-phuoc-duyen', 'cau-vang', 'thuyen-thung',
+// Every model in assets/models, listed by build.mjs. Meshy slots (chua-cau, nha-hoi-an-1, ngo-mon...) are used as soon as
+// their files exist; until then the scene falls back to a library model or a code-built stand-in.
+const AVAILABLE = new Set(/*MODELS*/ null || ['cot-co-lung-cu', 'lang-bac', 'thap-rua', 'thuyen-buom', 'thap-phuoc-duyen', 'cau-vang', 'thuyen-thung',
   'nha-rong', 'cong-chieng', 'thap-ba-ponagar', 'thap-nuoc-phan-thiet', 'cho-ben-thanh', 'ghe-cho-noi', 'mui-ca-mau']);
-// chua-cau, nha-tho-duc-ba, buu-dien-thanh-pho have slots below and appear once their files are added here.
+const CREDITS = /*CREDITS*/ null || []; // CC BY authors of the Sketchfab models in use
+const pick = (...slugs) => slugs.find((s) => s && AVAILABLE.has(s)) || null;
 
 // ---------------------------------------------------------------- math
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -580,7 +583,7 @@ const TEMPL = {}, QUEUE = [];
 let active = 0, modelsDone = 0;
 const TREE_KINDS = ['oak', 'ash', 'pine', 'bush']; // baked from EZ-Tree by tools/trees/bake.mjs
 const TREE_MESHES = !LOW; // the light tier draws impostors only, to stay within its draw-call budget
-const modelsTotal = AVAILABLE.size + (TREE_MESHES ? TREE_KINDS.length : 0);
+const modelsTotal = () => Object.keys(TEMPL).length; // models requested so far (stops load in journey order)
 function pump() {
   while (active < 3 && QUEUE.length) {
     const job = QUEUE.shift(); active++;
@@ -664,6 +667,197 @@ const G = STOP_NAMES.map(() => { const g = new THREE.Group(); scene.add(g); retu
 const GCENTER = STOP_NAMES.map((_, k) => { const p = at(k, 0, k === 4 ? 50 : 15); return new THREE.Vector2(p.x, p.z); });
 const HERO = [], HERO_ALONG = [], WARM = [];
 const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+
+// ---------------------------------------------------------------- scenery: library models and code-built surroundings
+// Library props (assets/models, see tools/library) are drawn instanced: one draw call per material however many copies.
+// Meshy slots use pick(): the Meshy file when it exists, else a library stand-in, else a code-built one.
+const UP = new THREE.Vector3(0, 1, 0), _m4b = new THREE.Matrix4(), _pf = { x: 0, z: 0, tx: 0, tz: 1 };
+const MAT_TEX = {};
+const matTex = (name) => (MAT_TEX[name] ??= loadTex('mat-' + name, { srgb: true, placeholder: '#808080' }));
+const texMat = (name, opts = {}) => M({ color: 0xffffff, map: matTex(name), roughness: 0.92, ...opts });
+// box whose UVs are in world units (one texture tile per `tile` units), so a texture keeps its scale on any size
+function tiledBox(w, h, d, tile = 4) {
+  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, dims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const j = f * 4 + i; uv.setXY(j, (uv.getX(j) * dims[f][0]) / tile, (uv.getY(j) * dims[f][1]) / tile); }
+  return g;
+}
+const tint = (g, c) => { const col = new THREE.Color(c), a = new Float32Array(g.attributes.position.count * 3); for (let i = 0; i < a.length; i += 3) { a[i] = col.r; a[i + 1] = col.g; a[i + 2] = col.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+// position on the route with linear interpolation (at() snaps to the path samples, too coarse for moving traffic)
+function atf(k, lat, along) {
+  const f = clamp((A_STOP[k] + along) / STEP, 0, N - 1e-6), i = Math.floor(f), t = f - i, j = i + 1;
+  _pf.tx = TX[i] + (TX[j] - TX[i]) * t; _pf.tz = TZ[i] + (TZ[j] - TZ[i]) * t;
+  _pf.x = PX[i] + (PX[j] - PX[i]) * t - _pf.tz * lat; _pf.z = PZ[i] + (PZ[j] - PZ[i]) * t + _pf.tx * lat;
+  return _pf;
+}
+// Many copies of one library model. items: [{ x, z, y?, s, ry? }]; s is the model's largest size in world units.
+// opts.long turns the model so its longest side runs along ry (vehicles, boats); opts.update(t, items) moves them each frame.
+function scatter(k, slug, items, opts = {}) {
+  if (!slug || !AVAILABLE.has(slug) || !items.length) return null;
+  if (opts.excl) for (const it of items) EXCL.push([it.x, it.z, it.s * opts.excl]);
+  for (const it of items) if (it.y === undefined) it.y = Math.max(gy(it.x, it.z), 0) + (opts.dy ?? 0) * it.s;
+  const set = { items, meshes: [], parts: [] };
+  MODEL_JOBS.push(loadModel(slug).then((tpl) => {
+    if (!tpl) return;
+    tpl.updateMatrixWorld(true);
+    // props standing on the camera's flight path would fill the screen: drop those (moving traffic stays on its road)
+    if (!opts.update && !opts.keep) { set.items = items.filter((it) => camClear(it.x, it.z, it.s * 0.45 + 3)); if (!set.items.length) return; }
+    const pre = new THREE.Matrix4();
+    if (opts.long) { const sz = new THREE.Box3().setFromObject(tpl).getSize(new THREE.Vector3()); if (sz.x > sz.z) pre.makeRotationY(Math.PI / 2); }
+    tpl.traverse((m) => {
+      if (!m.isMesh) return;
+      const im = new THREE.InstancedMesh(m.geometry, m.material, set.items.length);
+      set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); G[k].add(im);
+      if (opts.extra) EXTRAS.push(im);
+    });
+    setMatrices(set);
+    if (opts.update) { for (const im of set.meshes) im.frustumCulled = false; ANIM.push({ k, fn: (t) => { opts.update(t, items); setMatrices(set); } }); }
+    else for (const im of set.meshes) im.computeBoundingSphere();
+    precompile(k);
+  }));
+  return set;
+}
+// whether a prop at (x, z) with radius r keeps clear of the flight path (sampled once, after the camera rig is defined)
+// and of the line of sight from the camera at each stop to its landmark
+let CAM_PTS = null, CAM_LINES = null;
+function camClear(x, z, r) {
+  if (!CAM_PTS) {
+    CAM_PTS = []; CAM_LINES = [];
+    const p = new THREE.Vector3(), l = new THREE.Vector3();
+    for (let a = A_START; a <= A_END; a += 3) { journeyPose(a, p, l); CAM_PTS.push(p.x, p.z); }
+    for (let k = 0; k < 11; k++) { journeyPose(ADW[k], p, l); CAM_LINES.push([p.x, p.z, HERO[k].x, HERO[k].z]); }
+  }
+  for (let i = 0; i < CAM_PTS.length; i += 2) if ((CAM_PTS[i] - x) ** 2 + (CAM_PTS[i + 1] - z) ** 2 < r * r) return false;
+  for (const [ax, az, bx, bz] of CAM_LINES) {
+    const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, t = clamp(((x - ax) * dx + (z - az) * dz) / L2, 0, 1);
+    if (Math.hypot(x - ax - dx * t, z - az - dz * t) < r + 4 + 0.15 * t * Math.sqrt(L2)) return false;
+  }
+  return true;
+}
+function setMatrices(set) {
+  set.items.forEach((it, i) => {
+    _m4.compose(_v3.set(it.x, it.y, it.z), _q.setFromAxisAngle(UP, it.ry ?? 0), _s3.setScalar(it.s));
+    for (let j = 0; j < set.meshes.length; j++) set.meshes[j].setMatrixAt(i, _m4b.multiplyMatrices(_m4, set.parts[j]));
+  });
+  for (const im of set.meshes) im.instanceMatrix.needsUpdate = true;
+}
+// items along a bank: n copies between along a0 and a1 at lateral lat ± jitter
+function along(k, n, lat, a0, a1, s, { jit = 0, sJit = 0.15, ry = null, face = 0, gap = 0 } = {}) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const al = a0 + ((a1 - a0) * (i + 0.5)) / n + R(-gap, gap), l = lat + R(-jit, jit), q = at(k, l, al);
+    out.push({ x: q.x, z: q.z, s: s * (1 + R(-sJit, sJit)), ry: ry ?? q.rot + face });
+  }
+  return out;
+}
+const around = (k, n, l0, l1, a0, a1, s, sJit = 0.25) => [...Array(n)].map(() => { const q = at(k, R(l0, l1), R(a0, a1)); return { x: q.x, z: q.z, s: s * (1 + R(-sJit, sJit)), ry: R(0, 6.28) }; });
+
+// road strip along the river at lateral offset lat (centre), width w, along a0..a1, following the ground
+const ROAD_MAT = {};
+function road(k, lat, a0, a1, w, tex, { lift = 0.12, tile = 6 } = {}) {
+  const pos = [], uv = [], idx = [], n = Math.max(2, Math.ceil((a1 - a0) / 2)), hs = [];
+  for (let i = 0; i <= n; i++) {
+    const al = a0 + ((a1 - a0) * i) / n;
+    let hm = 0;
+    for (const s of [-1, 0, 1]) { const q = at(k, lat + (s * w) / 2, al); hm = Math.max(hm, gy(q.x, q.z)); }
+    hm = Math.max(hm, 0.5) + lift; hs.push(hm);
+    for (const s of [-1, 1]) { const q = atf(k, lat + (s * w) / 2, al); pos.push(q.x, hm, q.z); uv.push(((s + 1) / 2) * (w / tile), (al - a0) / tile); }
+    if (i) { const b = (i - 1) * 2; idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2); }
+    if (i % 3 === 0) { const q = at(k, lat, al); EXCL.push([q.x, q.z, w * 0.5 + 3]); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  ROAD_MAT[tex] ??= texMat(tex, { side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  G[k].add(new THREE.Mesh(g, ROAD_MAT[tex]));
+  return { lat, a0, a1, w, h: (al) => { const f = clamp(((al - a0) / (a1 - a0)) * n, 0, n), i = Math.min(n - 1, Math.floor(f)); return hs[i] + (hs[i + 1] - hs[i]) * (f - i); } };
+}
+// traffic on a road: lanes either side of the centre line, vehicles loop from a0 to a1 (or back)
+function traffic(k, rd, specs) {
+  for (const { slug, n, s, speed = 6 } of specs) {
+    if (!pick(slug)) continue;
+    const items = [...Array(n)].map((_, i) => ({ ph: rand() * (rd.a1 - rd.a0), dir: i % 2 ? 1 : -1, lane: (i % 2 ? 1 : -1) * rd.w * R(0.12, 0.32), v: speed * R(0.7, 1.25), s: s * R(0.92, 1.08), x: 0, y: 0, z: 0 }));
+    const len = rd.a1 - rd.a0;
+    const move = (t) => { for (const it of items) { const al = rd.a0 + ((((it.ph + it.dir * it.v * t) % len) + len) % len), q = atf(k, rd.lat + it.lane, al); it.x = q.x; it.z = q.z; it.y = rd.h(al); it.ry = Math.atan2(q.tx, q.tz) + (it.dir > 0 ? 0 : Math.PI); } };
+    move(0);
+    scatter(k, slug, items, { long: true, update: move });
+  }
+}
+// power lines: poles every `step` along a bank, three sagging wires between neighbours (one draw call)
+const WIRE_MAT = new THREE.LineBasicMaterial({ color: 0x15191a });
+function powerLine(k, lat, a0, a1, step = 12, h = 7.5) {
+  const poles = along(k, Math.max(2, Math.round((a1 - a0) / step)), lat, a0, a1, h, { sJit: 0.05 });
+  scatter(k, 'cot-dien', poles);
+  const v = [];
+  for (let i = 1; i < poles.length; i++) {
+    const A = poles[i - 1], B = poles[i], dx = B.x - A.x, dz = B.z - A.z, l = Math.hypot(dx, dz), nx = -dz / l, nz = dx / l;
+    for (const [o, dy, sag] of [[-0.45, 0.9, 0.7], [0, 0.82, 0.9], [0.45, 0.9, 0.7], [0.15, 0.7, 1.4]]) {
+      let px, py, pz;
+      for (let s = 0; s <= 8; s++) {
+        const t = s / 8, x = A.x + dx * t + nx * o, z = A.z + dz * t + nz * o, y = A.y + (B.y - A.y) * t + A.s * dy - sag * 4 * t * (1 - t);
+        if (s) v.push(px, py, pz, x, y, z); px = x; py = y; pz = z;
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  G[k].add(new THREE.LineSegments(g, WIRE_MAT));
+}
+// a row of narrow houses (stand-in until the Meshy house arrives): plaster walls tinted per house, tiled or flat roofs
+function houseRow(k, lat, a0, a1, { w = [4.5, 6.5], h = [5, 9], d = 7, tints, roof = 'roof-moss', wall = 'plaster', flat = false, face = 1 }) {
+  const walls = [], roofs = [], houses = [];
+  for (let al = a0; al < a1;) {
+    const ww = R(w[0], w[1]), hh = R(h[0], h[1]), q = at(k, lat + R(-0.6, 0.6), al + ww / 2), y = Math.max(gy(q.x, q.z), 0.3);
+    walls.push([tint(tiledBox(d, hh, ww, 4), tints[houses.length % tints.length]), MY(q.x, y + hh / 2, q.z, q.rot)]);
+    if (flat) roofs.push([tiledBox(d + 0.4, 0.4, ww + 0.2, 4), MY(q.x, y + hh + 0.2, q.z, q.rot)]);
+    else roofs.push([new THREE.CylinderGeometry(0.01, d * 0.62, ww + 0.6, 3, 1).rotateX(Math.PI / 2).scale(1, 0.55, 1), MY(q.x, y + hh + d * 0.15, q.z, q.rot)]);
+    houses.push({ x: q.x, z: q.z, y, w: ww, h: hh, rot: q.rot, al: al + ww / 2 });
+    EXCL.push([q.x, q.z, Math.max(d, ww) * 0.7]);
+    al += ww + R(0, 0.3);
+  }
+  G[k].add(new THREE.Mesh(bake(walls), texMat(wall, { vertexColors: true })));
+  G[k].add(new THREE.Mesh(bake(roofs), flat ? texMat('concrete') : texMat(roof, { color: 0xc8a090 })));
+  return houses;
+}
+// instanced copies of a small code-built geometry (flowers, posts, fronds...)
+function instances(k, geo, mat, items, { extra = false } = {}) {
+  if (!items.length) return null;
+  const im = new THREE.InstancedMesh(geo, mat, items.length);
+  items.forEach((it, i) => im.setMatrixAt(i, _m4.compose(_v3.set(it.x, it.y ?? Math.max(gy(it.x, it.z), 0), it.z), _q.setFromAxisAngle(UP, it.ry ?? 0), _s3.set(it.sx ?? it.s, it.sy ?? it.s, it.sz ?? it.s))));
+  if (items[0].c !== undefined) items.forEach((it, i) => im.setColorAt(i, new THREE.Color(it.c)));
+  im.computeBoundingSphere(); G[k].add(im); if (extra) EXTRAS.push(im);
+  return im;
+}
+// points on land between lat/along bounds, keeping those whose ground passes test(y)
+function onLand(k, n, l0, l1, a0, a1, test = (y) => y > 0.6, tries = 6) {
+  const out = [];
+  for (let t = 0; t < n * tries && out.length < n; t++) { const q = at(k, R(l0, l1), R(a0, a1)), y = gy(q.x, q.z); if (test(y)) out.push({ x: q.x, z: q.z, y }); }
+  return out;
+}
+// geometry for a fan of leaves from the ground (dừa nước) and a dragon-fruit post
+const FROND = (() => { const p = []; for (let i = 0; i < 9; i++) p.push([new THREE.ConeGeometry(0.22, 4.2, 3).translate(0, 2.1, 0).rotateZ(-0.35 - R(0, 0.5)).rotateY((i / 9) * Math.PI * 2 + R(-0.2, 0.2)), null]); return bake(p); })();
+const PITAYA = (() => { const p = [[new THREE.BoxGeometry(0.22, 1.8, 0.22).translate(0, 0.9, 0), null]]; for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; p.push([new THREE.CylinderGeometry(0.09, 0.12, 1.3, 4).translate(0, 0.65, 0).rotateZ(1.9).rotateY(a).translate(0, 1.85, 0), null]); } return p; })();
+const PITAYA_POST = bake([PITAYA[0]]), PITAYA_ARMS = bake(PITAYA.slice(1));
+// waterfall: a sheet with falling streaks and a mist of glow points at its foot
+const FALL_MAT = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, fog: true, side: THREE.DoubleSide,
+  uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {}]),
+  vertexShader: `varying vec2 vUv;
+    #include <fog_pars_vertex>
+    void main(){ vUv = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
+    #include <fog_vertex>
+    }`,
+  fragmentShader: `uniform float uTime; varying vec2 vUv;
+    #include <fog_pars_fragment>
+    float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n2(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(h1(i), h1(i + vec2(1, 0)), u.x), mix(h1(i + vec2(0, 1)), h1(i + vec2(1, 1)), u.x), u.y); }
+    void main(){
+      float s = n2(vec2(vUv.x * 26.0, vUv.y * 3.0 + uTime * 2.6)) * 0.6 + n2(vec2(vUv.x * 60.0, vUv.y * 7.0 + uTime * 4.0)) * 0.4;
+      float edge = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);
+      float a = edge * (0.35 + 0.65 * smoothstep(0.35, 0.8, s)) * (0.75 + 0.25 * vUv.y);
+      gl_FragColor = vec4(mix(vec3(0.62, 0.72, 0.76), vec3(0.95, 0.98, 1.0), s), a * 0.85);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+      #include <fog_fragment>
+    }`,
+});
+FALL_MAT.uniforms.uTime = SH.uTime;
 
 function terraces(k, x, z, g0, rot, n, r0, dr, h) {
   EXCL.push([x, z, r0 + 6]);
@@ -853,15 +1047,25 @@ function addFlag(k, o, rot) {
   }
   // Hội An: yellow shophouses, lantern strings along the bank, floating flower lanterns
   {
-    const walls = [], roofs = [], lan = [];
+    // shophouses: the Meshy houses (nha-hoi-an-1/2) when they exist, else textured stand-ins in Hội An yellows
+    const walls = [], roofs = [], lan = [], hm = [pick('nha-hoi-an-1'), pick('nha-hoi-an-2')], meshy = [[], []];
+    const yellows = [0xe3bf5a, 0xd9a842, 0xe8c66e, 0xcfa04a];
     for (let i = 0; i < nq(11, 7); i++) {
       const al = 64 + i * 7.4, q = at(k, 28 + R(-1, 1), al), yy = gy(q.x, q.z), w = R(5.2, 6.6), h = R(3.6, 5.2), d = 6;
-      walls.push([new THREE.BoxGeometry(d, h, w), MY(q.x, yy + h / 2, q.z, q.rot)]);
-      roofs.push([new THREE.BoxGeometry(d * 0.75, d * 0.75, w + 0.7).rotateZ(Math.PI / 4).scale(1, 0.62, 1), MY(q.x, yy + h, q.z, q.rot)]);
+      const v = i % 2, slot = hm[v] ?? hm[1 - v];
+      if (slot) meshy[hm[v] ? v : 1 - v].push({ x: q.x, z: q.z, y: yy, s: v ? 9 : 7.5, ry: q.rot + Math.PI / 2 });
+      else {
+        walls.push([tint(tiledBox(d, h, w, 3.5), yellows[i % yellows.length]), MY(q.x, yy + h / 2, q.z, q.rot)]);
+        roofs.push([new THREE.BoxGeometry(d * 0.75, d * 0.75, w + 0.7).rotateZ(Math.PI / 4).scale(1, 0.62, 1), MY(q.x, yy + h, q.z, q.rot)]);
+      }
+      EXCL.push([q.x, q.z, 5]);
       const f = at(k, 28 - d / 2 - 0.6, al); lan.push({ x: f.x, y: yy + 3, z: f.z, c: i % 2 ? 0xff5a2e : 0xffb347, s: 0.3, tw: 0.2 });
     }
-    G[k].add(new THREE.Mesh(bake(walls), M({ color: 0xc9a24a, emissive: 0x2a1a04 })));
-    G[k].add(new THREE.Mesh(bake(roofs), M({ color: 0x3a2420, flatShading: true })));
+    if (walls.length) {
+      G[k].add(new THREE.Mesh(bake(walls), texMat('plaster-old', { vertexColors: true, emissive: 0x1a1004 })));
+      G[k].add(new THREE.Mesh(bake(roofs), texMat('roof-moss', { color: 0xb08878, flatShading: true })));
+    }
+    meshy.forEach((items, v) => scatter(k, hm[v], items));
     const pal = [0xff5a2e, 0xffb347, 0xff7aa8, 0xd9452b, 0x9c7bff];
     for (let i = 0; i < nq(34, 18); i++) { const al = 60 + i * (84 / nq(34, 18)), q = at(k, 21.5, al), sag = Math.sin(((al - 60) / 12) * Math.PI); lan.push({ x: q.x, y: gy(q.x, q.z) + 3.9 - Math.abs(sag) * 0.5, z: q.z, c: pal[i % pal.length], s: 0.26, tw: 0.2, bob: 0.04 }); }
     field(k, lan, { reflect: true });
@@ -937,7 +1141,7 @@ function addFlag(k, o, rot) {
   const k = 8, p = at(k, 38, 2), y = pedestal(k, p.x, p.z, 16, 1.4, 0x202a28);
   HERO[k] = v3(p.x, y + 7, p.z); HERO_ALONG[k] = 2;
   place(k, 'cho-ben-thanh', 22, p, y, -0.4);
-  { const d1 = at(k, 62, 34), d2 = at(k, 46, 56); place(k, 'nha-tho-duc-ba', 20, d1, gy(d1.x, d1.z), -0.3); place(k, 'buu-dien-thanh-pho', 22, d2, gy(d2.x, d2.z), -0.3); }
+  { const d1 = at(k, 62, 34), d2 = at(k, 46, 56); place(k, pick('nha-tho-duc-ba') ? 'nha-tho-duc-ba' : 'nha-tho-duc-ba-sf', 26, d1, gy(d1.x, d1.z), -0.3 + Math.PI / 2); place(k, 'buu-dien-thanh-pho', 22, d2, gy(d2.x, d2.z), -0.3); }
   const parts = [], reserved = [[38, 2, 22], [62, 34, 12], [46, 56, 14], [98, 78, 10], [66, 54, 9]];
   for (let n = 0, t = 0; n < nq(34, 18) && t < 500; t++) {
     const west = rand() < 0.75, lat = west ? R(58, 160) : -R(26, 70), al = R(-30, 130);
@@ -946,12 +1150,13 @@ function addFlag(k, o, rot) {
     const w = R(6, 13), h = R(14, west ? 56 : 32), dd = R(6, 12);
     parts.push([scaleUV(new THREE.BoxGeometry(w, h, dd), w, h, dd), MY(q.x, g + h / 2, q.z, q.rot + R(-0.2, 0.2))]); n++;
   }
-  const lm = at(k, 98, 78), lg = Math.max(gy(lm.x, lm.z), 0);
-  for (const [ox, oz, h] of [[0, 0, 120], [5, 0, 104], [-5, 0, 98], [0, 5, 90], [0, -5, 84], [5, 5, 72], [-5, -5, 66], [5, -5, 58], [-5, 5, 50]]) parts.push([scaleUV(new THREE.BoxGeometry(5, h, 5), 5, h, 5), MY(lm.x + ox, lg + h / 2, lm.z + oz)]);
+  const lm = at(k, 98, 78), lg = Math.max(gy(lm.x, lm.z), 0), l81 = AVAILABLE.has('landmark-81');
+  if (l81) scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }]);
+  else for (const [ox, oz, h] of [[0, 0, 120], [5, 0, 104], [-5, 0, 98], [0, 5, 90], [0, -5, 84], [5, 5, 72], [-5, -5, 66], [5, -5, 58], [-5, 5, 50]]) parts.push([scaleUV(new THREE.BoxGeometry(5, h, 5), 5, h, 5), MY(lm.x + ox, lg + h / 2, lm.z + oz)]);
   const bx = at(k, 66, 54), bg = Math.max(gy(bx.x, bx.z), 0);
   parts.push([new THREE.CylinderGeometry(3.2, 7, 84, 20), MY(bx.x, bg + 42, bx.z)]);
   G[k].add(new THREE.Mesh(bake(parts), WINDOW_MAT));
-  const spire = new THREE.Mesh(new THREE.ConeGeometry(1.2, 14, 6), new THREE.MeshBasicMaterial({ color: 0xffe6b8 })); spire.position.set(lm.x, lg + 127, lm.z); G[k].add(spire);
+  if (!l81) { const spire = new THREE.Mesh(new THREE.ConeGeometry(1.2, 14, 6), new THREE.MeshBasicMaterial({ color: 0xffe6b8 })); spire.position.set(lm.x, lg + 127, lm.z); G[k].add(spire); }
   const pad = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 7.5, 1.2, 24), M({ color: 0x2a3436, emissive: 0x4a3418, emissiveIntensity: 0.6 })); pad.position.set(bx.x + 3.6, bg + 66, bx.z); G[k].add(pad);
   const lights = [];
   for (let al = -50; al <= 70; al += 8) for (const s of [-1, 1]) { const q = at(k, s * 15, al); lights.push({ x: q.x, y: Math.max(gy(q.x, q.z), 0) + 3.2, z: q.z, c: 0xffd59a, s: 0.18, tw: 0.1 }); }
@@ -1020,6 +1225,201 @@ function addFlag(k, o, rot) {
   const mangrove = new THREE.InstancedMesh(mg, M({ color: 0x14261b, flatShading: true }), mats.length); mats.forEach((m, i) => mangrove.setMatrixAt(i, m)); G[k].add(mangrove);
   const b = at(k, -40, 170);
   field(k, [{ x: b.x, y: 6, z: b.z, c: 0xffffff, s: 0.5, halo: 14, tw: 1 }, ...[0, 1, 2, 3].map(() => { const q = at(k, -R(60, 200), R(60, 260)); return { x: q.x, y: 0.8, z: q.z, c: 0xe6fbff, s: 0.3, tw: 0.5 }; })], { bodies: false, reflect: true });
+}
+
+// ---------------------------------------------------------------- scenery around the stops (helpers are above the stops)
+
+// 01 Lũng Cú: cliffs on the far hills, bamboo, boulders, pink buckwheat on the slopes, a hamlet of earth-walled houses
+{
+  const k = 0;
+  scatter(k, 'vach-da-1', around(k, nq(5, 3), 70, 130, -60, 70, 46), { dy: -0.25, excl: 0.4 });
+  scatter(k, 'vach-da-2', around(k, nq(5, 3), -130, -70, -60, 70, 46), { dy: -0.25, excl: 0.4 });
+  scatter(k, 'suon-nui', around(k, 3, 90, 150, -120, -40, 70), { dy: -0.3 });
+  scatter(k, 'tre', onLand(k, nq(14, 6), 40, 85, -70, 20, (y) => y > 2 && y < 25).map((p) => ({ ...p, s: R(7, 10), ry: R(0, 6) })), { excl: 0.3 });
+  scatter(k, 'tang-da', onLand(k, nq(16, 8), -90, 90, -80, 60, (y) => y > 1).map((p) => ({ ...p, s: R(1.5, 4), ry: R(0, 6) })));
+  const pink = [0xff8cc6, 0xf06ab0, 0xffb3d9, 0xffffff];
+  instances(k, new THREE.IcosahedronGeometry(0.3, 0), M({ color: 0xffffff, roughness: 1 }), onLand(k, nq(1800, 600), 26, 110, -90, 50, (y) => y > 2 && y < 30).map((p, i) => ({ ...p, y: p.y + 0.25, s: R(0.8, 1.6), c: pink[i % 4] })), { extra: true });
+  const lolo = [];
+  for (const [l, al] of [[56, -36], [64, -28], [61, -44], [72, -34], [52, -52]]) { const q = at(k, l, al); lolo.push({ q, y: Math.max(gy(q.x, q.z), 0.5) }); }
+  G[k].add(new THREE.Mesh(bake(lolo.map(({ q, y }) => [tiledBox(6, 3.4, 5, 3), MY(q.x, y + 1.7, q.z, q.rot + 0.3)])), texMat('earth-wall', { color: 0xd8b48a })));
+  G[k].add(new THREE.Mesh(bake(lolo.map(({ q, y }) => [new THREE.CylinderGeometry(0.01, 4.2, 6.6, 3, 1).rotateX(Math.PI / 2).rotateY(Math.PI / 2).scale(1, 0.5, 1), MY(q.x, y + 3.4 + 0.8, q.z, q.rot + 0.3)])), texMat('roof-tile', { color: 0x9a8a80 })));
+  for (const { q } of lolo) EXCL.push([q.x, q.z, 7]);
+}
+// 02 Hà Nội: lakeside road with motorbikes, banyans around the lake, street lamps, One Pillar Pagoda and Khuê Văn Các near Ba Đình,
+// old-quarter tube houses with power lines north of the lake
+{
+  const k = 1;
+  const rd = road(k, 21, -80, 70, 6, 'asphalt'); road(k, 25.5, -80, 70, 3, 'pavers');
+  traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(16, 6), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-may-rx', n: nq(8, 3), s: 1.9 }, { slug: 'o-to', n: nq(4, 2), s: 4.4, speed: 7 }, { slug: 'xe-khach', n: 1, s: 9, speed: 5 }]);
+  scatter(k, 'den-duong', along(k, nq(12, 6), 24.6, -76, 66, 4.2));
+  scatter(k, pick('xich-lo'), along(k, 3, 24.9, -60, 30, 2.6, { gap: 8 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })), { long: true }); // Meshy slot
+  scatter(k, 'cay-da', [...along(k, nq(6, 3), -26, -66, 22, 14, { jit: 3, gap: 4 }), ...along(k, 3, 27.5, -40, 40, 13, { gap: 6 })].map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.45 });
+  { const q = at(k, 52, 46); scatter(k, 'chua-mot-cot', [{ x: q.x, z: q.z, s: 15, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  { const q = at(k, 78, -40); scatter(k, 'khue-van-cac', [{ x: q.x, z: q.z, s: 18, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  const oq = pick('nha-ong-ha-noi');
+  if (oq) scatter(k, oq, along(k, nq(9, 5), -33, 28, 82, 8, { face: Math.PI / 2 }), { excl: 0.5 });
+  else houseRow(k, -33, 28, 82, { w: [3.6, 5], h: [6, 10], d: 9, tints: [0xe8d6a8, 0xd9c49a, 0xc9d6c0, 0xe6c6a0, 0xd8c8b8] });
+  road(k, -26.5, 26, 84, 4, 'asphalt');
+  powerLine(k, -28.8, 28, 82, 11);
+  scatter(k, 'xe-may-cub', along(k, nq(10, 4), -28.4, 30, 80, 1.9, { jit: 0.4, ry: 0 }).map((p) => ({ ...p, ry: R(0, 6) })), { long: true });
+}
+// 03 Hạ Long: more junks under sail, buoys and kayaks among the karsts, a floating fishing village
+{
+  const k = 2;
+  scatter(k, 'tau-buom-2', [[-60, 70, 16], [-120, 140, 18], [-150, 10, 15]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.3, s, ry: R(0, 6) }; }), { long: true });
+  scatter(k, 'phao', around(k, nq(18, 8), -70, -14, 20, 120, 1.4).map((p) => ({ ...p, y: -0.35 })));
+  scatter(k, 'kayak', around(k, nq(6, 3), -60, -16, -30, 60, 3.2).map((p) => ({ ...p, y: -0.05 })), { long: true });
+  scatter(k, 'thuyen-viet', around(k, nq(5, 3), -90, -20, 40, 130, 5.5).map((p) => ({ ...p, y: -0.25 })), { long: true });
+  const nb = pick('nha-be');
+  const rafts = [[-62, 62], [-70, 74], [-58, 80], [-74, 88], [-64, 94], [-80, 66]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, ry: q.rot + R(-0.3, 0.3) }; });
+  if (nb) scatter(k, nb, rafts.map((r) => ({ ...r, y: -0.2, s: 9 })));
+  else {
+    G[k].add(new THREE.Mesh(bake(rafts.map((r) => [tiledBox(9, 0.5, 7, 3), MY(r.x, 0.1, r.z, r.ry)])), texMat('planks')));
+    G[k].add(new THREE.Mesh(bake(rafts.map((r) => [tiledBox(4.5, 2.6, 4, 2), MY(r.x + 0.8, 1.6, r.z, r.ry)])), texMat('painted-wood')));
+    G[k].add(new THREE.Mesh(bake(rafts.map((r) => [tiledBox(5.4, 0.18, 5, 2).rotateX(0.18), MY(r.x + 0.8, 3.1, r.z, r.ry)])), texMat('tin')));
+    field(k, rafts.map((r) => ({ x: r.x, y: 2.4, z: r.z, c: 0xffc46b, s: 0.22, tw: 0.2 })), { reflect: true });
+  }
+}
+// 04 Huế: dragon boats and sampans on the Perfume River, lotus in the shallows, the pagoda gate, the citadel on the far bank
+{
+  const k = 3;
+  scatter(k, pick('thuyen-rong', 'thuyen-duoi-dai'), [[-6, -30], [5, 14]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 8, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
+  scatter(k, 'thuyen-viet', [[8, -50], [-9, 70], [7, 90]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5, ry: q.rot + R(-0.5, 0.5) }; }), { long: true });
+  scatter(k, 'sen', around(k, nq(10, 5), 11, 14, -70, -20, 5).map((p) => ({ ...p, y: 0.02 })));
+  { const q = at(k, 19, -4), y = Math.max(gy(q.x, q.z), 0.4); scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: q.x, z: q.z, y, s: 10, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  const nm = pick('ngo-mon'), c = at(k, -52, 24), cy = Math.max(gy(c.x, c.z), 0.5);
+  if (nm) scatter(k, nm, [{ x: c.x, z: c.z, y: cy, s: 34, ry: c.rot - Math.PI / 2 }], { excl: 0.5 });
+  else {
+    const wall = [], dark = [], roof = [], wood = [];
+    for (const s of [-1, 1]) wall.push([tiledBox(10, 6, 26, 4), MY(c.x, cy + 3, c.z, c.rot).multiply(new THREE.Matrix4().makeTranslation(0, 0, s * 25))]);
+    wall.push([tiledBox(12, 8, 26, 4), MY(c.x, cy + 4, c.z, c.rot)]);
+    for (const o of [-7, 0, 7]) dark.push([new THREE.BoxGeometry(12.2, o ? 3.6 : 4.6, 3), MY(c.x, cy + (o ? 1.8 : 2.3), c.z, c.rot).multiply(new THREE.Matrix4().makeTranslation(0, 0, o))]);
+    for (const [y0, w0] of [[8, 1], [12.4, 0.72]]) {
+      roof.push([new THREE.CylinderGeometry(0.01, 6.5 * w0, 24 * w0, 4, 1).rotateY(Math.PI / 4).scale(1, 0.4, 1.9), MY(c.x, cy + y0 + 2.6, c.z, c.rot)]);
+      for (const z of [-9, -3, 3, 9]) for (const x of [-3, 3]) wood.push([new THREE.CylinderGeometry(0.22, 0.22, 3, 6), MY(c.x, cy + y0 + 1.5, c.z, c.rot).multiply(new THREE.Matrix4().makeTranslation(x * w0, 0, z * w0))]);
+    }
+    G[k].add(new THREE.Mesh(bake(wall), texMat('stone-wall', { color: 0xb9b3a6 })));
+    G[k].add(new THREE.Mesh(bake(dark), M({ color: 0x0f0d0b })));
+    G[k].add(new THREE.Mesh(bake(roof), M({ color: 0xc8a22c, emissive: 0x2a1c02, roughness: 0.5 })));
+    G[k].add(new THREE.Mesh(bake(wood), M({ color: 0x7a2a1a })));
+    EXCL.push([c.x, c.z, 34]);
+  }
+}
+// 05 Đà Nẵng: high-rises along the Hàn river with a busy riverside road, cable cars up to the Golden Bridge; Hội An: market props
+{
+  const k = 4;
+  const rd = road(k, -20.5, 0, 60, 6, 'asphalt'); road(k, -24.8, 0, 60, 2.6, 'pavers');
+  traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(12, 5), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-vespa', n: nq(5, 2), s: 1.8 }, { slug: 'o-to', n: nq(5, 2), s: 4.4, speed: 7 }]);
+  scatter(k, 'den-duong', along(k, nq(7, 4), -23.6, 2, 58, 4.2));
+  scatter(k, 'toa-van-phong', [[-29, 12, 44], [-30, 44, 50], [-28, 28, 36], [-30, 58, 40]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4 });
+  { const parts = []; for (const [l, al, w, h] of [[-29, 2, 9, 30], [-30, 22, 8, 24], [-29, 36, 10, 34], [-30, 50, 8, 22]]) { const q = at(k, l, al), g = Math.max(gy(q.x, q.z), 0.5); parts.push([scaleUV(new THREE.BoxGeometry(w, h, w), w, h, w), MY(q.x, g + h / 2, q.z, q.rot)]); EXCL.push([q.x, q.z, w]); } G[k].add(new THREE.Mesh(bake(parts), WINDOW_MAT)); }
+  // cable car: cabins along a sagging line from the valley up to the Golden Bridge
+  const A = at(k, 22, -46), B = at(k, 44, 4), ya = Math.max(gy(A.x, A.z), 0) + 6, yb = gy(B.x, B.z) + 18, cab = [], wv = [];
+  for (let i = 0; i <= 24; i++) { const t = i / 24; wv.push(A.x + (B.x - A.x) * t, ya + (yb - ya) * t - 5 * t * (1 - t), A.z + (B.z - A.z) * t); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(wv, 3)); G[k].add(new THREE.Line(lg, WIRE_MAT));
+  for (let i = 1; i < 6; i++) { const t = i / 6; cab.push({ x: A.x + (B.x - A.x) * t, y: ya + (yb - ya) * t - 5 * t * (1 - t) - 2.6, z: A.z + (B.z - A.z) * t, s: 2.6, ry: Math.atan2(B.x - A.x, B.z - A.z) }); }
+  scatter(k, 'cap-treo', cab, { long: true });
+  // Hội An riverside: banana and coconut behind the houses, lanterns, motorbikes parked on the brick street, sampans
+  road(k, 23.8, 58, 148, 3.6, 'brick-floor');
+  scatter(k, 'xe-may-cub', along(k, nq(8, 3), 24.6, 62, 140, 1.9, { gap: 3 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 + R(-0.3, 0.3) })), { long: true });
+  scatter(k, 'chuoi', onLand(k, nq(10, 5), 36, 52, 60, 146).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
+  scatter(k, 'dua', onLand(k, nq(6, 3), 34, 50, 58, 146).map((p) => ({ ...p, s: R(9, 12), ry: R(0, 6) })));
+  scatter(k, 'den-long-vn', along(k, nq(6, 3), 25.6, 66, 140, 2.2, { gap: 3 }).map((p) => ({ ...p, y: p.y + 2.2 })));
+  scatter(k, 'thuyen-viet', [[-4, 70], [6, 118], [-6, 136]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5.5, ry: q.rot + R(-0.4, 0.4) }; }), { long: true });
+  scatter(k, 'ro', along(k, 4, 22.6, 70, 130, 1.2, { gap: 4 }));
+}
+// 06 Tây Nguyên: thatched stilt houses round the rông house, elephants, bananas and ferns, a waterfall on the far hills
+{
+  const k = 5;
+  scatter(k, 'nha-mai-la', [[-50, -22], [-56, 18], [-44, 30], [-62, -4]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 10, ry: q.rot + R(-0.4, 0.4) }; }), { excl: 0.5 });
+  scatter(k, 'voi', [[-27, 22], [-31, 26]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 4.2, ry: q.rot + 2 + R(-0.3, 0.3) }; }), { long: true });
+  scatter(k, 'chuoi', onLand(k, nq(10, 5), -70, -30, -50, 40).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
+  scatter(k, 'duong-xi', onLand(k, nq(14, 6), -60, -24, -50, 40).map((p) => ({ ...p, s: R(2, 3), ry: R(0, 6) })), { extra: true });
+  const w = at(k, 54, 34), wy = gy(w.x, w.z);
+  scatter(k, 'vach-da-2', [{ x: w.x, z: w.z, y: wy - 6, s: 34, ry: w.rot + Math.PI / 2 }], { excl: 0.5 });
+  const fall = new THREE.Mesh(new THREE.PlaneGeometry(5, 22), FALL_MAT); fall.position.set(w.x - TZ[w.i] * -6, wy + 6, w.z + TX[w.i] * -6); fall.rotation.y = w.rot + Math.PI / 2; G[k].add(fall);
+  field(k, [...Array(nq(30, 14))].map(() => ({ x: w.x - TZ[w.i] * -9 + R(-3, 3), y: wy - 4 + R(0, 3), z: w.z + TX[w.i] * -9 + R(-3, 3), c: 0xcfe6ff, s: 0.5, halo: 6, tw: 0.6, bob: 0.3 })), { bodies: false, reflect: false });
+}
+// 07 Nha Trang: parasols and loungers on the beach, coconut palms on the promenade, hotels, squid boats at sea, sea cliffs
+{
+  const k = 6;
+  road(k, 21.5, -80, 70, 5, 'asphalt');
+  scatter(k, 'dua', along(k, nq(12, 6), 18.4, -76, 66, 11, { gap: 2 }).map((p) => ({ ...p, ry: R(0, 6) })));
+  scatter(k, 'du-bien', around(k, nq(10, 5), -24, -19, -60, 50, 3.2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
+  scatter(k, 'ghe-bien', around(k, nq(10, 5), -24, -19, -60, 50, 2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
+  scatter(k, 'toa-van-phong', [[68, -64, 34], [74, -38, 40], [70, 50, 36], [78, 66, 30]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
+  scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 })), { long: true });
+  scatter(k, 'vach-bien', around(k, 3, -60, -36, -60, 60, 30).map((p) => ({ ...p, y: -3 })));
+}
+// 08 Phan Thiết: dragon-fruit fields on the hills, fishing boats, coconut palms
+{
+  const k = 7;
+  const posts = onLand(k, nq(260, 90), 36, 100, -60, 40, (y) => y > 1 && y < 14);
+  instances(k, PITAYA_POST, M({ color: 0x9c968a, roughness: 1 }), posts.map((p) => ({ ...p, s: 1 })), { extra: true });
+  instances(k, PITAYA_ARMS, M({ color: 0x3f7a3a, roughness: 0.8 }), posts.map((p) => ({ ...p, s: 1, ry: R(0, 6) })), { extra: true });
+  scatter(k, 'thuyen-ca', around(k, nq(6, 3), -90, -40, -30, 60, 8).map((p) => ({ ...p, y: -0.4 })), { long: true });
+  scatter(k, 'dua', onLand(k, nq(10, 5), -40, -18, -60, 50).map((p) => ({ ...p, s: R(9, 12), ry: R(0, 6) })));
+}
+// 09 Sài Gòn: busy riverside road (motorbikes, buses, cars), street food carts and plastic stools on the pavement, power lines,
+// townhouses with shutters and air conditioners, office towers, a ferry crossing the river
+{
+  const k = 8;
+  const rd = road(k, 20, -60, 90, 7, 'asphalt'); road(k, 25, -60, 90, 3, 'pavers');
+  traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(24, 8), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(18, 6), s: 1.8 }, { slug: 'xe-may-rx', n: nq(10, 4), s: 1.9 }, { slug: 'xe-vespa', n: nq(6, 2), s: 1.8 },
+    { slug: 'o-to', n: nq(6, 3), s: 4.4, speed: 7 }, { slug: 'xe-buyt', n: 2, s: 10, speed: 5 }]);
+  powerLine(k, 26.8, -58, 88, 12);
+  scatter(k, 'xe-day', along(k, nq(5, 2), 25.4, -50, 80, 2.4, { gap: 6 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })));
+  const stools = []; for (const c of along(k, nq(7, 3), 25.2, -46, 84, 1, { gap: 5 })) for (let i = 0; i < 5; i++) stools.push({ x: c.x + R(-1.2, 1.2), z: c.z + R(-1.2, 1.2), s: 0.55, ry: R(0, 6) });
+  scatter(k, 'ghe-do', stools); scatter(k, 'ghe-xanh', stools.slice(0, Math.floor(stools.length / 3)).map((p) => ({ ...p, x: p.x + 0.7, s: 0.6 })));
+  scatter(k, 'cay-ven-bien', along(k, nq(8, 4), 27.2, -56, 86, 10, { gap: 3 }).map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.3 });
+  const np = pick('nha-pho-sai-gon');
+  const row = np ? null : houseRow(k, 31.5, 60, 92, { w: [4, 5.5], h: [12, 18], d: 8, flat: true, wall: 'white', tints: [0xe9e4d8, 0xd6e2e6, 0xf0dcc2, 0xdfe6d0, 0xe8d0d0] });
+  if (np) scatter(k, np, along(k, 6, 31.5, 60, 92, 16, { face: Math.PI / 2 }), { excl: 0.5 });
+  else {
+    scatter(k, 'cua-cuon', row.map((h) => { const q = at(k, 27.4, h.al); return { x: q.x, z: q.z, s: 3.6, ry: h.rot + Math.PI / 2 }; }));
+    scatter(k, 'cuc-nong', row.filter((_, i) => i % 2 === 0).map((h) => { const q = at(k, 27.3, h.al); return { x: q.x, z: q.z, y: h.y + h.h * 0.6, s: 2, ry: h.rot + Math.PI / 2 }; }));
+  }
+  scatter(k, 'toa-van-phong', [[120, 20, 60], [140, 60, 70], [110, -20, 48]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.4 });
+  // ferry: hull, deck and cabin crossing back and forth
+  const fg = new THREE.Group(); G[k].add(fg);
+  fg.add(new THREE.Mesh(tiledBox(5, 1, 11, 3), texMat('painted-wood', { color: 0xd8e4e8 })));
+  const cabin = new THREE.Mesh(tiledBox(3.6, 1.8, 4, 2), texMat('white')); cabin.position.set(0, 1.4, -2.5); fg.add(cabin);
+  const fq = at(k, 0, 24);
+  ANIM.push({ k, fn: (t) => { const l = Math.sin(t * 0.07) * 9, q = atf(k, l, 24); fg.position.set(q.x, 0.25 + Math.sin(t) * 0.05, q.z); fg.rotation.y = fq.rot + Math.PI / 2; } });
+}
+// 10 Miền Tây: Cần Thơ stilt houses, small sampans and longtail boats, hammocks, fruit stalls, banana and coconut,
+// nipa palms on the banks, rice paddies inland
+{
+  const k = 9;
+  scatter(k, 'nha-san-can-tho', [[24, -56], [-26, -14], [26, 50]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: Math.max(gy(q.x, q.z), -0.5), s: 11, ry: q.rot + (l > 0 ? Math.PI / 2 : -Math.PI / 2) }; }), { excl: 0.5 });
+  scatter(k, 'nha-nho-can-tho', [[-24, 40], [28, -36]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 10, ry: q.rot + (l > 0 ? Math.PI / 2 : -Math.PI / 2) }; }), { excl: 0.5 });
+  scatter(k, 'thuyen-viet', around(k, nq(6, 3), -10, 10, -70, 70, 5).map((p) => ({ ...p, y: -0.25, ry: p.ry })), { long: true });
+  scatter(k, 'thuyen-duoi-dai', around(k, nq(3, 2), -9, 9, -60, 60, 7).map((p) => ({ ...p, y: -0.25 })), { long: true });
+  scatter(k, 'vong', [[22, -50], [-23, -10], [24, 46]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3, ry: q.rot }; }));
+  scatter(k, 'sap-rau', [[-17, -2], [18, 22]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3.2, ry: q.rot }; }));
+  scatter(k, 'chuoi', onLand(k, nq(16, 6), 16, 60, -80, 80).concat(onLand(k, nq(10, 4), -60, -16, -80, 80)).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
+  scatter(k, 'dua', onLand(k, nq(10, 4), 18, 64, -80, 80).map((p) => ({ ...p, s: R(10, 13), ry: R(0, 6) })));
+  instances(k, FROND, M({ color: 0x3d6b2f, roughness: 0.85 }), [...onLand(k, nq(70, 25), 14.5, 19, -90, 90, (y) => y > -1 && y < 1.5), ...onLand(k, nq(70, 25), -19, -14.5, -90, 90, (y) => y > -1 && y < 1.5)].map((p) => ({ ...p, y: Math.max(p.y, 0), s: R(0.9, 1.4), ry: R(0, 6) })));
+  // rice paddies: flat fields in shades of young and ripening rice, some still flooded
+  const fields = [];
+  for (const side of [-1, 1]) for (let l = 70; l < 140; l += 9) for (let al = -80; al < 80; al += 12) {
+    const q = at(k, side * (l + R(-1, 1)), al + R(-1, 1)), y = gy(q.x, q.z); if (y < 0.3 || y > 3) continue;
+    const r = rand(); fields.push({ x: q.x, z: q.z, y: y + 0.08, sx: 8.2, sy: 1, sz: 11, ry: q.rot, c: r < 0.2 ? 0x4a6a6a : r < 0.75 ? 0x6f9a3a : 0xa8a040 });
+  }
+  instances(k, new THREE.BoxGeometry(1, 0.12, 1), M({ color: 0xffffff, roughness: 0.75 }), fields);
+}
+// 11 Mũi Cà Mau: mangroves of three kinds, a boardwalk into them, the GPS 0001 marker, fishing boats, nipa palms
+{
+  const k = 10;
+  const mg = onLand(k, nq(60, 24), -60, 60, -80, 50, (y) => y > -0.5 && y < 2.5).filter((p) => Math.hypot(p.x - HERO[k].x, p.z - HERO[k].z) > 14);
+  scatter(k, 'duoc', mg.filter((_, i) => i % 3 === 0).map((p) => ({ ...p, s: R(5, 7), ry: R(0, 6) })));
+  scatter(k, 'duoc-re', mg.filter((_, i) => i % 3 === 1).map((p) => ({ ...p, s: R(4, 6), ry: R(0, 6) })));
+  scatter(k, 'duoc-cao', mg.filter((_, i) => i % 3 === 2).map((p) => ({ ...p, s: R(7, 10), ry: R(0, 6) })));
+  road(k, -21, -50, 6, 2.2, 'planks', { lift: 1.1, tile: 3 });
+  instances(k, new THREE.CylinderGeometry(0.12, 0.12, 2.4, 5), M({ color: 0x4a3a28 }), along(k, 24, -21, -50, 6, 1).flatMap((p) => [-0.95, 0.95].map((o) => { const q = { x: p.x + Math.cos(p.ry) * o, z: p.z - Math.sin(p.ry) * o }; return { x: q.x, z: q.z, y: Math.max(gy(q.x, q.z), -1) + 0.4, s: 1 }; })));
+  { const q = at(k, 24, 22), y = Math.max(gy(q.x, q.z), 0.5); G[k].add(new THREE.Mesh(bake([[tiledBox(1.6, 3.2, 1.6, 2), MY(q.x, y + 1.6, q.z, q.rot)], [tiledBox(2.6, 0.4, 2.6, 2), MY(q.x, y + 0.2, q.z, q.rot)]]), texMat('white', { color: 0xe8e2d6 }))); EXCL.push([q.x, q.z, 4]); }
+  scatter(k, 'thuyen-ca', around(k, nq(5, 3), -120, -30, 40, 200, 8).map((p) => ({ ...p, y: -0.4 })), { long: true });
+  instances(k, FROND, M({ color: 0x3d6b2f, roughness: 0.85 }), onLand(k, nq(60, 20), -40, 40, -90, 30, (y) => y > -1 && y < 1.2).map((p) => ({ ...p, y: Math.max(p.y, 0), s: R(0.9, 1.4), ry: R(0, 6) })));
 }
 
 // ---------------------------------------------------------------- overview: route ribbon, stop markers, glowing coastline, village lights
@@ -1531,8 +1931,8 @@ function updateLabels(ov) {
 const loadingEl = $('#loading');
 function updateLoading() {
   if (!loadingEl) return;
-  if (modelsDone >= modelsTotal) { loadingEl.hidden = true; return; }
-  loadingEl.hidden = false; loadingEl.textContent = `Đang tải công trình ${modelsDone}/${modelsTotal}`;
+  if (modelsDone >= modelsTotal()) { loadingEl.hidden = true; return; }
+  loadingEl.hidden = false; loadingEl.textContent = `Đang tải công trình ${modelsDone}/${modelsTotal()}`;
 }
 updateLoading();
 
@@ -1560,6 +1960,14 @@ document.addEventListener('click', (e) => {
   const act = b.dataset.act;
   if (act === 'play') setAuto(true);
   if (act === 'restart') { setAuto(false); writeU(0); curU = 0; }
+  if (act === 'credits') {
+    const box = $('#credits');
+    if (!box.dataset.filled) {
+      box.dataset.filled = '1';
+      box.querySelector('ul').innerHTML = CREDITS.map((c) => `<li><a class="link" href="${c.url}" target="_blank" rel="noopener">${c.name.replace(/</g, '&lt;')}</a> · ${c.author.replace(/</g, '&lt;')}</li>`).join('');
+    }
+    box.hidden = !box.hidden;
+  }
   if (act === 'copy') {
     const email = 'longnminhse@gmail.com', done = () => { b.textContent = 'Đã chép email'; setTimeout(() => { b.textContent = 'Chép email'; }, 1800); };
     const fallback = () => { const el = b.closest('.panel').querySelector('.email'); const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Đã chọn, nhấn Ctrl+C'; };

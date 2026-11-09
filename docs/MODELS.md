@@ -104,3 +104,41 @@ node textures/process.mjs
 ```
 
 Script chia màu texture cho màu trung bình của chính nó, nên texture chỉ thêm chi tiết sáng tối; tông màu từng vùng vẫn lấy từ màu đỉnh của địa hình.
+
+## Khung cảnh quanh các chặng (thư viện)
+
+70 model phụ trợ lấy từ thư viện (`tools/library/props.json`), xử lý thành mức mid và low bằng `tools/library/build_props.sh`, được trải bằng instancing: mỗi loại vật chỉ tốn một lệnh vẽ dù có bao nhiêu bản sao. Vật nào đứng trên đường bay của máy quay, hoặc chắn đường nhìn từ máy quay tới công trình chính, sẽ tự bị loại.
+
+| Chặng | Đã có |
+|---|---|
+| 01 Lũng Cú | Vách đá, sườn núi đá, tre, tảng đá, hoa tam giác mạch, xóm nhà tường đất mái ngói |
+| 02 Hà Nội | Đường ven hồ có xe máy, ô tô, xe khách chạy; cây đa; đèn đường; chùa Một Cột; Khuê Văn Các; dãy nhà ống phố cổ có dây điện và xe máy đỗ |
+| 03 Hạ Long | Thêm tàu buồm, phao, kayak, thuyền gỗ, làng chài nổi |
+| 04 Huế | Thuyền đuôi dài (chờ thuyền rồng), đò, sen, cổng chùa, Ngọ Môn dựng bằng code |
+| 05 Đà Nẵng, Hội An | Đường ven sông Hàn có xe chạy, hàng nhà kính, cáp treo lên Cầu Vàng; phố Hội An lát gạch, xe máy đỗ, chuối, dừa, đèn lồng, thuyền, rổ; nhà Hội An phủ texture vữa và ngói rêu |
+| 06 Tây Nguyên | Nhà sàn mái lá, voi, chuối, dương xỉ, thác nước |
+| 07 Nha Trang | Đường ven biển, hàng dừa, dù và ghế bãi biển, tòa nhà khách sạn, thuyền đánh cá, vách đá biển |
+| 08 Phan Thiết | Ruộng thanh long trên trụ, thuyền đánh cá, dừa |
+| 09 Sài Gòn | Landmark 81; Nhà thờ Đức Bà (bản Sketchfab); đường đông xe máy, ô tô, xe buýt; vỉa hè có xe đẩy, ghế nhựa, cây; cột điện và dây điện; dãy nhà phố có cửa cuốn và cục nóng điều hòa; tòa văn phòng; phà qua sông |
+| 10 Miền Tây | Nhà sàn Cần Thơ, xuồng, thuyền đuôi dài, võng, sạp rau, chuối, dừa, dừa nước, ruộng lúa |
+| 11 Mũi Cà Mau | Ba loại đước, cầu gỗ, cột mốc tọa độ, thuyền đánh cá, dừa nước |
+
+### Chỗ chừa cho Meshy
+
+Đặt file đúng tên dưới đây vào `assets/models/{mid,low}/` (qua `tools/process.mjs`) là cảnh tự dùng, không phải sửa code.
+
+| Tên file | Ở đâu | Đang tạm dùng |
+|---|---|---|
+| `chua-cau` | Hội An | (trống) |
+| `nha-tho-duc-ba` | Sài Gòn | Bản Sketchfab `nha-tho-duc-ba-sf` |
+| `buu-dien-thanh-pho` | Sài Gòn | (trống) |
+| `cho-ben-thanh` | Sài Gòn | Bản Meshy cũ, chờ làm lại màu |
+| `nha-hoi-an-1`, `nha-hoi-an-2` | Phố Hội An | Khối nhà phủ texture vữa vàng và ngói rêu |
+| `nha-ong-ha-noi` | Phố cổ Hà Nội | Dãy nhà ống dựng bằng code |
+| `nha-pho-sai-gon` | Phố Sài Gòn | Dãy nhà phố dựng bằng code, có cửa cuốn và cục nóng |
+| `cong-tam-quan` | Huế, trước tháp Phước Duyên | Đền kiểu Á Đông (`den-chua`) |
+| `ngo-mon` | Huế, bờ bên kia | Ngọ Môn dựng bằng code |
+| `xich-lo` | Vỉa hè ven Hồ Gươm, Hà Nội | (trống) |
+| `thuyen-rong` | Huế | Thuyền đuôi dài |
+| `thuyen-cau-muc` | Nha Trang | Thuyền đánh cá |
+| `nha-be` | Hạ Long | Nhà bè dựng bằng code |

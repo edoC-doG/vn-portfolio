@@ -12,7 +12,17 @@ const app = fs.readFileSync(path.join(here, 'app.js'), 'utf8');
 // terrain textures prepared by tools/textures/process.mjs (null when there are none yet: the shader falls back to noise)
 const terrainTex = path.join(here, '../../assets/textures/terrain.json');
 const app2 = app.replace('/*TERRAIN_TEX*/ null', () => (fs.existsSync(terrainTex) ? fs.readFileSync(terrainTex, 'utf8').trim() : 'null'));
-const out = page.replace('/*APP*/', () => app2);
+// models present in both tiers (a Meshy slot such as 'nha-hoi-an-1' lights up as soon as its file is added)
+const models = (t) => new Set(fs.readdirSync(path.join(here, '../../assets/models', t)).filter((f) => f.endsWith('.glb')).map((f) => f.slice(0, -4)));
+const mid = models('mid'), low = models('low');
+const modelList = [...mid].filter((m) => low.has(m)).sort();
+// CC BY credits for the Sketchfab models in use, matched through the library lists
+const lib = path.join(here, '../../tools/library');
+const props = JSON.parse(fs.readFileSync(path.join(lib, 'props.json'), 'utf8')), sf = JSON.parse(fs.readFileSync(path.join(lib, 'sketchfab.json'), 'utf8'));
+const credits = Object.entries(props).filter(([slug]) => mid.has(slug)).map(([slug, p]) => sf.find((m) => p.src.includes(m.uid.slice(0, 8))))
+  .filter(Boolean).map((m) => ({ name: m.name, author: m.author, url: m.url }));
+const app3 = app2.replace('/*MODELS*/ null', () => JSON.stringify(modelList)).replace('/*CREDITS*/ null', () => JSON.stringify(credits));
+const out = page.replace('/*APP*/', () => app3);
 fs.mkdirSync(dist, { recursive: true });
 fs.writeFileSync(path.join(dist, 'index.html'), out);
 fs.writeFileSync(path.join(dist, '_local.html'), `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>${out}</body></html>`);
@@ -26,4 +36,4 @@ for (const tier of ['low', 'mid']) {
   fs.mkdirSync(dst, { recursive: true });
   for (const f of fs.readdirSync(src).filter((f) => /\.(jpe?g|png|webp)$/.test(f))) fs.writeFileSync(path.join(dst, f.replace(/\.\w+$/, '.txt')), fs.readFileSync(path.join(src, f)).toString('base64'));
 }
-console.log('built', (out.length / 1024).toFixed(1), 'KB page + models');
+console.log('built', (out.length / 1024).toFixed(1), 'KB page,', modelList.length, 'models,', credits.length, 'credits');
