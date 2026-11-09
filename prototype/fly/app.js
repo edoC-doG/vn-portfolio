@@ -1351,7 +1351,7 @@ function addFlag(k, o, rot) {
   scatter(k, 'dua', along(k, nq(12, 6), 18.4, -76, 66, 11, { gap: 2 }).map((p) => ({ ...p, ry: R(0, 6) })));
   scatter(k, 'du-bien', around(k, nq(10, 5), -24, -19, -60, 50, 3.2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
   scatter(k, 'ghe-bien', around(k, nq(10, 5), -24, -19, -60, 50, 2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
-  scatter(k, 'toa-van-phong', [[68, -64, 34], [74, -38, 40], [70, 50, 36], [78, 66, 30]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4, far: true });
+  scatter(k, 'toa-van-phong', [[68, -40, 28], [74, -20, 32], [70, 50, 30], [78, 66, 26]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
   scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 })), { long: true });
   scatter(k, 'vach-bien', around(k, 3, -60, -36, -60, 60, 30).map((p) => ({ ...p, y: -3 })), { far: true });
 }
@@ -1834,7 +1834,7 @@ function updateAtmo(dt, camY) {
   const sk = sky.material.uniforms;
   sk.top.value.copy(L.top); sk.mid.value.copy(L.mid); sk.horizon.value.copy(L.hor).lerp(_c2.setRGB(0.8, 0.85, 1), A.flash * 0.5);
   scene.fog.color.copy(L.hor).lerp(L.mid, 0.25); scene.background.copy(scene.fog.color);
-  A.fogK = (1 - 0.15 * dayF) * (1 + 1.4 * wet);
+  A.fogK = (1 + 0.25 * dayF) * (1 + 1.4 * wet); // a light haze by day gives depth; rain thickens it
   STARS_MAT.opacity = 0.8 * (1 - dayF) * (1 - A.cloud);
   moonGroup.visible = (1 - dayF) * (1 - A.cloud) > 0.03; MOON_HALO.opacity = 0.4 * (1 - A.cloud);
   // sun: low in front of the camera at dawn and dusk (glitter on the water), swinging to the side as it climbs
