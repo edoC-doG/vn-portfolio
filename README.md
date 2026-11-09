@@ -2,21 +2,22 @@
 
 Portfolio 3D của **Nguyễn Minh Long**, kỹ sư full-stack .NET / Next.js. Người xem bay một chuyến đêm dọc dải đất hình chữ S, qua 11 chặng từ Lũng Cú đến Mũi Cà Mau. Mỗi chặng có một công trình biểu tượng và một phần CV. Ai chỉ muốn đọc CV thì bấm sang bản "CV nhanh".
 
-## Trạng thái (26/10/2026)
+## Trạng thái (09/11/2026)
 
 | Hạng mục | Tình trạng |
 |---|---|
 | 14 model Meshy, xử lý thành 3 mức high / mid / low | Xong, nằm ở `assets/models` |
 | Storyboard 11 chặng và bản điện thoại | Xong, ảnh ở `docs/storyboard` |
-| CV nhanh song ngữ Việt / Anh | Xong, ở `prototype/quick-cv` |
+| CV nhanh song ngữ Việt / Anh | Xong, ở `web/` (`/vi/cv`, `/en/cv`), in ra PDF được. Bản cũ ở `prototype/quick-cv`. |
 | Bản bay liên tục (`prototype/fly`) | Chạy đủ 11 chặng. Đã chụp kiểm tra toàn bộ khung trên máy tính và điện thoại (26/10/2026), sửa xong khung hình Lũng Cú, Đà Nẵng, Nha Trang, đoạn qua cầu Rồng, đoạn bay lên cuối và bản đồ cuối trên điện thoại. |
 | Câu chuyện và máy quay | Mỗi công ty là một điểm dừng, hiện tại (CTNP) ở Đà Nẵng, Hội An, Cà Mau là "điểm đến tiếp theo". Máy quay nhìn thẳng về phía trước: cuộn là bay tới, công trình từ xa lớn dần rồi lướt qua bên cạnh. Panel phóng to theo chiều sâu. |
 | Giờ và thời tiết | Ngày, đêm theo giờ Việt Nam thật; mưa và mây theo Open-Meteo. Nút đổi giờ và thời tiết ở góc trên. |
 | Thư viện asset | Đã tải và kiểm tra: 51 texture, 33 mô hình Poly Haven (CC0), 86 model Sketchfab (CC BY, 74 dùng tốt). Không nằm trong git; lệnh tải lại và ảnh xem trước ở `docs/ASSETS.md`. |
-| Khung cảnh quanh địa danh | **Đã lắp đủ mức tổng quan** cho 11 chặng: 70 model thư viện (xe cộ chạy trên đường, thuyền, nhà, cây, đồ đường phố) và phần dựng bằng code (ruộng lúa, thanh long, dừa nước, thác nước, phà, Ngọ Môn tạm…). Chỗ chừa cho model Meshy ở `docs/MODELS.md`. Còn lại: làm chi tiết từng chặng. |
+| Khung cảnh quanh địa danh | Đã lắp đủ cho 11 chặng: 70 model thư viện (xe cộ chạy trên đường, thuyền, nhà, cây, đồ đường phố), phần dựng bằng code (ruộng lúa, thanh long, dừa nước, thác nước, phà, Ngọ Môn tạm…) và lượt chi tiết thứ hai (bậc đá Lũng Cú, cột cờ Ba Đình, tường thành Huế, hoa giấy Hội An, cáp treo Nha Trang, cầu Ba Son, cây bẹo, Hòn Khoai…). Chỗ chừa cho model Meshy ở `docs/MODELS.md`. |
 | Cây, mặt nước, địa hình | Rừng 4 loại cây từ EZ-Tree (MIT), mặt nước có normal map, vệt trăng và bọt sóng, địa hình có đá / thảm thực vật / cát bằng shader. Nguồn và giấy phép ở `docs/MODELS.md`. |
-| Model Meshy còn chờ | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện (đã làm, chưa có file); làm lại màu Chợ Bến Thành; 10 model mới. Danh sách và prompt ở `docs/ASSETS.md` mục 4, chỗ chừa trong cảnh ở `docs/MODELS.md`. |
-| Project thật Next.js + React Three Fiber | Chưa bắt đầu, xem `docs/PLAN.md` (Mốc D) |
+| Song ngữ | Việt / Anh cho toàn bộ panel và giao diện. Prototype đổi tại chỗ bằng nút EN / VI; site thật dùng route `/vi`, `/en`. |
+| Model Meshy còn chờ | Chùa Cầu, Nhà thờ Đức Bà, Bưu điện (đã làm, chưa có file); làm lại màu Chợ Bến Thành; các model mới. Danh sách và prompt ở `docs/ASSETS.md` mục 4, chỗ chừa trong cảnh ở `docs/MODELS.md`. Thả file vào `assets/models` là cảnh tự dùng. |
+| Site thật Next.js 16 | Đã dựng ở `web/`: hành trình 3D, CV nhanh, chuyển ngôn ngữ theo trình duyệt, metadata, Open Graph, sitemap. Build và lint sạch. Chưa deploy (chờ tên miền). Xem `web/README.md`. |
 
 ## Thư mục
 
@@ -26,7 +27,8 @@ docs/PLAN.md                         kế hoạch dựng bản thật
 docs/MODELS.md                       danh sách model, vị trí đặt, số liệu
 docs/ASSETS.md                       danh sách model phụ trợ cần tải, quy tắc giấy phép
 docs/storyboard/*.png                khung hình storyboard (máy tính và điện thoại)
-prototype/fly/                       bản bay liên tục: app.js (cảnh + máy quay), page.html (giao diện + nội dung CV)
+web/                                 site thật Next.js 16 (xem web/README.md)
+prototype/fly/                       bản bay liên tục: app.js (cảnh + máy quay, nguồn chung cho cả site), page.html (giao diện + nội dung CV)
 prototype/storyboard-scene/          cảnh tĩnh dùng để chụp storyboard
 prototype/quick-cv/                  trang CV nhanh
 prototype/model-viewer/              trang xem từng model theo mức
@@ -65,9 +67,9 @@ Mở repo này trong claude.ai/code (hoặc mục Code trong app desktop, chọn
 
 > Đọc README.md và docs/PLAN.md. Hoàn thiện prototype/fly: chụp lại tất cả các khung bằng shots.mjs, sửa những chỗ hình bị lỗi (model lơ lửng, camera xuyên vật thể, panel che công trình), rồi commit.
 
-> Đọc docs/PLAN.md và bắt đầu Mốc 1: dựng project Next.js 16 + React Three Fiber trong thư mục `web/`, chuyển đường bay, địa hình và nội dung từ prototype/fly sang component.
+> Đọc web/README.md. Thả các file Meshy mới vào assets/models (chạy tools/run_all.sh), chạy lại npm run build trong web/ và chụp kiểm tra các chặng có model mới.
 
 ## Ghi chú
 
 - File gốc từ Meshy (0,2 đến 5,6 triệu tam giác mỗi file, khoảng 1,3 GB) không đưa lên repo. Muốn xuất lại thì để chúng vào một thư mục rồi chạy `tools/run_all.sh <thư mục>`.
-- Bản bay thử nạp model dạng base64 (`.txt`) vì nơi xem thử không phục vụ được file `.glb`. Bản thật sẽ dùng `.glb` nén meshopt + KTX2.
+- Bản bay thử nạp model dạng base64 (`.txt`) vì nơi xem thử không phục vụ được file `.glb`. Site thật (`web/`) nạp thẳng file `.glb`.

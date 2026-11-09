@@ -5,23 +5,11 @@
 //   dist/textures/*.txt          base64 copies of assets/textures
 import fs from 'fs';
 import path from 'path';
+import { injectApp } from './inject.mjs';
 const here = path.dirname(new URL(import.meta.url).pathname);
 const dist = path.join(here, 'dist');
 const page = fs.readFileSync(path.join(here, 'page.html'), 'utf8');
-const app = fs.readFileSync(path.join(here, 'app.js'), 'utf8');
-// terrain textures prepared by tools/textures/process.mjs (null when there are none yet: the shader falls back to noise)
-const terrainTex = path.join(here, '../../assets/textures/terrain.json');
-const app2 = app.replace('/*TERRAIN_TEX*/ null', () => (fs.existsSync(terrainTex) ? fs.readFileSync(terrainTex, 'utf8').trim() : 'null'));
-// models present in both tiers (a Meshy slot such as 'nha-hoi-an-1' lights up as soon as its file is added)
-const models = (t) => new Set(fs.readdirSync(path.join(here, '../../assets/models', t)).filter((f) => f.endsWith('.glb')).map((f) => f.slice(0, -4)));
-const mid = models('mid'), low = models('low');
-const modelList = [...mid].filter((m) => low.has(m)).sort();
-// CC BY credits for the Sketchfab models in use, matched through the library lists
-const lib = path.join(here, '../../tools/library');
-const props = JSON.parse(fs.readFileSync(path.join(lib, 'props.json'), 'utf8')), sf = JSON.parse(fs.readFileSync(path.join(lib, 'sketchfab.json'), 'utf8'));
-const credits = Object.entries(props).filter(([slug]) => mid.has(slug)).map(([slug, p]) => sf.find((m) => p.src.includes(m.uid.slice(0, 8))))
-  .filter(Boolean).map((m) => ({ name: m.name, author: m.author, url: m.url }));
-const app3 = app2.replace('/*MODELS*/ null', () => JSON.stringify(modelList)).replace('/*CREDITS*/ null', () => JSON.stringify(credits));
+const { code: app3, modelList, credits } = injectApp(fs.readFileSync(path.join(here, 'app.js'), 'utf8'));
 const out = page.replace('/*APP*/', () => app3);
 fs.mkdirSync(dist, { recursive: true });
 fs.writeFileSync(path.join(dist, 'index.html'), out);

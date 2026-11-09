@@ -29,10 +29,14 @@ const nq = (mid, low) => (LOW ? low : mid);
 const AVAILABLE = new Set(/*MODELS*/ null || ['cot-co-lung-cu', 'lang-bac', 'thap-rua', 'thuyen-buom', 'thap-phuoc-duyen', 'cau-vang', 'thuyen-thung',
   'nha-rong', 'cong-chieng', 'thap-ba-ponagar', 'thap-nuoc-phan-thiet', 'cho-ben-thanh', 'ghe-cho-noi', 'mui-ca-mau']);
 const CREDITS = /*CREDITS*/ null || []; // CC BY authors of the Sketchfab models in use
+// null: models and textures are base64 .txt files next to the page (the prototype preview cannot serve .glb);
+// a path such as '/': plain .glb / .jpg / .png files under it (the Next.js site in web/)
+const ASSET_BASE = /*ASSET_BASE*/ null;
 const pick = (...slugs) => slugs.find((s) => s && AVAILABLE.has(s)) || null;
 
 // ---------------------------------------------------------------- language (Vietnamese / English)
-// ?lang=vi|en wins, then the visitor's saved choice, then the browser language. Each panel swaps its content with the
+// On the site the route decides (<html data-lang>); in the prototype ?lang=vi|en wins, then the visitor's saved choice,
+// then the browser language. Each panel swaps its content with the
 // English copy in <template id="panels-en">; elements marked data-t / data-ta take their text / attribute from TXT;
 // strings built in code read tx() and refresh through langHook().
 const TXT = {
@@ -66,7 +70,7 @@ const TXT = {
   },
 };
 let LANG = (() => {
-  const q = Q.get('lang'); if (TXT[q]) return q;
+  const q = document.documentElement.dataset.lang || Q.get('lang'); if (TXT[q]) return q;
   try { const s = localStorage.getItem('lnm-lang'); if (TXT[s]) return s; } catch (e) { /* storage blocked */ }
   return /^vi/i.test(navigator.language || 'vi') ? 'vi' : 'en';
 })();
@@ -75,10 +79,11 @@ const LANG_HOOKS = [];
 const langHook = (f) => { LANG_HOOKS.push(f); f(); };
 const PANEL_HTML = { vi: {}, en: {} };
 for (const s of $('#panels-en')?.content.querySelectorAll('section[data-k]') || []) PANEL_HTML.en[s.dataset.k] = s.innerHTML;
-for (const el of $$('.panel[data-k]')) { PANEL_HTML.vi[el.dataset.k] = el.innerHTML; el.dataset.lang = 'vi'; } // the page ships in Vietnamese
+const PAGE_LANG = TXT[document.documentElement.dataset.lang] ? document.documentElement.dataset.lang : 'vi'; // the prototype ships in Vietnamese
+for (const el of $$('.panel[data-k]')) { PANEL_HTML[PAGE_LANG][el.dataset.k] = el.innerHTML; el.dataset.lang = PAGE_LANG; }
 function applyLang() {
   const L = TXT[LANG];
-  document.documentElement.lang = LANG; document.title = L.title;
+  document.documentElement.lang = LANG; if (!document.documentElement.dataset.lang) document.title = L.title; // the site sets its own titles
   for (const el of $$('.panel[data-k]')) {
     const html = PANEL_HTML[LANG][el.dataset.k];
     if (html !== undefined && el.dataset.lang !== LANG) { el.innerHTML = html; el.dataset.lang = LANG; }
@@ -90,7 +95,9 @@ function applyLang() {
   for (const f of LANG_HOOKS) f();
 }
 applyLang();
-$('#lang')?.addEventListener('click', () => {
+$('#lang')?.addEventListener('click', (e) => {
+  // on the site the pill is a link to the other language's page: keep the place in the journey across the reload
+  if (e.currentTarget.tagName === 'A') { try { sessionStorage.setItem('lnm-u', String(readU())); } catch (err) { /* storage blocked */ } return; }
   LANG = LANG === 'vi' ? 'en' : 'vi';
   try { localStorage.setItem('lnm-lang', LANG); } catch (e) { /* storage blocked */ }
   if (Q.has('lang')) { Q.set('lang', LANG); history.replaceState(null, '', `${location.pathname}?${Q}${location.hash}`); }
@@ -157,9 +164,11 @@ function loadTex(name, { mime = 'image/jpeg', placeholder = '#8080ff', srgb = fa
   if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = LOW ? 1 : 4; // the real image replaces the placeholder on load; t.dispose() there makes the GPU copy reallocate at the new size
-  TEX_JOBS.push(fetch(`textures/${name}.txt`)
-    .then((r) => { if (!r.ok) throw new Error(name + ' ' + r.status); return r.text(); })
-    .then((b64) => new Promise((res) => { const img = new Image(); img.onload = () => { t.image = img; t.dispose(); t.needsUpdate = true; res(); }; img.onerror = res; img.src = `data:${mime};base64,${b64.trim()}`; }))
+  const src = ASSET_BASE == null
+    ? fetch(`textures/${name}.txt`).then((r) => { if (!r.ok) throw new Error(name + ' ' + r.status); return r.text(); }).then((b64) => `data:${mime};base64,${b64.trim()}`)
+    : Promise.resolve(`${ASSET_BASE}textures/${name}.${mime === 'image/png' ? 'png' : 'jpg'}`);
+  TEX_JOBS.push(src
+    .then((url) => new Promise((res) => { const img = new Image(); img.onload = () => { t.image = img; t.dispose(); t.needsUpdate = true; res(); }; img.onerror = () => { console.warn('texture ' + name); res(); }; img.src = url; }))
     .catch((e) => console.warn(e)));
   return t;
 }
@@ -653,9 +662,9 @@ const modelsTotal = () => Object.keys(TEMPL).length; // models requested so far 
 function pump() {
   while (active < 3 && QUEUE.length) {
     const job = QUEUE.shift(); active++;
-    fetch(`models/${TIER}/${job.slug}.txt`)
-      .then((r) => { if (!r.ok) throw new Error(job.slug + ' ' + r.status); return r.text(); })
-      .then((txt) => { const s = atob(txt.trim()), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return loader.parseAsync(u.buffer, ''); })
+    fetch(ASSET_BASE == null ? `models/${TIER}/${job.slug}.txt` : `${ASSET_BASE}models/${TIER}/${job.slug}.glb`)
+      .then((r) => { if (!r.ok) throw new Error(job.slug + ' ' + r.status); return ASSET_BASE == null ? r.text() : r.arrayBuffer(); })
+      .then((data) => { if (typeof data !== 'string') return loader.parseAsync(data, ''); const s = atob(data.trim()), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return loader.parseAsync(u.buffer, ''); })
       .then((g) => { g.scene.traverse((m) => { if (m.isMesh) m.material.envMapIntensity = 0.6; }); job.resolve(g.scene); })
       .catch((e) => { console.warn(e); job.resolve(null); })
       .finally(() => { active--; modelsDone++; updateLoading(); pump(); });
@@ -2203,6 +2212,7 @@ function resize(force) {
 }
 window.addEventListener('resize', () => resize(false));
 resize(true);
+try { const u = sessionStorage.getItem('lnm-u'); if (u !== null) { sessionStorage.removeItem('lnm-u'); writeU(clamp(+u || 0, 0, 1)); } } catch (e) { /* storage blocked */ }
 
 // ---------------------------------------------------------------- precompile shaders behind the fog
 let compileTimer = 0;

@@ -64,14 +64,16 @@ Cách làm một chặng cho kỹ:
 | Phần | Chọn |
 |---|---|
 | Khung | Next.js 16 (App Router), TypeScript |
-| 3D | three.js + React Three Fiber + drei |
+| 3D | three.js. Engine là một module (`prototype/fly/app.js`), site sinh `web/src/scene/journey.js` từ đó |
 | Cuộn | Cuộn gốc của trình duyệt. Máy tính có thể thêm Lenis. Tiến độ cuộn giữ trong `ref`, không đưa vào React state. |
 | Giao diện | Tailwind CSS + shadcn/ui |
-| Ngôn ngữ | Từ điển `content/vi.ts`, `content/en.ts` + route `/[locale]` |
+| Ngôn ngữ | Từ điển `web/src/content/vi.ts`, `en.ts` + route `/[lang]`, `proxy.ts` chuyển theo Accept-Language |
 | Model | `.glb` nén meshopt, texture KTX2 (Basis), 3 mức high / mid / low |
 | Kiểm tra | Playwright chụp khung cố định (giống `prototype/fly/shots.mjs`) |
 
-Cấu trúc đề xuất (`web/`):
+Đã chọn giữ engine 3D là một module three.js thuần thay vì viết lại bằng React Three Fiber: cảnh đã tinh chỉnh và đo ngân sách từng chặng, viết lại sẽ phải làm và kiểm tra lại toàn bộ. React lo phần nội dung, ngôn ngữ, SEO và trang CV; engine tìm phần tử theo id / class mà React render ra. Prototype và site dựng từ cùng một file nên sửa một chỗ là cả hai đổi. Nếu sau này cần R3F, có thể tách dần từng phần (mặt nước, rừng, từng chặng) ra component.
+
+Cấu trúc ban đầu đề xuất (đã thay bằng cấu trúc trong `web/README.md`):
 
 ```
 app/[locale]/page.tsx          hành trình 3D
@@ -116,9 +118,9 @@ public/models/{low,mid,high}/  model
 - **A. Tổng quan (đang làm).** Câu chuyện mới, máy quay bay thẳng, ngày đêm và thời tiết, mặt nước, địa hình, rừng.
 - **B. Asset ngoài.** Tải theo `docs/ASSETS.md`, xử lý thành 3 mức, ghi nguồn và giấy phép.
 - **C. Từng chặng chi tiết.** Làm lần lượt theo bảng ở mục 4, mỗi chặng chụp 4 khung so với ảnh thật. Thứ tự đề xuất: Đà Nẵng, Hội An (hiện tại) → Sài Gòn → Hà Nội → Lũng Cú → các chặng còn lại.
-- **D. Project thật.** Next.js 16 + React Three Fiber trong `web/`, chuyển dần từ prototype. Trang CV nhanh Lighthouse ≥ 95.
+- **D. Project thật (xong phần dựng, 09/11/2026).** Next.js 16 trong `web/`: hành trình 3D dùng chung engine với prototype, CV nhanh Tailwind + shadcn/ui, `/vi` `/en`, metadata, Open Graph, sitemap. Còn đo Lighthouse trang CV.
 - **E. Hiệu năng.** Meshopt + KTX2, PerformanceMonitor, đo từng chặng.
-- **F. Song ngữ và hoàn thiện.** Tiếng Anh, ảnh chân dung, ảnh dự án, SEO / Open Graph, analytics.
+- **F. Song ngữ và hoàn thiện.** Tiếng Anh, SEO / Open Graph đã xong. Còn ảnh chân dung, ảnh dự án, analytics.
 - **G. Ra mắt.** Tên miền, kiểm tra trên iPhone, Android tầm trung, laptop không card rời.
 
 ## 9. Còn chờ
@@ -127,4 +129,4 @@ public/models/{low,mid,high}/  model
 - Model phụ trợ theo `docs/ASSETS.md`.
 - Nội dung chặng 10 (Miền Tây): điều anh Long muốn tìm ở công việc tiếp theo.
 - Chứng chỉ trên LinkedIn, ảnh chân dung, ảnh chụp màn hình dự án.
-- Bản tiếng Anh cho từng panel.
+- Tên miền (đặt `NEXT_PUBLIC_SITE_URL` khi deploy).
