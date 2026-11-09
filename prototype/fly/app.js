@@ -1727,10 +1727,10 @@ function addFlag(k, o, rot) {
   const fc = [0x3f8a2a, 0xe0a020, 0xc83a1a, 0x7a3a8a, 0xe8d24a];
   [[-7, -4], [9, -24], [-9, 20], [7, 38], [-6, -44]].forEach(([l, al], i) => {
     const q = at(k, l, al); poles.push([new THREE.CylinderGeometry(0.08, 0.12, 7, 5), MY(q.x, 3.3, q.z)]);
-    for (let j = 0; j < 7; j++) fruit.push({ x: q.x + R(-0.5, 0.5), z: q.z + R(-0.5, 0.5), y: 5.4 + R(0, 1.4), s: R(0.25, 0.45), c: fc[(i + j) % fc.length] });
+    for (let j = 0; j < 9; j++) { const a = R(0, 6.28), d = R(0.12, 0.3); fruit.push({ x: q.x + Math.cos(a) * d, z: q.z + Math.sin(a) * d, y: 6.2 - R(0, 0.9), s: R(0.13, 0.22), c: fc[(i + j) % fc.length] }); } // a bunch hanging at the top
   });
   G[k].add(new THREE.Mesh(bake(poles), M({ color: 0xb09a6a })));
-  instances(k, new THREE.IcosahedronGeometry(1, 0), M({ color: 0xffffff, roughness: 0.7 }), fruit);
+  instances(k, new THREE.IcosahedronGeometry(1, 2), M({ color: 0xffffff, roughness: 0.55 }), fruit);
 }
 // 11 Mũi Cà Mau: Hòn Khoai island out at sea, boat lights
 {
