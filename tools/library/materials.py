@@ -13,7 +13,7 @@ MATS = {
     'concrete': 'road/concrete_floor_02', 'plaster': 'wall/painted_plaster_wall', 'plaster-old': 'wall/damaged_plaster',
     'white': 'wall/white_plaster_02', 'earth-wall': 'wall/clay_plaster', 'stone-wall': 'wall/broken_wall',
     'roof-tile': 'roof/roof_09', 'roof-moss': 'roof/roof_07', 'tin': 'roof/rusty_corrugated_iron', 'thatch': 'roof/thatch_roof_angled',
-    'planks': 'wood/weathered_planks', 'painted-wood': 'wood/blue_painted_planks', 'red-soil': 'ground/red_laterite_soil_stones', 'sand-red': 'sand/red_sand', 'sand-white': 'sand/aerial_beach_01',
+    'planks': 'wood/weathered_planks', 'painted-wood': 'wood/blue_painted_planks', 'red-soil': 'ground/red_laterite_soil_stones', 'sand-red': 'sand/red_sand', 'sand-white': 'sand/aerial_beach_01', 'grass': 'grass/Grass004', 'grass-dark': 'grass/Grass001',
 }
 for name, src in MATS.items():
     files = [f for f in glob.glob(os.path.join(LIB, src, '*')) if any(t in os.path.basename(f).lower() for t in ('diff', 'color'))]

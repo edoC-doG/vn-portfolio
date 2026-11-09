@@ -45,6 +45,7 @@
   .pill .i-pause { display: none; }
   .pill.on .i-play { display: none; }
   .pill.on .i-pause { display: block; }
+  #lang { font-family: var(--f-mono); letter-spacing: 0.08em; min-width: 40px; justify-content: center; }
 
   .hud { position: fixed; z-index: 5; top: calc(62px + env(safe-area-inset-top, 0px)); left: var(--gut-l); display: flex; gap: 14px; align-items: center;
     font: 400 11px var(--f-mono); letter-spacing: 0.04em; color: var(--muted); }
@@ -172,33 +173,197 @@
 </style>
 
 <canvas id="gl" aria-label="Cảnh 3D hành trình dọc dải đất hình chữ S"></canvas>
+<template id="panels-en">
+<section data-k="intro">
+  <p class="kicker">Portfolio of Nguyễn Minh Long</p>
+  <h1 class="display">From Lũng Cú<br>to Cà Mau</h1>
+  <p class="lead">A journey down the length of Vietnam, and through the working life of a full-stack .NET and React engineer.</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="play">Start the journey</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">Quick CV</a>
+  </div>
+  <p class="hint"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>Scroll or swipe to fly, or press Autoplay</p>
+  <p class="nogl-msg">This browser cannot open the 3D scene. Everything is still on the Quick CV page.</p>
+</section>
+<section data-k="0">
+  <p class="kicker">Stop 01 / 11 · Lũng Cú · Setting off</p>
+  <h2 class="display name">Nguyễn Minh Long</h2>
+  <p class="role">Full-stack Engineer (.NET / React)</p>
+  <p class="txt">Designs and builds distributed systems for financial services, supply chain, FMCG and logistics clients, from backend architecture all the way to production.</p>
+  <p class="txt">Every company I have worked for is a stop on the road south. The starting point was FPT University, in 2019.</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-go="4">Go to where I am now</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">Quick CV</a>
+  </div>
+  <p class="seen">Lũng Cú flag tower, the terraced fields of Hà Giang</p>
+</section>
+<section data-k="1">
+  <p class="kicker">Stop 02 / 11 · Hà Nội · 2021</p>
+  <h2 class="display">FPT Software</h2>
+  <p class="role">Software Engineer · Full-time</p>
+  <p class="mono">01/2021 – 12/2021</p>
+  <p class="txt">Worked on a large-scale ERP system for a Japanese electronics client across inventory, HR and finance modules, in a 12-person Scrum team. Deployed containerized applications with Docker.</p>
+  <div class="rule"></div>
+  <p class="label">Same year</p>
+  <p class="txt">Professional Front-end Developer certificate, Cybersoft Academy (03/2021).</p>
+  <p class="seen">Hồ Chí Minh Mausoleum, Hoàn Kiếm Lake with the Turtle Tower and the Thê Húc bridge</p>
+</section>
+<section data-k="2">
+  <p class="kicker">Stop 03 / 11 · Hạ Long · 2022</p>
+  <h2 class="display">Vihat</h2>
+  <p class="role">Software Engineer · Contract</p>
+  <p class="mono">07/2022 – 01/2023</p>
+  <p class="txt">Contributed to a cross-platform desktop CRM (Electron + React), working on real-time WebRTC/SIP calling features in a small team.</p>
+  <div class="rule"></div>
+  <p class="label">At the same time</p>
+  <p class="txt">Graduated: Bachelor's degree in Software Engineering, FPT University Ho Chi Minh City (12/2022).</p>
+  <p class="seen">Hạ Long Bay, junks among the limestone islands</p>
+</section>
+<section data-k="3">
+  <p class="kicker">Stop 04 / 11 · Huế · 2023</p>
+  <h2 class="display">Great Sun</h2>
+  <p class="role">Full-stack Engineer · Full-time</p>
+  <p class="mono">12/2023 – 11/2024</p>
+  <p class="txt">Built and operated a multi-platform ERP system end to end, from AWS-hosted backend services to a production React frontend, with Git- and Docker-based workflows.</p>
+  <div class="rule"></div>
+  <p class="label">Project</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">Garage ERP Platform:</b> 20+ .NET Core REST APIs for 10+ locations, real-time check-in with Socket.io, the whole React frontend.</p>
+  <p class="seen">Phước Duyên tower of Thiên Mụ pagoda, the Trường Tiền bridge, conical hats on the Perfume River</p>
+</section>
+<section data-k="4">
+  <p class="kicker">Stop 05 / 11 · Đà Nẵng, Hội An · <span class="here">You are here</span></p>
+  <h2 class="display">CTNP</h2>
+  <p class="role">Full-stack Engineer, Sub-Lead · Full-time</p>
+  <p class="mono" style="color:var(--coral)">12/2024 – present</p>
+  <p class="txt">Full-stack engineer (.NET Core backend, Next.js/React frontend) across two concurrent client engagements with teams of 6–12. Owns the technical design docs and standardizes AI-assisted development across the team.</p>
+  <div class="rule"></div>
+  <p class="label">Working for</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">Bridgestone Vietnam:</b> Identity &amp; Access Platform, Order System Platform</p>
+  <p class="txt"><b style="color:var(--ink);font-weight:600">L'Oréal Vietnam:</b> FC Tool &amp; FFM Tool</p>
+  <p class="seen">The Golden Bridge, the Dragon Bridge, the lantern streets and basket boats of Hội An</p>
+</section>
+<section data-k="5">
+  <p class="kicker">Stop 06 / 11 · Central Highlands</p>
+  <h2 class="display">Selected projects</h2>
+  <ul class="proj">
+    <li><span class="lt"></span><span><b>Bridgestone · Identity &amp; Access Platform</b><span class="ds">Identity.API: Google sign-in, JWT, audit logging, permissions. Migrated the dealer portal from Angular to Next.js 15.</span><span class="st">.NET Core · JWT · Next.js 15 · shadcn/ui</span></span></li>
+    <li><span class="lt" style="--l:#ffb347"></span><span><b>Bridgestone · Order System Platform</b><span class="ds">5+ backend modules, multi-level approvals, row-level access rules, 80%+ test coverage.</span><span class="st">.NET Core · Next.js · React Query · Zod</span></span></li>
+    <li><span class="lt"></span><span><b>L'Oréal · FC Tool &amp; FFM Tool</b><span class="ds">Maintains two legacy desktop backends, proposed moving them to the web.</span></span></li>
+    <li><span class="lt" style="--l:#ffb347"></span><span><b>Garage ERP Platform</b><span class="ds">20+ REST APIs for 10+ locations, real-time check-in.</span></span></li>
+  </ul>
+  <p class="seen">A rông communal house, gongs by the fire, coffee hills</p>
+</section>
+<section data-k="6">
+  <p class="kicker">Stop 07 / 11 · Nha Trang</p>
+  <h2 class="display">How I work</h2>
+  <ul class="ways">
+    <li><span><b>Design before code.</b> Writes and keeps the technical design docs for the project.</span></li>
+    <li><span><b>AI with standards.</b> Standardized how the team uses GitHub Copilot and Claude Code.</span></li>
+    <li><span><b>Thorough testing.</b> Jest and React Testing Library, 80%+ coverage on the Order System.</span></li>
+    <li><span><b>Agile/Scrum.</b> Jira, Git, Docker, GitHub Actions and GitLab CI.</span></li>
+  </ul>
+  <p class="seen">The Po Nagar towers, islands and squid-boat lights</p>
+</section>
+<section data-k="7">
+  <p class="kicker">Stop 08 / 11 · Phan Thiết</p>
+  <h2 class="display">Skills</h2>
+  <dl class="skills">
+    <div><dt>Backend</dt><dd>.NET Core, ASP.NET Core, EF Core, CQRS/MediatR, Clean Architecture, C#</dd></div>
+    <div><dt>Frontend</dt><dd>React, Next.js, TypeScript, Tailwind CSS, shadcn/ui</dd></div>
+    <div><dt>Data &amp; messaging</dt><dd>SQL Server, RabbitMQ, Redis, SignalR</dd></div>
+    <div><dt>DevOps &amp; cloud</dt><dd>AWS (EC2, Lambda, S3), Docker, GitHub Actions, GitLab CI</dd></div>
+    <div><dt>Tools &amp; practices</dt><dd>Git, Jest/RTL, Jira, Agile/Scrum, GitHub Copilot, Claude Code</dd></div>
+  </dl>
+  <p class="seen">The Phan Thiết water tower, the Mũi Né dunes, basket boats</p>
+</section>
+<section data-k="8">
+  <p class="kicker">Stop 09 / 11 · Saigon</p>
+  <h2 class="display">Education and certificates</h2>
+  <div>
+    <p style="font-weight:600">FPT University Ho Chi Minh City</p>
+    <p class="txt">Bachelor's degree, Software Engineering</p>
+    <p class="mono">07/2019 – 12/2022</p>
+  </div>
+  <div class="rule"></div>
+  <div>
+    <p style="font-weight:600">HackerRank: SQL, CSS, JavaScript, React</p>
+    <p class="mono">HackerRank · 05/2024</p>
+  </div>
+  <div>
+    <p style="font-weight:600">Professional Front-end Developer</p>
+    <p class="mono">Cybersoft Academy · 03/2021</p>
+  </div>
+  <p class="txt">Vietnamese (native), English (professional working proficiency).</p>
+  <p class="seen">Bến Thành market, Landmark 81, Bitexco</p>
+</section>
+<section data-k="9">
+  <p class="kicker">Stop 10 / 11 · Mekong Delta</p>
+  <h2 class="display">What I am looking for next</h2>
+  <ul class="ways">
+    <li><span><b>A real product with real users.</b> A team building .NET and Next.js products that run in production.</span></li>
+    <li><span><b>Depth in architecture.</b> Designing systems from the start, not only building to a given design.</span></li>
+    <li><span><b>Technical leadership.</b> Carrying on the Sub-Lead kind of role: docs, reviews, the team's shared practices.</span></li>
+  </ul>
+  <p class="seen">Floating market, coconut palms, stilt houses on the river, monkey bridge</p>
+</section>
+<section data-k="10">
+  <p class="kicker">Stop 11 / 11 · Cà Mau Cape</p>
+  <h2 class="display">The next destination</h2>
+  <p class="txt">The land ends here, but the road goes on. I am looking for my next destination. If your team needs a .NET and Next.js engineer, I would love to hear from you.</p>
+  <div>
+    <p class="label">Email</p>
+    <p class="email">longnminhse@gmail.com</p>
+  </div>
+  <div>
+    <p class="label">LinkedIn</p>
+    <a class="link" href="https://www.linkedin.com/in/longnminhse" target="_blank" rel="noopener">linkedin.com/in/longnminhse</a>
+  </div>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="copy">Copy email</button>
+    <a class="btn ghost" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">Quick CV</a>
+  </div>
+  <p class="seen">The ship monument of Cà Mau Cape, the mangrove forest</p>
+</section>
+<section data-k="end">
+  <p class="kicker">Cà Mau Cape · where the land ends</p>
+  <h2 class="display">The next destination is waiting</h2>
+  <p class="txt">Thank you for travelling with me from Lũng Cú to here. If you have a new journey for a .NET and Next.js engineer, send me a message.</p>
+  <p class="email">longnminhse@gmail.com</p>
+  <div class="row">
+    <button class="btn primary" type="button" data-act="copy">Copy email</button>
+    <button class="btn ghost" type="button" data-act="restart">Fly again from Lũng Cú</button>
+  </div>
+  <p class="mono"><button class="link-btn" type="button" data-act="credits">3D model credits</button></p>
+</section>
+</template>
 <div id="labels" aria-hidden="true"></div>
 <div id="credits" hidden>
   <div class="credits-box">
-    <button class="link-btn close" type="button" data-act="credits" aria-label="Đóng">Đóng ×</button>
-    <h2 class="display" style="font-size:22px">Ghi công mô hình 3D</h2>
-    <p class="txt">Cảnh dùng mô hình từ Sketchfab theo giấy phép CC BY 4.0 của các tác giả dưới đây, cùng texture và mô hình CC0 từ Poly Haven và ambientCG. Các công trình chính làm bằng Meshy.</p>
+    <button class="link-btn close" type="button" data-act="credits" aria-label="Đóng" data-ta="aria-label:closeAria" data-t="close">Đóng ×</button>
+    <h2 class="display" style="font-size:22px" data-t="creditsH">Ghi công mô hình 3D</h2>
+    <p class="txt" data-t="creditsP">Cảnh dùng mô hình từ Sketchfab theo giấy phép CC BY 4.0 của các tác giả dưới đây, cùng texture và mô hình CC0 từ Poly Haven và ambientCG. Các công trình chính làm bằng Meshy.</p>
     <ul></ul>
   </div>
 </div>
 
 <header class="top">
-  <a class="mark" href="#top" aria-label="Về đầu trang">L<span>N</span>M</a>
+  <a class="mark" href="#top" aria-label="Về đầu trang" data-ta="aria-label:top">L<span>N</span>M</a>
   <div class="actions">
+    <button class="pill" id="lang" type="button" lang="en" aria-label="Switch to English">EN</button>
     <button class="pill" id="play" type="button" aria-pressed="false">
       <svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="currentColor"/></svg>
       <svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h2.5v9H2.5zM7 1.5h2.5v9H7z" fill="currentColor"/></svg>
       <span class="lbl">Tự chạy</span>
     </button>
-    <a class="pill" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener">CV nhanh ↗</a>
+    <a class="pill" href="https://claude.ai/artifact/TA3YZh1nYtzgEd8ir8hbba" target="_blank" rel="noopener" data-t="cv">CV nhanh ↗</a>
   </div>
 </header>
 <div class="hud">
-  <span id="fps">– khung/giây</span>
+  <span id="fps" data-t="fpsInit">– khung/giây</span>
   <span id="clock" aria-live="off"></span>
-  <button class="chip" id="sky" type="button" title="Đổi giờ trong cảnh">Giờ thật</button>
-  <button class="chip" id="wx" type="button" title="Đổi thời tiết">Thời tiết thật</button>
-  <label class="sw"><input type="checkbox" id="light"> Chế độ nhẹ</label>
+  <button class="chip" id="sky" type="button" title="Đổi giờ trong cảnh" data-ta="title:skyTitle">Giờ thật</button>
+  <button class="chip" id="wx" type="button" title="Đổi thời tiết" data-ta="title:wxTitle">Thời tiết thật</button>
+  <label class="sw"><input type="checkbox" id="light"> <span data-t="light">Chế độ nhẹ</span></label>
   <span id="loading" hidden></span>
 </div>
 
@@ -365,7 +530,7 @@
   <p class="mono"><button class="link-btn" type="button" data-act="credits">Ghi công mô hình 3D</button></p>
 </section>
 
-<nav class="rail" aria-label="Các chặng">
+<nav class="rail" aria-label="Các chặng" data-ta="aria-label:rail">
   <span class="fill"></span>
   <button class="dot" type="button" aria-label="Chặng 1, Lũng Cú"><i></i></button>
   <button class="dot" type="button" aria-label="Chặng 2, Hà Nội"><i></i></button>

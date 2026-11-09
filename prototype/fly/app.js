@@ -31,6 +31,72 @@ const AVAILABLE = new Set(/*MODELS*/ null || ['cot-co-lung-cu', 'lang-bac', 'tha
 const CREDITS = /*CREDITS*/ null || []; // CC BY authors of the Sketchfab models in use
 const pick = (...slugs) => slugs.find((s) => s && AVAILABLE.has(s)) || null;
 
+// ---------------------------------------------------------------- language (Vietnamese / English)
+// ?lang=vi|en wins, then the visitor's saved choice, then the browser language. Each panel swaps its content with the
+// English copy in <template id="panels-en">; elements marked data-t / data-ta take their text / attribute from TXT;
+// strings built in code read tx() and refresh through langHook().
+const TXT = {
+  vi: {
+    title: 'Từ Lũng Cú đến Cà Mau', other: 'EN', otherAria: 'Switch to English',
+    stops: ['Lũng Cú', 'Hà Nội', 'Hạ Long', 'Huế', 'Đà Nẵng, Hội An', 'Tây Nguyên', 'Nha Trang', 'Phan Thiết', 'Sài Gòn', 'Miền Tây', 'Mũi Cà Mau'],
+    stop: 'Chặng', rail: 'Các chặng', top: 'Về đầu trang', cv: 'CV nhanh ↗', light: 'Chế độ nhẹ', play: 'Tự chạy', pause: 'Tạm dừng',
+    fpsInit: '– khung/giây', fps: (n) => `${n} khung/giây · ${LOW ? 'bản nhẹ' : 'bản đầy đủ'}`,
+    loading: (a, b) => `Đang tải công trình ${a}/${b}`,
+    skyTitle: 'Đổi giờ trong cảnh', wxTitle: 'Đổi thời tiết',
+    time: { real: 'Giờ thật', day: 'Ban ngày', sunset: 'Hoàng hôn', night: 'Ban đêm' },
+    wx: { real: 'Thời tiết thật', clear: 'Trời quang', rain: 'Mưa' },
+    sky: { heavy: 'mưa to', rain: 'mưa', cloud: 'nhiều mây', sun: 'nắng', clear: 'trời quang' },
+    copy: 'Chép email', copied: 'Đã chép email', selected: 'Đã chọn, nhấn Ctrl+C',
+    close: 'Đóng ×', closeAria: 'Đóng', creditsH: 'Ghi công mô hình 3D',
+    creditsP: 'Cảnh dùng mô hình từ Sketchfab theo giấy phép CC BY 4.0 của các tác giả dưới đây, cùng texture và mô hình CC0 từ Poly Haven và ambientCG. Các công trình chính làm bằng Meshy.',
+  },
+  en: {
+    title: 'From Lũng Cú to Cà Mau', other: 'VI', otherAria: 'Chuyển sang tiếng Việt',
+    stops: ['Lũng Cú', 'Hà Nội', 'Hạ Long', 'Huế', 'Đà Nẵng, Hội An', 'Central Highlands', 'Nha Trang', 'Phan Thiết', 'Saigon', 'Mekong Delta', 'Cà Mau Cape'],
+    stop: 'Stop', rail: 'Stops', top: 'Back to top', cv: 'Quick CV ↗', light: 'Light mode', play: 'Autoplay', pause: 'Pause',
+    fpsInit: '– fps', fps: (n) => `${n} fps · ${LOW ? 'light' : 'full'} version`,
+    loading: (a, b) => `Loading landmarks ${a}/${b}`,
+    skyTitle: 'Change the time of day in the scene', wxTitle: 'Change the weather',
+    time: { real: 'Real time', day: 'Daytime', sunset: 'Sunset', night: 'Night' },
+    wx: { real: 'Real weather', clear: 'Clear sky', rain: 'Rain' },
+    sky: { heavy: 'heavy rain', rain: 'rain', cloud: 'cloudy', sun: 'sunny', clear: 'clear sky' },
+    copy: 'Copy email', copied: 'Email copied', selected: 'Selected, press Ctrl+C',
+    close: 'Close ×', closeAria: 'Close', creditsH: '3D model credits',
+    creditsP: 'The scene uses Sketchfab models by the authors below, under CC BY 4.0, plus CC0 textures and models from Poly Haven and ambientCG. The main landmarks are made with Meshy.',
+  },
+};
+let LANG = (() => {
+  const q = Q.get('lang'); if (TXT[q]) return q;
+  try { const s = localStorage.getItem('lnm-lang'); if (TXT[s]) return s; } catch (e) { /* storage blocked */ }
+  return /^vi/i.test(navigator.language || 'vi') ? 'vi' : 'en';
+})();
+const tx = (key) => TXT[LANG][key];
+const LANG_HOOKS = [];
+const langHook = (f) => { LANG_HOOKS.push(f); f(); };
+const PANEL_HTML = { vi: {}, en: {} };
+for (const s of $('#panels-en')?.content.querySelectorAll('section[data-k]') || []) PANEL_HTML.en[s.dataset.k] = s.innerHTML;
+for (const el of $$('.panel[data-k]')) { PANEL_HTML.vi[el.dataset.k] = el.innerHTML; el.dataset.lang = 'vi'; } // the page ships in Vietnamese
+function applyLang() {
+  const L = TXT[LANG];
+  document.documentElement.lang = LANG; document.title = L.title;
+  for (const el of $$('.panel[data-k]')) {
+    const html = PANEL_HTML[LANG][el.dataset.k];
+    if (html !== undefined && el.dataset.lang !== LANG) { el.innerHTML = html; el.dataset.lang = LANG; }
+  }
+  for (const el of $$('[data-t]')) el.textContent = L[el.dataset.t];
+  for (const el of $$('[data-ta]')) { const [attr, k] = el.dataset.ta.split(':'); el.setAttribute(attr, L[k]); }
+  $$('.rail .dot').forEach((d, i) => d.setAttribute('aria-label', `${L.stop} ${i + 1}, ${L.stops[i]}`));
+  const lb = $('#lang'); if (lb) { lb.textContent = L.other; lb.setAttribute('aria-label', L.otherAria); lb.lang = LANG === 'vi' ? 'en' : 'vi'; }
+  for (const f of LANG_HOOKS) f();
+}
+applyLang();
+$('#lang')?.addEventListener('click', () => {
+  LANG = LANG === 'vi' ? 'en' : 'vi';
+  try { localStorage.setItem('lnm-lang', LANG); } catch (e) { /* storage blocked */ }
+  if (Q.has('lang')) { Q.set('lang', LANG); history.replaceState(null, '', `${location.pathname}?${Q}${location.hash}`); }
+  applyLang();
+});
+
 // ---------------------------------------------------------------- math
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -870,8 +936,11 @@ function terraces(k, x, z, g0, rot, n, r0, dr, h) {
     (i % 2 ? A : B).push([new THREE.CylinderGeometry(r, r + 0.6, h + extra, LOW ? 24 : 40, 1).scale(1, 1, 0.7), MY(x, g0 + i * h + 0.2 - extra / 2, z, rot)]);
     W.push([new THREE.TorusGeometry(r - 0.45, 0.1, 3, LOW ? 24 : 48).rotateX(Math.PI / 2).scale(1, 1, 0.7), MY(x, g0 + i * h + 0.2 + h / 2, z, rot)]);
   }
-  G[k].add(new THREE.Mesh(bake(A), M({ color: 0x3d5a2c, flatShading: true })));
-  G[k].add(new THREE.Mesh(bake(B), M({ color: 0x35502a, flatShading: true })));
+  // grass texture with UVs in world units (side: around and up; caps: across)
+  const uvCyl = (g, r) => { const uv = g.attributes.uv, done = new Set(); for (const gr of g.groups) for (let i = gr.start; i < gr.start + gr.count; i++) { const v = g.index.getX(i); if (done.has(v)) continue; done.add(v); if (gr.materialIndex === 0) uv.setXY(v, (uv.getX(v) * 2 * Math.PI * r) / 5, (uv.getY(v) * h) / 5); else uv.setXY(v, ((uv.getX(v) - 0.5) * 2 * r) / 5, ((uv.getY(v) - 0.5) * 2 * r) / 5); } return g; };
+  for (const L of [A, B]) L.forEach((e, j) => uvCyl(e[0], r0 - (L === A ? 2 * j + 1 : 2 * j) * dr));
+  G[k].add(new THREE.Mesh(bake(A), texMat('grass', { color: 0xa8c070 })));
+  G[k].add(new THREE.Mesh(bake(B), texMat('grass', { color: 0x90a860 })));
   G[k].add(new THREE.Mesh(bake(W), M({ color: 0x4d6c68, roughness: 0.35 })));
   return g0 + (n - 1) * h + 0.2 + h / 2;
 }
@@ -908,6 +977,14 @@ function addFlag(k, o, rot) {
   const top = terraces(k, p.x, p.z, g0, p.rot, 9, 26, 2.6, 1.6);
   HERO[k] = v3(p.x, top + 5, p.z); HERO_ALONG[k] = 6; { const w = at(k, -14, -8); WARM[k] = v3(w.x, g0 + 6, w.z); }
   place(k, 'cot-co-lung-cu', 13, p, top, 0.4, { then: (o) => addFlag(k, o, p.rot) });
+  { // 389 stone steps: one flight per terrace, climbing the side of the hill that faces the approaching camera
+    const steps = [], dir = new THREE.Vector2(0.45, 1).normalize(), ell = (r) => r / Math.hypot(dir.x, dir.y / 0.7);
+    for (let i = 0; i < 9; i++) {
+      const rIn = ell(26 - (i + 1) * 2.6), rOut = ell(26 - i * 2.6), y = g0 + i * 1.6 + 0.2 + 0.8;
+      for (let j = 0; j < 4; j++) { const r = rOut - ((rOut - rIn) * (j + 0.5)) / 4, yy = y + (1.6 * (j + 1)) / 4; steps.push([tiledBox(0.9, 0.5, 2.6, 2), MY(p.x, yy - 0.25, p.z, p.rot).multiply(new THREE.Matrix4().makeRotationY(Math.atan2(dir.x, dir.y))).multiply(new THREE.Matrix4().makeTranslation(0, 0, r))]); }
+    }
+    G[k].add(new THREE.Mesh(bake(steps), texMat('stone-wall', { color: 0xc8c2b4 })));
+  }
   const q = at(k, 52, -30); terraces(k, q.x, q.z, gy(q.x, q.z), q.rot, 7, 22, 2.8, 1.5);
   const vl = [];
   for (let i = 0; i < nq(16, 8); i++) { const s = at(k, R(40, 95) * (i % 2 ? 1 : -1), R(-70, 40)), y = gy(s.x, s.z); if (y > 2) vl.push({ x: s.x, y: y + 1.2, z: s.z, c: 0xffb35c, s: 0.25, tw: 0.3 }); }
@@ -1038,7 +1115,7 @@ function addFlag(k, o, rot) {
     const b = at(k, 0, 36), L = 64, g = new THREE.Group(); g.position.set(b.x, 0, b.z); g.rotation.y = b.rot; G[k].add(g);
     const deck = [[new THREE.BoxGeometry(L, 0.9, 6), MY(0, 14, 0)]];
     for (const px of [-26, -14, 14, 26]) deck.push([new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(px, 5.3, 2.2)], [new THREE.CylinderGeometry(1, 1.2, 16.6, 10), MY(px, 5.3, -2.2)]); // no piers near the flight line
-    g.add(new THREE.Mesh(bake(deck), M({ color: 0x2a3634, roughness: 0.8 })));
+    g.add(new THREE.Mesh(bake(deck), M({ color: 0x6a716e, roughness: 0.8 })));
     const pts = []; for (let i = 0; i <= 60; i++) { const t = i / 60; pts.push(v3(-L / 2 - 2 + t * (L + 4), 17 + 2.6 * Math.sin(t * Math.PI * 4.5 + 0.4), 0)); }
     const dm = M({ color: 0xd9a23a, emissive: 0x9a5a10, emissiveIntensity: 1.1, metalness: 0.4, roughness: 0.4 });
     const head = new THREE.ConeGeometry(1.3, 3.4, 6).rotateZ(-Math.PI / 2);
@@ -1137,6 +1214,7 @@ function addFlag(k, o, rot) {
   dg.rotateX(-Math.PI / 2); dg.computeVertexNormals();
   { const uv = dg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (220 / 9), uv.getY(i) * (160 / 9)); }
   const dunes = new THREE.Mesh(dg, texMat('sand-red', { color: 0xf2d2b0, roughness: 1 })); dunes.position.set(d.x, 1, d.z); dunes.rotation.y = d.rot; G[k].add(dunes);
+  { const d2 = at(k, 120, 120), wd = new THREE.Mesh(dg, texMat('sand-white', { color: 0xfff6ea, roughness: 1 })); wd.position.set(d2.x, 1, d2.z); wd.rotation.y = d2.rot + 0.7; wd.scale.set(0.8, 1.3, 0.7); G[k].add(wd); } // the white dunes of Mũi Né
   for (let i = 0; i < nq(6, 3); i++) place(k, 'thuyen-thung', 2.4, at(k, -R(56, 82), R(-30, 40)), -0.15, R(0, 6), { bob: 0.07 });
   field(k, [{ x: p.x, y: y + 0.8, z: p.z, c: 0xffc46b, s: 0.3, tw: 0.2 }], { reflect: false });
 }
@@ -1424,6 +1502,106 @@ function addFlag(k, o, rot) {
   { const q = at(k, 24, 22), y = Math.max(gy(q.x, q.z), 0.5); G[k].add(new THREE.Mesh(bake([[tiledBox(1.6, 3.2, 1.6, 2), MY(q.x, y + 1.6, q.z, q.rot)], [tiledBox(2.6, 0.4, 2.6, 2), MY(q.x, y + 0.2, q.z, q.rot)]]), texMat('white', { color: 0xe8e2d6 }))); EXCL.push([q.x, q.z, 4]); }
   scatter(k, 'thuyen-ca', around(k, nq(5, 3), -120, -30, 40, 200, 8).map((p) => ({ ...p, y: -0.4 })), { long: true });
   instances(k, FROND, M({ color: 0x3d6b2f, roughness: 0.85 }), onLand(k, nq(60, 20), -40, 40, -90, 30, (y) => y > -1 && y < 1.2).map((p) => ({ ...p, y: Math.max(p.y, 0), s: R(0.9, 1.4), ry: R(0, 6) })));
+}
+
+// ---------------------------------------------------------------- details per stop (second pass): what each place is known for
+// 02 Hà Nội: Ba Đình flagpole and the lawn squares of the square
+{
+  const k = 1, fp = at(k, 30, -18), fy = gy(fp.x, fp.z);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.26, 24, 10), M({ color: 0xe8e8e0, roughness: 0.5 }));
+  pole.position.set(fp.x, fy + 12, fp.z); G[k].add(pole); pole.updateMatrixWorld(true); addFlag(k, pole, fp.rot); EXCL.push([fp.x, fp.z, 4]);
+  const lawn = [];
+  for (const [a0, a1] of [[-28, -10], [18, 32]]) for (let l = 24; l <= 54; l += 6) for (let al = a0; al < a1; al += 6) { const q = at(k, l, al + 3); lawn.push({ x: q.x, z: q.z, y: gy(q.x, q.z) + 0.05, sx: 5, sy: 1, sz: 5, ry: q.rot }); }
+  instances(k, new THREE.BoxGeometry(1, 0.12, 1), texMat('grass', { color: 0xb8d088 }), lawn);
+}
+// 04 Huế: the citadel wall along the far bank (the Ngọ Môn gate sits in it)
+{
+  const k = 3, wall = [];
+  for (let al = -80; al <= 100; al += 9) {
+    if (al > 4 && al < 44) continue;
+    const q = at(k, -47 + Math.sin(al * 0.05) * 1.5, al), y = Math.max(gy(q.x, q.z), 0.4);
+    wall.push([tiledBox(3.2, 4.5, 9.4, 3), MY(q.x, y + 2.25, q.z, q.rot)]);
+    EXCL.push([q.x, q.z, 6]);
+  }
+  G[k].add(new THREE.Mesh(bake(wall), texMat('stone-wall', { color: 0xa9a294 })));
+}
+// 05 Hội An: Chùa Cầu stand-in until the Meshy model arrives, bougainvillea on the house fronts, lantern boats
+{
+  const k = 4;
+  if (!AVAILABLE.has('chua-cau')) {
+    const c = at(k, 23, 102), y = 1.5, R0 = MY(c.x, y, c.z, c.rot), at0 = (x, yy, z) => R0.clone().multiply(new THREE.Matrix4().makeTranslation(x, yy, z));
+    const wood = [[tiledBox(11, 0.6, 3.6, 2), at0(0, 0.3, 0)], [tiledBox(11, 1.9, 0.25, 2), at0(0, 1.5, 1.7)], [tiledBox(11, 1.9, 0.25, 2), at0(0, 1.5, -1.7)]];
+    for (let x = -5; x <= 5; x += 2.5) for (const z of [-1.7, 1.7]) wood.push([new THREE.CylinderGeometry(0.14, 0.14, 2.6, 6), at0(x, 1.9, z)]);
+    G[k].add(new THREE.Mesh(bake(wood), texMat('painted-wood', { color: 0xc06a4a })));
+    G[k].add(new THREE.Mesh(bake([[tiledBox(3.6, 2.8, 4.2, 2), at0(4.4, 1.7, 0)]]), texMat('plaster', { color: 0xe0b860 })));
+    G[k].add(new THREE.Mesh(bake([[new THREE.CylinderGeometry(0.01, 3.4, 12, 3, 1).rotateZ(Math.PI / 2).rotateX(Math.PI / 2).scale(1, 0.5, 1), at0(0, 3.7, 0)], [new THREE.CylinderGeometry(0.01, 3, 4.8, 4, 1).rotateY(Math.PI / 4).scale(1, 0.55, 1.3), at0(4.4, 4.6, 0)]]), texMat('roof-moss', { color: 0xb08878, flatShading: true })));
+    field(k, [-4, -1.5, 1, 3.5].map((x) => { const v = new THREE.Vector3(x, 2.6, 1.9).applyMatrix4(R0); return { x: v.x, y: v.y, z: v.z, c: 0xff5a2e, s: 0.3, tw: 0.2 }; }), { reflect: true });
+    EXCL.push([c.x, c.z, 9]);
+  }
+  const mag = [0xd8327a, 0xe8559a, 0xc0206a, 0xf07ab0];
+  instances(k, new THREE.IcosahedronGeometry(0.32, 0), M({ color: 0xffffff, roughness: 0.9 }), [...Array(nq(260, 90))].map((_, i) => { const q = at(k, 24.8 + R(-0.3, 0.3), R(62, 142)); return { x: q.x, z: q.z, y: gy(q.x, q.z) + R(2, 4.6), s: R(0.7, 1.4), c: mag[i % 4] }; }), { extra: true });
+}
+// 07 Nha Trang: a white sand beach on the sea side and the cable car over the sea to the island
+{
+  const k = 6;
+  road(k, -21.5, -70, 60, 6.5, 'sand-white', { lift: 0.04, tile: 8 });
+  const A = at(k, -26, 70), B = at(k, -210, 160), towers = [], line = [], cab = [];
+  const ya = 4, yb = 18, pt = (t) => ({ x: A.x + (B.x - A.x) * t, z: A.z + (B.z - A.z) * t });
+  for (let i = 0; i <= 5; i++) { const t = i / 5, p = pt(t), h = 26 + Math.sin(t * Math.PI) * 10; towers.push([new THREE.CylinderGeometry(0.7, 2, h, 4).rotateY(Math.PI / 4), MY(p.x, -2 + h / 2, p.z)]); }
+  G[k].add(new THREE.Mesh(bake(towers), M({ color: 0xe6e2da, roughness: 0.6 })));
+  for (let i = 0; i < 40; i++) { const t0 = i / 40, t1 = (i + 1) / 40, a = pt(t0), b = pt(t1), h0 = 22 + Math.sin(t0 * Math.PI) * 10 + ya * (1 - t0) + yb * t0 - 18, h1 = 22 + Math.sin(t1 * Math.PI) * 10 + ya * (1 - t1) + yb * t1 - 18; line.push(a.x, h0, a.z, b.x, h1, b.z); }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(line, 3)); G[k].add(new THREE.LineSegments(lg, WIRE_MAT));
+  for (let i = 1; i < 10; i++) { const t = i / 10, p = pt(t); cab.push({ x: p.x, z: p.z, y: 22 + Math.sin(t * Math.PI) * 10 + ya * (1 - t) + yb * t - 18 - 2.6, s: 2.6, ry: Math.atan2(B.x - A.x, B.z - A.z) }); }
+  scatter(k, 'cap-treo', cab, { long: true, far: true, keep: true });
+  field(k, towers.map((t) => { const v = new THREE.Vector3().setFromMatrixPosition(t[1]); return { x: v.x, y: v.y * 2 + 2, z: v.z, c: 0xff4040, s: 0.4, tw: 1 }; }), { bodies: false, reflect: false });
+}
+// 08 Phan Thiết: red dragon fruits on the posts
+{
+  const k = 7, posts = onLand(k, nq(70, 25), 36, 100, -60, 40, (y) => y > 1 && y < 14);
+  instances(k, new THREE.IcosahedronGeometry(0.22, 0), M({ color: 0xd8205a, roughness: 0.6 }), posts.flatMap((p) => [0, 1, 2].map(() => ({ x: p.x + R(-0.9, 0.9), z: p.z + R(-0.9, 0.9), y: p.y + R(1.4, 2), s: R(0.8, 1.2) }))), { extra: true });
+}
+// 09 Sài Gòn: Ba Son cable-stayed bridge across the river (the camera flies under the deck, the single pylon stands
+// on the Thủ Thiêm side beyond the road), Bưu điện stand-in
+{
+  const k = 8, al = -36, c = at(k, -6, al), deckY = 24, dk = [], cables = [];
+  dk.push([tiledBox(96, 1.2, 8, 4), MY(c.x, deckY, c.z, c.rot)]);
+  const py = at(k, 40, al), pyTop = 72;
+  dk.push([new THREE.CylinderGeometry(0.9, 1.8, pyTop, 6), MY(py.x, pyTop / 2, py.z, py.rot)]);
+  for (const [l0, l1] of [[-54, -42], [36, 44]]) { const q = at(k, (l0 + l1) / 2, al); dk.push([tiledBox(8, deckY, 6, 4), MY(q.x, deckY / 2, q.z, q.rot)]); EXCL.push([q.x, q.z, 7]); }
+  G[k].add(new THREE.Mesh(bake(dk), texMat('white', { color: 0xdcdcd6 })));
+  for (let l = -50; l <= 36; l += 4.5) { for (const s of [-1, 1]) { const q = atf(k, l, al + s * 3.5); cables.push(py.x, pyTop - 4, py.z, q.x, deckY + 0.6, q.z); } }
+  const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.Float32BufferAttribute(cables, 3)); G[k].add(new THREE.LineSegments(cg, new THREE.LineBasicMaterial({ color: 0xcfd6d8 })));
+  field(k, [...Array(12)].map((_, i) => { const q = at(k, -50 + i * 8.5, al); return { x: q.x, y: deckY + 1.6, z: q.z, c: 0xfff1d6, s: 0.2, tw: 0.1 }; }).concat([{ x: py.x, y: pyTop + 0.5, z: py.z, c: 0xff4040, s: 0.5, tw: 1 }]), { reflect: false });
+  if (!AVAILABLE.has('buu-dien-thanh-pho')) {
+    const d = at(k, 46, 56), y = Math.max(gy(d.x, d.z), 0.5), R0 = MY(d.x, y, d.z, d.rot - 0.3 + Math.PI / 2), o = (x, yy, z) => R0.clone().multiply(new THREE.Matrix4().makeTranslation(x, yy, z));
+    G[k].add(new THREE.Mesh(bake([[tiledBox(24, 9, 9, 3), o(0, 4.5, 0)], [tiledBox(7, 12, 9.4, 3), o(0, 6, 0)]]), texMat('plaster', { color: 0xf0c060 })));
+    const win = []; for (let x = -10; x <= 10; x += 2.6) { if (Math.abs(x) < 4) continue; win.push([new THREE.BoxGeometry(1.2, 3.4, 0.3), o(x, 4.4, -4.5)]); }
+    win.push([new THREE.BoxGeometry(3, 5.5, 0.3), o(0, 3.4, -4.75)]);
+    G[k].add(new THREE.Mesh(bake(win), M({ color: 0x1a2a2c, emissive: 0xffc070, emissiveIntensity: 0.25 })));
+    G[k].add(new THREE.Mesh(bake([[tiledBox(24.6, 0.8, 9.6, 3), o(0, 9.4, 0)], [new THREE.CylinderGeometry(0.01, 5, 4, 4, 1).rotateY(Math.PI / 4).scale(1, 0.6, 1.4), o(0, 13.2, 0)]]), M({ color: 0x3a3e40 })));
+    const clock = new THREE.Mesh(new THREE.CircleGeometry(1.1, 24), new THREE.MeshBasicMaterial({ color: 0xfff6e0 })); clock.applyMatrix4(o(0, 10.4, -4.76).multiply(new THREE.Matrix4().makeRotationY(Math.PI))); G[k].add(clock);
+    EXCL.push([d.x, d.z, 14]);
+  }
+}
+// 10 Miền Tây: cây bẹo, the tall poles on market boats hung with what each boat sells
+{
+  const k = 9, poles = [], fruit = [];
+  const fc = [0x3f8a2a, 0xe0a020, 0xc83a1a, 0x7a3a8a, 0xe8d24a];
+  [[-7, -4], [9, -24], [-9, 20], [7, 38], [-6, -44]].forEach(([l, al], i) => {
+    const q = at(k, l, al); poles.push([new THREE.CylinderGeometry(0.08, 0.12, 7, 5), MY(q.x, 3.3, q.z)]);
+    for (let j = 0; j < 7; j++) fruit.push({ x: q.x + R(-0.5, 0.5), z: q.z + R(-0.5, 0.5), y: 5.4 + R(0, 1.4), s: R(0.25, 0.45), c: fc[(i + j) % fc.length] });
+  });
+  G[k].add(new THREE.Mesh(bake(poles), M({ color: 0xb09a6a })));
+  instances(k, new THREE.IcosahedronGeometry(1, 0), M({ color: 0xffffff, roughness: 0.7 }), fruit);
+}
+// 11 Mũi Cà Mau: Hòn Khoai island out at sea, boat lights
+{
+  const k = 10, q = at(k, -150, 230);
+  const g = mergeVertices(new THREE.IcosahedronGeometry(1, LOW ? 2 : 3).deleteAttribute('normal').deleteAttribute('uv')), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { _v3.fromBufferAttribute(p, i); const n = 1 + (vnoise(_v3.x * 2 + 9, _v3.z * 2 + _v3.y) - 0.5) * 0.5; p.setXYZ(i, _v3.x * n, Math.max(_v3.y * n, -0.2), _v3.z * n); }
+  g.computeVertexNormals();
+  const isl = new THREE.Mesh(g, natureMaterial({ color: 0x1f3a26, rock: 0x3d403a })); isl.position.set(q.x, -3, q.z); isl.scale.set(46, 26, 30); isl.rotation.y = q.rot; G[k].add(isl);
+  field(k, [...Array(nq(10, 5))].map(() => { const b = at(k, -R(40, 160), R(60, 220)); return { x: b.x, y: 1.4, z: b.z, c: 0xe6fbff, s: 0.3, halo: 10, tw: 0.5 }; }), { bodies: false, reflect: true });
 }
 
 // ---------------------------------------------------------------- overview: route ribbon, stop markers, glowing coastline, village lights
@@ -1742,8 +1920,8 @@ const ATMO = {
 };
 // URL overrides for testing: ?time=HH:MM (Vietnam time), ?rain=0..1, ?cloud=0..1. Screenshots default to a clear night.
 const Q_TIME = Q.get('time') || (TEST ? '22:00' : null), Q_RAIN = Q.has('rain') ? +Q.get('rain') : TEST ? 0 : null, Q_CLOUD = Q.has('cloud') ? +Q.get('cloud') : null;
-const TIME_MODES = { real: null, day: 45, sunset: 1.5, night: -25 }, TIME_LABEL = { real: 'Giờ thật', day: 'Ban ngày', sunset: 'Hoàng hôn', night: 'Ban đêm' };
-const WX_MODES = { real: null, clear: [0, 0.1], rain: [0.85, 1] }, WX_LABEL = { real: 'Thời tiết thật', clear: 'Trời quang', rain: 'Mưa' };
+const TIME_MODES = { real: null, day: 45, sunset: 1.5, night: -25 };
+const WX_MODES = { real: null, clear: [0, 0.1], rain: [0.85, 1] };
 function nowMs() {
   if (!Q_TIME) return Date.now();
   const [hh, mm] = Q_TIME.split(':').map(Number), vn = new Date(Date.now() + 7 * 36e5);
@@ -1877,20 +2055,22 @@ function updateAtmo(dt, camY) {
 const skyChip = $('#sky'), wxChip = $('#wx'), clockEl = $('#clock');
 let chipText = '';
 function updateSkyChip() {
-  const A = ATMO, place = STOP_NAMES[STATE.s.k];
-  const w = A.rain > 0.6 ? 'mưa to' : A.rain > 0.12 ? 'mưa' : A.cloud > 0.65 ? 'nhiều mây' : A.e > 0 ? 'nắng' : 'trời quang';
-  const txt = `${A.timeMode === 'real' ? A.clock : TIME_LABEL[A.timeMode]} · ${place} · ${w}`;
+  const A = ATMO, place = tx('stops')[STATE.s.k], sky = tx('sky');
+  const w = A.rain > 0.6 ? sky.heavy : A.rain > 0.12 ? sky.rain : A.cloud > 0.65 ? sky.cloud : A.e > 0 ? sky.sun : sky.clear;
+  const txt = `${A.timeMode === 'real' ? A.clock : tx('time')[A.timeMode]} · ${place} · ${w}`;
   if (txt !== chipText && clockEl) { chipText = txt; clockEl.textContent = txt; }
 }
 const cycle = (obj, cur) => { const ks = Object.keys(obj); return ks[(ks.indexOf(cur) + 1) % ks.length]; };
-skyChip?.addEventListener('click', () => { ATMO.timeMode = cycle(TIME_MODES, ATMO.timeMode); skyChip.textContent = TIME_LABEL[ATMO.timeMode]; });
-wxChip?.addEventListener('click', () => { ATMO.wxMode = cycle(WX_MODES, ATMO.wxMode); wxChip.textContent = WX_LABEL[ATMO.wxMode]; });
+const chipLabels = () => { if (skyChip) skyChip.textContent = tx('time')[ATMO.timeMode]; if (wxChip) wxChip.textContent = tx('wx')[ATMO.wxMode]; chipText = ''; };
+langHook(chipLabels);
+skyChip?.addEventListener('click', () => { ATMO.timeMode = cycle(TIME_MODES, ATMO.timeMode); chipLabels(); });
+wxChip?.addEventListener('click', () => { ATMO.wxMode = cycle(WX_MODES, ATMO.wxMode); chipLabels(); });
 
 // ---------------------------------------------------------------- UI
 const PANELS = $$('.panel').map((el) => ({ el, k: el.dataset.k, o: -1 }));
 const DOTS = $$('.rail .dot');
 const railFill = $('.rail .fill'), railLabel = $('.rail .now');
-const LABELS = STOP_NAMES.map((n, k) => { const el = document.createElement('span'); el.className = 'map-label'; el.textContent = n; $('#labels').appendChild(el); return { el, p: (() => { const q = at(k, 0, 0); return v3(q.x, 4, q.z); })() }; });
+const LABELS = STOP_NAMES.map((n, k) => { const el = document.createElement('span'); el.className = 'map-label'; $('#labels').appendChild(el); return { el, p: (() => { const q = at(k, 0, 0); return v3(q.x, 4, q.z); })() }; });
 const isPhoneLayout = () => matchMedia('(max-width: 760px)').matches;
 // panels move in depth with the flight: small and far while approaching, growing past full size as they slide by
 function setPanel(p, w, dir = -1) {
@@ -1900,6 +2080,7 @@ function setPanel(p, w, dir = -1) {
   p.el.style.visibility = w < 0.02 ? 'hidden' : 'visible'; p.el.classList.toggle('live', w > 0.6);
 }
 let railCur = -2;
+langHook(() => { LABELS.forEach((L, k) => { L.el.textContent = tx('stops')[k]; L.w = 0; }); railCur = -2; });
 function updateUI(u) {
   const st = STATE;
   for (const p of PANELS) {
@@ -1918,29 +2099,37 @@ function updateUI(u) {
   if (cur !== railCur) {
     railCur = cur;
     DOTS.forEach((d, i) => { d.classList.toggle('past', i < cur); d.classList.toggle('cur', i === cur); d.setAttribute('aria-current', i === cur ? 'step' : 'false'); });
-    if (cur >= 0 && cur <= 10) { railLabel.textContent = `${String(cur + 1).padStart(2, '0')} ${STOP_NAMES[cur]}`; railLabel.style.left = `${(cur / 10) * 100}%`; railLabel.dataset.edge = cur === 0 ? 'start' : cur === 10 ? 'end' : ''; }
+    if (cur >= 0 && cur <= 10) { railLabel.textContent = `${String(cur + 1).padStart(2, '0')} ${tx('stops')[cur]}`; railLabel.style.left = `${(cur / 10) * 100}%`; railLabel.dataset.edge = cur === 0 ? 'start' : cur === 10 ? 'end' : ''; }
     else railLabel.textContent = '';
   }
   railFill.style.transform = `scaleX(${clamp((u - U_INTRO) / (U_END - U_INTRO), 0, 1).toFixed(4)})`;
 }
+// map labels fade out where they would sit behind the intro text (phones: the map runs under it)
+const introP = PANELS.find((p) => p.k === 'intro');
+let introBox = null;
+const measureIntro = () => { introBox = introP ? introP.el.getBoundingClientRect() : null; };
+LANG_HOOKS.push(() => { introBox = null; });
+window.addEventListener('resize', () => { introBox = null; });
 function updateLabels(ov) {
   const show = ov > 0.05;
+  if (show && !introBox) measureIntro();
   for (const L of LABELS) {
     if (!show) { if (L.el.style.opacity !== '0') L.el.style.opacity = '0'; continue; }
     _v3.copy(L.p).project(camera);
     const x = (_v3.x * 0.5 + 0.5) * VW, y = (-_v3.y * 0.5 + 0.5) * VH;
     if (!L.w) L.w = L.el.offsetWidth;
     const lx = x + 14 + L.w > VW - 8 ? x - 14 - L.w : x + 14; // flip to the left near the right edge
-    L.el.style.opacity = ov.toFixed(2); L.el.style.transform = `translate3d(${lx.toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
+    const hid = introBox && introP.o > 0 && y > introBox.top - 12 && lx < introBox.right && lx + L.w > introBox.left ? introP.o : 0;
+    L.el.style.opacity = (ov * (1 - hid)).toFixed(2); L.el.style.transform = `translate3d(${lx.toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
   }
 }
 const loadingEl = $('#loading');
 function updateLoading() {
   if (!loadingEl) return;
   if (modelsDone >= modelsTotal()) { loadingEl.hidden = true; return; }
-  loadingEl.hidden = false; loadingEl.textContent = `Đang tải công trình ${modelsDone}/${modelsTotal()}`;
+  loadingEl.hidden = false; loadingEl.textContent = tx('loading')(modelsDone, modelsTotal());
 }
-updateLoading();
+langHook(updateLoading);
 
 // scroll, autoplay, navigation
 const track = $('#track');
@@ -1952,10 +2141,11 @@ const writeU = (u) => window.scrollTo(0, u * maxScroll);
 const playBtn = $('#play');
 function setAuto(on) {
   auto = on; playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  playBtn.querySelector('.lbl').textContent = on ? 'Tạm dừng' : 'Tự chạy';
+  playBtn.querySelector('.lbl').textContent = tx(on ? 'pause' : 'play');
   playBtn.classList.toggle('on', on);
   if (on) { if (readU() > 0.995) { writeU(0); curU = 0; } targetU = readU(); }
 }
+langHook(() => { playBtn.querySelector('.lbl').textContent = tx(auto ? 'pause' : 'play'); });
 playBtn.addEventListener('click', () => setAuto(!auto));
 for (const ev of ['wheel', 'touchstart']) window.addEventListener(ev, () => { if (auto) setAuto(false); }, { passive: true });
 function go(k) { setAuto(false); writeU(uOfStop(k)); }
@@ -1975,8 +2165,8 @@ document.addEventListener('click', (e) => {
     box.hidden = !box.hidden;
   }
   if (act === 'copy') {
-    const email = 'longnminhse@gmail.com', done = () => { b.textContent = 'Đã chép email'; setTimeout(() => { b.textContent = 'Chép email'; }, 1800); };
-    const fallback = () => { const el = b.closest('.panel').querySelector('.email'); const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Đã chọn, nhấn Ctrl+C'; };
+    const email = 'longnminhse@gmail.com', done = () => { b.textContent = tx('copied'); setTimeout(() => { b.textContent = tx('copy'); }, 1800); };
+    const fallback = () => { const el = b.closest('.panel').querySelector('.email'); const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = tx('selected'); };
     try { navigator.clipboard.writeText(email).then(done, fallback); } catch (err) { fallback(); }
   }
 });
@@ -2030,7 +2220,6 @@ function precompile(k) {
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), fwd = new THREE.Vector3(), left = new THREE.Vector3();
 let last = performance.now(), T = 0, roll = 0, shiftX = 0, shiftY = 0, frames = 0, fpsT = 0, slowStreak = 0, degradedBloom = false;
 const fpsEl = $('#fps');
-const tierName = LOW ? 'bản nhẹ' : 'bản đầy đủ';
 const VIS_R = () => (lightMode ? 300 : LOW ? 360 : 440);
 let HOLD = false; // screenshots: once a test frame is set up, the loop stops redrawing so the capture is not starved
 function frame(now) {
@@ -2045,7 +2234,7 @@ function frame(now) {
   step(curU, dt);
   frames++; fpsT += dt;
   if (fpsT >= 1) {
-    const fps = Math.round(frames / fpsT); fpsEl.textContent = `${fps} khung/giây · ${tierName}`;
+    const fps = Math.round(frames / fpsT); fpsEl.textContent = tx('fps')(fps);
     if (fps < 40 && !TEST) { slowStreak++; if (slowStreak >= 2) { slowStreak = 0; if (bloomOn) { bloomOn = false; degradedBloom = true; } else if (dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); composer?.setPixelRatio(dpr); } } }
     else slowStreak = 0;
     frames = 0; fpsT = 0;
