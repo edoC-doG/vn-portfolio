@@ -1,0 +1,117 @@
+{
+  "_comment": "Asset library: CC0 textures and models fetched by tools/library/fetch.py into assets/library/ (not committed; run the script to get them). 'use' says where each goes.",
+  "textures": {
+    "rock": [
+      { "src": "ambientcg", "id": "Rock059", "use": "A1 vách đá vôi xám có rêu (Hạ Long, Hà Giang)" },
+      { "src": "ambientcg", "id": "Rock036", "use": "A1 vách đá có vệt rêu" },
+      { "src": "polyhaven", "id": "rock_01", "use": "A1 đá xám có vệt nước chảy" },
+      { "src": "polyhaven", "id": "rock_boulder_dry", "use": "A3 đá tảng sáng màu (đồi Cù Lao)" },
+      { "src": "polyhaven", "id": "rock_3", "use": "A3 ghềnh đá ven biển" },
+      { "src": "polyhaven", "id": "dry_river_pebbles", "use": "A4 sỏi cuội lòng suối" },
+      { "src": "polyhaven", "id": "river_small_rocks", "use": "A4 sỏi lẫn đất" }
+    ],
+    "ground": [
+      { "src": "polyhaven", "id": "red_laterite_soil_stones", "use": "B3 đất đỏ bazan Tây Nguyên" },
+      { "src": "polyhaven", "id": "red_dirt_mud_01", "use": "B3 đất đỏ ẩm" },
+      { "src": "polyhaven", "id": "brown_mud_03", "use": "B4 bùn ướt bãi bồi Cà Mau" },
+      { "src": "polyhaven", "id": "brown_mud_02", "use": "B4 bùn ven sông Miền Tây" },
+      { "src": "polyhaven", "id": "dirt", "use": "B5 đường đất nện" },
+      { "src": "polyhaven", "id": "grass_path_2", "use": "B5 đường đất lẫn cỏ (bản làng)" }
+    ],
+    "grass": [
+      { "src": "ambientcg", "id": "Grass004", "use": "C1 cỏ xanh tự nhiên (Ba Đình, công viên)" },
+      { "src": "ambientcg", "id": "Grass001", "use": "C1 cỏ xanh đậm nhiệt đới" },
+      { "src": "polyhaven", "id": "grass_ground", "use": "C2 cỏ mỏng trên đất" },
+      { "src": "polyhaven", "id": "sparse_grass", "use": "C2 cỏ thưa" },
+      { "src": "polyhaven", "id": "leafy_grass", "use": "C2 cỏ lẫn lá khô" }
+    ],
+    "sand": [
+      { "src": "polyhaven", "id": "aerial_beach_01", "use": "D2 cát trắng gợn sóng (đồi cát trắng Mũi Né)" },
+      { "src": "polyhaven", "id": "dense_sand", "use": "D2 cát vàng nhạt (bãi biển Nha Trang)" },
+      { "src": "polyhaven", "id": "red_sand", "use": "D3 cát đỏ (đồi cát đỏ Mũi Né)" }
+    ],
+    "road": [
+      { "src": "polyhaven", "id": "asphalt_01", "use": "E1 đường nhựa cũ" },
+      { "src": "polyhaven", "id": "concrete_pavers", "use": "E2 vỉa hè gạch con sâu" },
+      { "src": "polyhaven", "id": "floor_pavement", "use": "E2 vỉa hè gạch vuông" },
+      { "src": "polyhaven", "id": "square_brick_paving", "use": "E3 gạch vuông đất nung phố cổ Hội An" },
+      { "src": "polyhaven", "id": "cobblestone_floor_08", "use": "E3 đá lát cổ" },
+      { "src": "polyhaven", "id": "concrete_floor_02", "use": "E4 bê tông cũ có rêu (bến, kè)" }
+    ],
+    "wall": [
+      { "src": "polyhaven", "id": "painted_plaster_wall", "use": "F1 vữa sơn ngoài trời (tường vàng Hội An, chỉnh màu bằng code)" },
+      { "src": "polyhaven", "id": "damaged_plaster", "use": "F1 vữa bong lộ gạch (tường cũ)" },
+      { "src": "polyhaven", "id": "red_brick", "use": "F2 gạch đỏ" },
+      { "src": "polyhaven", "id": "brick_wall_006", "use": "F2 gạch cam (Nhà thờ Đức Bà)" },
+      { "src": "polyhaven", "id": "clay_plaster", "use": "F3 tường đất" },
+      { "src": "polyhaven", "id": "excavated_soil_wall", "use": "F3 tường trình có lớp (nhà Lô Lô Chải)" },
+      { "src": "polyhaven", "id": "broken_wall", "use": "F4 tường đá xám xếp khan (Hà Giang)" },
+      { "src": "polyhaven", "id": "stone_wall", "use": "F4 tường đá" },
+      { "src": "polyhaven", "id": "white_plaster_02", "use": "F5 vữa trắng nhà phố" },
+      { "src": "polyhaven", "id": "concrete_wall_008", "use": "F5 tường bê tông cũ" }
+    ],
+    "roof": [
+      { "src": "polyhaven", "id": "roof_09", "use": "G1 ngói đất nung cong (gần ngói âm dương)" },
+      { "src": "polyhaven", "id": "roof_07", "use": "G1 ngói cũ phủ rêu (Hội An, Huế)" },
+      { "src": "polyhaven", "id": "corrugated_iron", "use": "G2 mái tôn" },
+      { "src": "polyhaven", "id": "rusty_corrugated_iron", "use": "G2 mái tôn gỉ" },
+      { "src": "polyhaven", "id": "thatch_roof_angled", "use": "G3 mái tranh (nhà rông, nhà sàn)" },
+      { "src": "polyhaven", "id": "riet_01", "use": "G3 mái lá xám cũ" }
+    ],
+    "wood": [
+      { "src": "polyhaven", "id": "weathered_planks", "use": "H1 ván gỗ cũ sẫm (cầu gỗ, nhà bè)" },
+      { "src": "polyhaven", "id": "brown_planks_03", "use": "H1 ván gỗ phơi nắng biển" },
+      { "src": "polyhaven", "id": "blue_painted_planks", "use": "H2 gỗ sơn xanh bong tróc (thuyền, cửa Hội An)" },
+      { "src": "polyhaven", "id": "green_rough_planks", "use": "H2 gỗ sơn xanh lá bong tróc" },
+      { "src": "polyhaven", "id": "bamboo_wall_02", "use": "H3 phên tre đan" },
+      { "src": "polyhaven", "id": "bamboo_wall", "use": "H3 vách tre cây" },
+      { "src": "polyhaven", "id": "palm_tree_bark", "use": "Thân dừa" }
+    ],
+    "metal": [
+      { "src": "polyhaven", "id": "rust_coarse_01", "use": "I1 sắt gỉ" }
+    ]
+  },
+  "models": {
+    "da": [
+      { "src": "polyhaven", "id": "rock_face_01", "use": "Khối vách đá (Hà Giang, Hạ Long)" },
+      { "src": "polyhaven", "id": "rock_face_02", "use": "Khối vách đá" },
+      { "src": "polyhaven", "id": "mountainside", "use": "Sườn núi đá" },
+      { "src": "polyhaven", "id": "coastal_cliff_01", "use": "Vách đá ven biển (Nha Trang)" },
+      { "src": "polyhaven", "id": "boulder_01", "use": "Tảng đá" },
+      { "src": "polyhaven", "id": "rock_moss_set_01", "use": "Bộ đá có rêu" },
+      { "src": "polyhaven", "id": "coast_rocks_01", "use": "Đá ven biển" }
+    ],
+    "cay": [
+      { "src": "polyhaven", "id": "island_tree_01", "use": "Cây nhiệt đới (Nha Trang, Miền Tây)" },
+      { "src": "polyhaven", "id": "island_tree_02", "use": "Cây nhiệt đới" },
+      { "src": "polyhaven", "id": "island_tree_03", "use": "Cây nhiệt đới" },
+      { "src": "polyhaven", "id": "fern_02", "use": "Dương xỉ (rừng Tây Nguyên)" },
+      { "src": "polyhaven", "id": "shrub_01", "use": "Bụi cây" },
+      { "src": "polyhaven", "id": "shrub_02", "use": "Bụi cây" },
+      { "src": "polyhaven", "id": "pachira_aquatica_01", "use": "Cây kim ngân (cây cảnh trước nhà)" },
+      { "src": "polyhaven", "id": "grass_medium_01", "use": "Bụi cỏ" }
+    ],
+    "duong-pho": [
+      { "src": "polyhaven", "id": "modular_electricity_poles", "use": "Cột điện" },
+      { "src": "polyhaven", "id": "modular_electric_cables", "use": "Dây điện chằng chịt" },
+      { "src": "polyhaven", "id": "exterior_aircon_unit", "use": "Cục nóng điều hòa trên mặt tiền" },
+      { "src": "polyhaven", "id": "rollershutter_door", "use": "Cửa cuốn nhà phố" },
+      { "src": "polyhaven", "id": "street_lamp_01", "use": "Đèn đường" },
+      { "src": "polyhaven", "id": "utility_box_01", "use": "Hộp điện" },
+      { "src": "polyhaven", "id": "plastic_monobloc_chair_01", "use": "Ghế nhựa quán vỉa hè" },
+      { "src": "polyhaven", "id": "plastic_crate_01", "use": "Két nhựa" },
+      { "src": "polyhaven", "id": "CoffeeCart_01", "use": "Xe đẩy cà phê" },
+      { "src": "polyhaven", "id": "planter_pot_clay", "use": "Chậu cây đất nung" }
+    ],
+    "cho-ben": [
+      { "src": "polyhaven", "id": "modular_wooden_pier", "use": "Cầu gỗ, bến (Cà Mau, Hội An)" },
+      { "src": "polyhaven", "id": "wooden_lantern_01", "use": "Đèn lồng gỗ" },
+      { "src": "polyhaven", "id": "Lantern_01", "use": "Đèn bão" },
+      { "src": "polyhaven", "id": "ocean_buoy", "use": "Phao biển (Hạ Long)" },
+      { "src": "polyhaven", "id": "wicker_basket_01", "use": "Rổ, thúng" },
+      { "src": "polyhaven", "id": "wooden_crate_01", "use": "Thùng gỗ (chợ)" },
+      { "src": "polyhaven", "id": "chinese_stool", "use": "Ghế đẩu gỗ" },
+      { "src": "polyhaven", "id": "wooden_stool_01", "use": "Ghế đẩu" }
+    ]
+  }
+}
