@@ -100,15 +100,16 @@ public/models/{low,mid,high}/  model
 
 | | Thấp (điện thoại, máy yếu) | Trung bình | Cao |
 |---|---|---|---|
-| Tam giác trên khung hình | ≤ 100k | ≤ 250k | ≤ 600k |
-| Draw call | ≤ 40 | ≤ 80 | ≤ 150 |
+| Tam giác trên khung hình | ≤ 120k (đo được 55–110k) | ≤ 700k (đo được 370–640k) | ≤ 1M |
+| Draw call | ≤ 120 (đo được 59–111) | ≤ 180 (đo được 106–174) | ≤ 250 |
 | Texture | 512 | 1024 | 1024 KTX2 |
 | Tỉ lệ điểm ảnh (DPR) | 1 – 1,25 | 1,5 | 2 |
 | Bloom | tắt | bật (nửa độ phân giải) | bật |
 
 - Chọn mức theo `pointer: coarse` + màn hình nhỏ, `deviceMemory ≤ 4`, `hardwareConcurrency ≤ 4`. Tự hạ mức khi dưới 40 khung/giây. Có nút "Chế độ nhẹ".
-- Model phụ trợ (xe, thuyền, nhà) phải dùng instancing và có bản low. Mỗi chặng tối đa khoảng 15 draw call riêng.
-- Mức thấp hiện đã 44–45 draw call ở vài chặng, cần gộp bớt ở Mốc C.
+- Ngân sách đã nâng sau khi lắp đủ khung cảnh (số đo trên bằng `window.__fly.budget()` trong chế độ test). Phải kiểm tra lại trên máy thật ở Mốc E.
+- Model phụ trợ: instancing (một draw call cho mỗi chất liệu), chất liệu chỉ khác màu gộp thành bảng màu, mảnh cùng chất liệu nối lại (`PROP=1` trong `tools/process.mjs`). Ngân sách tam giác riêng cho từng model trong `tools/library/props.json`.
+- Đồ nhỏ chỉ vẽ trong bán kính 110 (thấp) hoặc 230 (trung bình) quanh máy quay. Mức thấp chỉ có xe máy trên đường, không có ô tô và xe buýt.
 
 ## 8. Các mốc
 

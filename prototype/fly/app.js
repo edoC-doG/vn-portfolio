@@ -672,6 +672,9 @@ const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
 // Library props (assets/models, see tools/library) are drawn instanced: one draw call per material however many copies.
 // Meshy slots use pick(): the Meshy file when it exists, else a library stand-in, else a code-built one.
 const UP = new THREE.Vector3(0, 1, 0), _m4b = new THREE.Matrix4(), _pf = { x: 0, z: 0, tx: 0, tz: 1 };
+// small props live in SG[k], drawn only near the camera (they vanish in the fog further out anyway); big ones go in G[k]
+const SG = G.map((g) => { const s = new THREE.Group(); g.add(s); return s; });
+const SG_R = () => (LOW ? 110 : 230);
 const MAT_TEX = {};
 const matTex = (name) => (MAT_TEX[name] ??= loadTex('mat-' + name, { srgb: true, placeholder: '#808080' }));
 const texMat = (name, opts = {}) => M({ color: 0xffffff, map: matTex(name), roughness: 0.92, ...opts });
@@ -706,7 +709,7 @@ function scatter(k, slug, items, opts = {}) {
     tpl.traverse((m) => {
       if (!m.isMesh) return;
       const im = new THREE.InstancedMesh(m.geometry, m.material, set.items.length);
-      set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); G[k].add(im);
+      set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); (opts.far ? G[k] : SG[k]).add(im);
       if (opts.extra) EXTRAS.push(im);
     });
     setMatrices(set);
@@ -766,13 +769,13 @@ function road(k, lat, a0, a1, w, tex, { lift = 0.12, tile = 6 } = {}) {
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
   ROAD_MAT[tex] ??= texMat(tex, { side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-  G[k].add(new THREE.Mesh(g, ROAD_MAT[tex]));
+  SG[k].add(new THREE.Mesh(g, ROAD_MAT[tex]));
   return { lat, a0, a1, w, h: (al) => { const f = clamp(((al - a0) / (a1 - a0)) * n, 0, n), i = Math.min(n - 1, Math.floor(f)); return hs[i] + (hs[i + 1] - hs[i]) * (f - i); } };
 }
 // traffic on a road: lanes either side of the centre line, vehicles loop from a0 to a1 (or back)
 function traffic(k, rd, specs) {
   for (const { slug, n, s, speed = 6 } of specs) {
-    if (!pick(slug)) continue;
+    if (!pick(slug) || (LOW && s > 3)) continue; // light tier: motorbikes only (cars and buses carry a dozen materials each)
     const items = [...Array(n)].map((_, i) => ({ ph: rand() * (rd.a1 - rd.a0), dir: i % 2 ? 1 : -1, lane: (i % 2 ? 1 : -1) * rd.w * R(0.12, 0.32), v: speed * R(0.7, 1.25), s: s * R(0.92, 1.08), x: 0, y: 0, z: 0 }));
     const len = rd.a1 - rd.a0;
     const move = (t) => { for (const it of items) { const al = rd.a0 + ((((it.ph + it.dir * it.v * t) % len) + len) % len), q = atf(k, rd.lat + it.lane, al); it.x = q.x; it.z = q.z; it.y = rd.h(al); it.ry = Math.atan2(q.tx, q.tz) + (it.dir > 0 ? 0 : Math.PI); } };
@@ -797,7 +800,7 @@ function powerLine(k, lat, a0, a1, step = 12, h = 7.5) {
     }
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
-  G[k].add(new THREE.LineSegments(g, WIRE_MAT));
+  SG[k].add(new THREE.LineSegments(g, WIRE_MAT));
 }
 // a row of narrow houses (stand-in until the Meshy house arrives): plaster walls tinted per house, tiled or flat roofs
 function houseRow(k, lat, a0, a1, { w = [4.5, 6.5], h = [5, 9], d = 7, tints, roof = 'roof-moss', wall = 'plaster', flat = false, face = 1 }) {
@@ -821,7 +824,7 @@ function instances(k, geo, mat, items, { extra = false } = {}) {
   const im = new THREE.InstancedMesh(geo, mat, items.length);
   items.forEach((it, i) => im.setMatrixAt(i, _m4.compose(_v3.set(it.x, it.y ?? Math.max(gy(it.x, it.z), 0), it.z), _q.setFromAxisAngle(UP, it.ry ?? 0), _s3.set(it.sx ?? it.s, it.sy ?? it.s, it.sz ?? it.s))));
   if (items[0].c !== undefined) items.forEach((it, i) => im.setColorAt(i, new THREE.Color(it.c)));
-  im.computeBoundingSphere(); G[k].add(im); if (extra) EXTRAS.push(im);
+  im.computeBoundingSphere(); SG[k].add(im); if (extra) EXTRAS.push(im);
   return im;
 }
 // points on land between lat/along bounds, keeping those whose ground passes test(y)
@@ -1151,7 +1154,7 @@ function addFlag(k, o, rot) {
     parts.push([scaleUV(new THREE.BoxGeometry(w, h, dd), w, h, dd), MY(q.x, g + h / 2, q.z, q.rot + R(-0.2, 0.2))]); n++;
   }
   const lm = at(k, 98, 78), lg = Math.max(gy(lm.x, lm.z), 0), l81 = AVAILABLE.has('landmark-81');
-  if (l81) scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }]);
+  if (l81) scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }], { far: true, keep: true });
   else for (const [ox, oz, h] of [[0, 0, 120], [5, 0, 104], [-5, 0, 98], [0, 5, 90], [0, -5, 84], [5, 5, 72], [-5, -5, 66], [5, -5, 58], [-5, 5, 50]]) parts.push([scaleUV(new THREE.BoxGeometry(5, h, 5), 5, h, 5), MY(lm.x + ox, lg + h / 2, lm.z + oz)]);
   const bx = at(k, 66, 54), bg = Math.max(gy(bx.x, bx.z), 0);
   parts.push([new THREE.CylinderGeometry(3.2, 7, 84, 20), MY(bx.x, bg + 42, bx.z)]);
@@ -1232,9 +1235,9 @@ function addFlag(k, o, rot) {
 // 01 Lũng Cú: cliffs on the far hills, bamboo, boulders, pink buckwheat on the slopes, a hamlet of earth-walled houses
 {
   const k = 0;
-  scatter(k, 'vach-da-1', around(k, nq(5, 3), 70, 130, -60, 70, 46), { dy: -0.25, excl: 0.4 });
-  scatter(k, 'vach-da-2', around(k, nq(5, 3), -130, -70, -60, 70, 46), { dy: -0.25, excl: 0.4 });
-  scatter(k, 'suon-nui', around(k, 3, 90, 150, -120, -40, 70), { dy: -0.3 });
+  scatter(k, 'vach-da-1', around(k, nq(5, 3), 70, 130, -60, 70, 46), { dy: -0.25, excl: 0.4, far: true });
+  scatter(k, 'vach-da-2', around(k, nq(5, 3), -130, -70, -60, 70, 46), { dy: -0.25, excl: 0.4, far: true });
+  scatter(k, 'suon-nui', around(k, 3, 90, 150, -120, -40, 70), { dy: -0.3, far: true });
   scatter(k, 'tre', onLand(k, nq(14, 6), 40, 85, -70, 20, (y) => y > 2 && y < 25).map((p) => ({ ...p, s: R(7, 10), ry: R(0, 6) })), { excl: 0.3 });
   scatter(k, 'tang-da', onLand(k, nq(16, 8), -90, 90, -80, 60, (y) => y > 1).map((p) => ({ ...p, s: R(1.5, 4), ry: R(0, 6) })));
   const pink = [0xff8cc6, 0xf06ab0, 0xffb3d9, 0xffffff];
@@ -1311,7 +1314,7 @@ function addFlag(k, o, rot) {
   const rd = road(k, -20.5, 0, 60, 6, 'asphalt'); road(k, -24.8, 0, 60, 2.6, 'pavers');
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(12, 5), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-vespa', n: nq(5, 2), s: 1.8 }, { slug: 'o-to', n: nq(5, 2), s: 4.4, speed: 7 }]);
   scatter(k, 'den-duong', along(k, nq(7, 4), -23.6, 2, 58, 4.2));
-  scatter(k, 'toa-van-phong', [[-29, 12, 44], [-30, 44, 50], [-28, 28, 36], [-30, 58, 40]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4 });
+  scatter(k, 'toa-van-phong', [[-29, 12, 44], [-30, 44, 50], [-28, 28, 36], [-30, 58, 40]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4, far: true });
   { const parts = []; for (const [l, al, w, h] of [[-29, 2, 9, 30], [-30, 22, 8, 24], [-29, 36, 10, 34], [-30, 50, 8, 22]]) { const q = at(k, l, al), g = Math.max(gy(q.x, q.z), 0.5); parts.push([scaleUV(new THREE.BoxGeometry(w, h, w), w, h, w), MY(q.x, g + h / 2, q.z, q.rot)]); EXCL.push([q.x, q.z, w]); } G[k].add(new THREE.Mesh(bake(parts), WINDOW_MAT)); }
   // cable car: cabins along a sagging line from the valley up to the Golden Bridge
   const A = at(k, 22, -46), B = at(k, 44, 4), ya = Math.max(gy(A.x, A.z), 0) + 6, yb = gy(B.x, B.z) + 18, cab = [], wv = [];
@@ -1347,9 +1350,9 @@ function addFlag(k, o, rot) {
   scatter(k, 'dua', along(k, nq(12, 6), 18.4, -76, 66, 11, { gap: 2 }).map((p) => ({ ...p, ry: R(0, 6) })));
   scatter(k, 'du-bien', around(k, nq(10, 5), -24, -19, -60, 50, 3.2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
   scatter(k, 'ghe-bien', around(k, nq(10, 5), -24, -19, -60, 50, 2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
-  scatter(k, 'toa-van-phong', [[68, -64, 34], [74, -38, 40], [70, 50, 36], [78, 66, 30]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
+  scatter(k, 'toa-van-phong', [[68, -64, 34], [74, -38, 40], [70, 50, 36], [78, 66, 30]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4, far: true });
   scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 })), { long: true });
-  scatter(k, 'vach-bien', around(k, 3, -60, -36, -60, 60, 30).map((p) => ({ ...p, y: -3 })));
+  scatter(k, 'vach-bien', around(k, 3, -60, -36, -60, 60, 30).map((p) => ({ ...p, y: -3 })), { far: true });
 }
 // 08 Phan Thiết: dragon-fruit fields on the hills, fishing boats, coconut palms
 {
@@ -1368,7 +1371,7 @@ function addFlag(k, o, rot) {
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(24, 8), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(18, 6), s: 1.8 }, { slug: 'xe-may-rx', n: nq(10, 4), s: 1.9 }, { slug: 'xe-vespa', n: nq(6, 2), s: 1.8 },
     { slug: 'o-to', n: nq(6, 3), s: 4.4, speed: 7 }, { slug: 'xe-buyt', n: 2, s: 10, speed: 5 }]);
   powerLine(k, 26.8, -58, 88, 12);
-  scatter(k, 'xe-day', along(k, nq(5, 2), 25.4, -50, 80, 2.4, { gap: 6 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })));
+  if (!LOW) scatter(k, 'xe-day', along(k, nq(5, 2), 25.4, -50, 80, 2.4, { gap: 6 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })));
   const stools = []; for (const c of along(k, nq(7, 3), 25.2, -46, 84, 1, { gap: 5 })) for (let i = 0; i < 5; i++) stools.push({ x: c.x + R(-1.2, 1.2), z: c.z + R(-1.2, 1.2), s: 0.55, ry: R(0, 6) });
   scatter(k, 'ghe-do', stools); scatter(k, 'ghe-xanh', stools.slice(0, Math.floor(stools.length / 3)).map((p) => ({ ...p, x: p.x + 0.7, s: 0.6 })));
   scatter(k, 'cay-ven-bien', along(k, nq(8, 4), 27.2, -56, 86, 10, { gap: 3 }).map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.3 });
@@ -1379,7 +1382,7 @@ function addFlag(k, o, rot) {
     scatter(k, 'cua-cuon', row.map((h) => { const q = at(k, 27.4, h.al); return { x: q.x, z: q.z, s: 3.6, ry: h.rot + Math.PI / 2 }; }));
     scatter(k, 'cuc-nong', row.filter((_, i) => i % 2 === 0).map((h) => { const q = at(k, 27.3, h.al); return { x: q.x, z: q.z, y: h.y + h.h * 0.6, s: 2, ry: h.rot + Math.PI / 2 }; }));
   }
-  scatter(k, 'toa-van-phong', [[120, 20, 60], [140, 60, 70], [110, -20, 48]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.4 });
+  scatter(k, 'toa-van-phong', [[120, 20, 60], [140, 60, 70], [110, -20, 48]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.4, far: true });
   // ferry: hull, deck and cabin crossing back and forth
   const fg = new THREE.Group(); G[k].add(fg);
   fg.add(new THREE.Mesh(tiledBox(5, 1, 11, 3), texMat('painted-wood', { color: 0xd8e4e8 })));
@@ -1578,7 +1581,7 @@ function pose(u, time, pos, look) {
 const FOREST = [0.8, 0.3, 0.5, 0.65, 0.6, 0.55, 0.42, 0.12, 0.06, 0, 0]; // density at each stop (Miền Tây has palms, Cà Mau mangroves)
 const PINE = [0.55, 0.04, 0, 0.05, 0.05, 0.75, 0.12, 0.1, 0, 0, 0];     // share of pines: Hà Giang, Đà Lạt and the highlands
 const TREE_H = [[7, 10.5], [8, 12.5], [8.5, 13.5], [2.4, 4.2]];         // size range per kind (oak, ash, pine, bush)
-const FOREST_NEAR = LOW ? 32 : 56, FOREST_CAP = LOW ? 40 : 120, FOREST_FADE = 8;
+const FOREST_NEAR = LOW ? 32 : 40, FOREST_CAP = LOW ? 40 : 45, FOREST_FADE = 8;
 const TREES = { x: [], y: [], z: [], s: [], r: [], k: [], chunk: [] };
 {
   let st = 20261026; const fr = () => { st |= 0; st = (st + 0x6d2b79f5) | 0; let t = Math.imul(st ^ (st >>> 15), 1 | st); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -2087,7 +2090,7 @@ function step(u, dt) {
   SH.uBoost.value = lerp(1, 2.6, ov);
   // visibility: only nearby stops and terrain are drawn during the flight
   const low = camY < 320, vr = VIS_R();
-  for (let i = 0; i < 11; i++) G[i].visible = low && Math.hypot(camera.position.x - GCENTER[i].x, camera.position.z - GCENTER[i].y) < vr;
+  for (let i = 0; i < 11; i++) { const d = Math.hypot(camera.position.x - GCENTER[i].x, camera.position.z - GCENTER[i].y); G[i].visible = low && d < vr; SG[i].visible = d < SG_R(); }
   for (const m of TERRAIN) m.visible = !low || Math.abs(m.userData.zc - camera.position.z) < 640;
   updateForest(low);
   for (const f of FIELDS) if (f.dyn && (f.k < 0 || G[f.k].visible)) fieldUpdate(f, T);
@@ -2105,6 +2108,19 @@ window.__fly = {
   setTime(mode) { ATMO.timeMode = mode; }, setWx(mode) { ATMO.wxMode = mode; },
   trees: () => ({ total: TREES.x.length, near: NEAR_TREES.map((l) => l[0]?.count ?? 0), uNear: impMat.uniforms.uNear.value }),
   shot(u, t = 10) { HOLD = true; curU = targetU = u; T = t; writeU(u); step(u, 0.016); step(u, 0.5); step(u, 0.5); step(u, 0.5); step(u, 0.5); },
-  uOfStop, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, tier: TIER, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }),
+  uOfStop, info: () => { renderer.render(scene, camera); return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles, tier: TIER, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }; },
   U: { U_HOLD, U_INTRO, U_END },
+  // who costs what in the current frame: visible meshes grouped by geometry, with draw calls and triangles
+  budget() {
+    const rows = {}, f = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    scene.traverseVisible((o) => {
+      if (!(o.isMesh || o.isPoints || o.isLine)) return;
+      if (o.frustumCulled && o.geometry.boundingSphere && !f.intersectsObject(o)) return;
+      const tris = o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3, n = o.isInstancedMesh ? o.count : 1;
+      let g = o, k = '?'; while (g) { const i = G.indexOf(g); if (i >= 0) { k = i; break; } if (g === OV) { k = 'ov'; break; } g = g.parent; }
+      const key = `${k} ${o.isInstancedMesh ? 'inst' : o.type} ${o.geometry.uuid.slice(0, 4)} ${o.material.name || o.material.type}`;
+      rows[key] ??= { key, calls: 0, tris: 0 }; rows[key].calls++; rows[key].tris += tris * n;
+    });
+    return Object.values(rows).sort((a, b) => b.tris - a.tris);
+  },
 };

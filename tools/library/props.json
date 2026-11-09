@@ -1,85 +1,85 @@
 {
  "xe-may-cub": {
   "src": "sketchfab/xe/honda-super-cub-dfac2b92.glb",
-  "midTris": 3500,
-  "lowTris": 800,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
  "xe-may-rx": {
   "src": "sketchfab/xe/yamaha-rx115-white-f7c99caf.glb",
-  "midTris": 3000,
-  "lowTris": 700,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
  "xe-ga-vino": {
   "src": "sketchfab/xe/vino-2205f4e6.glb",
-  "midTris": 3500,
-  "lowTris": 800,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
  "xe-vespa": {
   "src": "sketchfab/xe/moped-vespa-piaggio-bravo-bb7549d8.glb",
-  "midTris": 3500,
-  "lowTris": 800,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
  "o-to": {
   "src": "sketchfab/xe/generic-sedan-car-58c33766.glb",
-  "midTris": 5000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "xe-khach": {
   "src": "sketchfab/xe/xe-khach-hanoi-6228a9c3.glb",
-  "midTris": 5000,
-  "lowTris": 1200,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "xe-buyt": {
   "src": "sketchfab/xe/generic-town-bus-14fe03d7.glb",
-  "midTris": 5000,
-  "lowTris": 1200,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "thuyen-viet": {
   "src": "sketchfab/thuyen/viet-boat-0c84f616.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "thuyen-go": {
   "src": "sketchfab/thuyen/wooden-boat-627ba38e.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "thuyen-duoi-dai": {
   "src": "sketchfab/thuyen/longtail-boat-35038e5b.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "thuyen-ca": {
   "src": "sketchfab/thuyen/fishing-boat-f4b38ccf.glb",
-  "midTris": 5000,
-  "lowTris": 1200,
+  "midTris": 2500,
+  "lowTris": 800,
   "midTex": 512,
   "lowTex": 256
  },
  "thuyen-go-cu": {
   "src": "sketchfab/thuyen/old-wooden-boat-c62fa438.glb",
-  "midTris": 5000,
-  "lowTris": 1200,
+  "midTris": 2500,
+  "lowTris": 800,
   "midTex": 512,
   "lowTex": 256
  },
@@ -92,15 +92,15 @@
  },
  "kayak": {
   "src": "sketchfab/thuyen/wooden-kayak-paddle-01cc514c.glb",
-  "midTris": 2000,
-  "lowTris": 500,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 512,
   "lowTex": 256
  },
  "phao": {
   "src": "models/cho-ben/ocean_buoy/ocean_buoy_1k.gltf",
-  "midTris": 2000,
-  "lowTris": 500,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 512,
   "lowTex": 256
  },
@@ -155,22 +155,22 @@
  },
  "nha-san-can-tho": {
   "src": "sketchfab/nha/stilt-house-in-denhung-cantho-vietnam-73b917a1.glb",
-  "midTris": 7000,
-  "lowTris": 2000,
+  "midTris": 4000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "nha-nho-can-tho": {
   "src": "sketchfab/nha/small-house-in-denhung-cantho-vietnam-335732e0.glb",
-  "midTris": 9000,
-  "lowTris": 2000,
+  "midTris": 4000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "nha-mai-la": {
   "src": "sketchfab/nha/thatched-hut-on-stilts-b73d5d61.glb",
-  "midTris": 8000,
-  "lowTris": 2000,
+  "midTris": 4000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
@@ -197,36 +197,36 @@
  },
  "cot-dien": {
   "src": "sketchfab/duong-pho/vietnam-electric-pole-83835834.glb",
-  "midTris": 1900,
-  "lowTris": 600,
+  "midTris": 1200,
+  "lowTris": 500,
   "midTex": 512,
   "lowTex": 256
  },
  "den-duong": {
   "src": "sketchfab/duong-pho/vintage-lamp-post-56f6dcb3.glb",
-  "midTris": 2500,
-  "lowTris": 600,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
  "ghe-do": {
   "src": "sketchfab/duong-pho/vietnamese-red-plastic-stool-game-ready--f07bfecb.glb",
-  "midTris": 600,
-  "lowTris": 200,
+  "midTris": 400,
+  "lowTris": 150,
   "midTex": 256,
   "lowTex": 128
  },
  "ghe-xanh": {
   "src": "sketchfab/duong-pho/vietnamese-plastic-chair-25c58573.glb",
-  "midTris": 800,
-  "lowTris": 250,
+  "midTris": 400,
+  "lowTris": 150,
   "midTex": 256,
   "lowTex": 128
  },
  "xe-day": {
   "src": "sketchfab/duong-pho/gerobak-lumpia-bca45512.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
@@ -239,8 +239,8 @@
  },
  "sap-rau": {
   "src": "sketchfab/duong-pho/vietnamese-vegetable-market-a3c935d7.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
@@ -260,8 +260,8 @@
  },
  "den-long-vn": {
   "src": "sketchfab/duong-pho/vietnamese-lantern-e08d22e1.glb",
-  "midTris": 3000,
-  "lowTris": 800,
+  "midTris": 1500,
+  "lowTris": 500,
   "midTex": 512,
   "lowTex": 256
  },
@@ -295,29 +295,29 @@
  },
  "vong": {
   "src": "sketchfab/duong-pho/traditional-vietnamese-hammock-35282e45.glb",
-  "midTris": 1500,
-  "lowTris": 500,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 512,
   "lowTex": 256
  },
  "du-bien": {
   "src": "sketchfab/duong-pho/beach-umbrella-1014ad7c.glb",
-  "midTris": 2000,
-  "lowTris": 600,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 256,
   "lowTex": 128
  },
  "ghe-bien": {
   "src": "sketchfab/duong-pho/beach-chair-57e94770.glb",
-  "midTris": 2000,
-  "lowTris": 600,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 512,
   "lowTex": 256
  },
  "cap-treo": {
   "src": "sketchfab/duong-pho/cable-car-1621ec80.glb",
-  "midTris": 5000,
-  "lowTris": 1200,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
@@ -337,8 +337,8 @@
  },
  "ro": {
   "src": "models/cho-ben/wicker_basket_01/wicker_basket_01_1k.gltf",
-  "midTris": 1500,
-  "lowTris": 400,
+  "midTris": 800,
+  "lowTris": 300,
   "midTex": 512,
   "lowTex": 256
  },
@@ -365,85 +365,85 @@
  },
  "tre": {
   "src": "sketchfab/cay/bamboo-tree-d0161434.glb",
-  "midTris": 6000,
-  "lowTris": 1500,
+  "midTris": 3000,
+  "lowTris": 900,
   "midTex": 512,
   "lowTex": 256
  },
  "dua": {
   "src": "sketchfab/cay/coconut-palm-26e787f2.glb",
-  "midTris": 6000,
-  "lowTris": 1500,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "chuoi": {
   "src": "sketchfab/cay/banana-tree-3b658eca.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 1500,
+  "lowTris": 500,
   "midTex": 512,
   "lowTex": 256
  },
  "chuoi-2": {
   "src": "sketchfab/cay/banana-plant-85695b82.glb",
-  "midTris": 4000,
-  "lowTris": 1000,
+  "midTris": 1500,
+  "lowTris": 500,
   "midTex": 512,
   "lowTex": 256
  },
  "cay-da": {
   "src": "sketchfab/cay/chinese-banyan-ficus-microcarpa-2a0dbcdf.glb",
-  "midTris": 12000,
-  "lowTris": 3000,
+  "midTris": 5000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "sen": {
   "src": "sketchfab/cay/lotus-5627ae95.glb",
-  "midTris": 5000,
-  "lowTris": 1500,
+  "midTris": 2000,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "duoc": {
   "src": "sketchfab/cay/mangrove-tree-5d454243.glb",
-  "midTris": 4300,
-  "lowTris": 1500,
+  "midTris": 1500,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "duoc-re": {
   "src": "sketchfab/cay/mangrove-tree-roots-c32d977c.glb",
-  "midTris": 3900,
-  "lowTris": 1200,
+  "midTris": 1500,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "duoc-cao": {
   "src": "sketchfab/cay/tall-mangrove-tree-b722ee28.glb",
-  "midTris": 3100,
-  "lowTris": 1200,
+  "midTris": 1500,
+  "lowTris": 600,
   "midTex": 512,
   "lowTex": 256
  },
  "cay-ven-bien": {
   "src": "models/cay/island_tree_01/island_tree_01_1k.gltf",
-  "midTris": 12000,
-  "lowTris": 3000,
+  "midTris": 5000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "cay-ven-bien-2": {
   "src": "models/cay/island_tree_02/island_tree_02_1k.gltf",
-  "midTris": 12000,
-  "lowTris": 3000,
+  "midTris": 5000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "duong-xi": {
   "src": "models/cay/fern_02/fern_02_1k.gltf",
-  "midTris": 3000,
-  "lowTris": 800,
+  "midTris": 1200,
+  "lowTris": 400,
   "midTex": 512,
   "lowTex": 256
  },
@@ -477,15 +477,15 @@
  },
  "tang-da": {
   "src": "models/da/boulder_01/boulder_01_1k.gltf",
-  "midTris": 3000,
-  "lowTris": 800,
+  "midTris": 1500,
+  "lowTris": 500,
   "midTex": 512,
   "lowTex": 256
  },
  "voi": {
   "src": "sketchfab/khac/elephant-4ae16137.glb",
   "midTris": 2000,
-  "lowTris": 1000,
+  "lowTris": 800,
   "midTex": 512,
   "lowTex": 256
  }

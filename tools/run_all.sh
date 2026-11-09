@@ -25,6 +25,8 @@ declare -A MAP=(
 : > results.jsonl
 for s in "${!MAP[@]}"; do
   LT=3000; case $s in nha-rong|thap-ba-ponagar) LT=6000;; cot-co-lung-cu) LT=5000;; esac
+  # small Meshy props drawn many times get prop budgets (see tools/library/build_props.sh)
+  MT=15000; P=0; case $s in thuyen-thung|cong-chieng) MT=3000; LT=1000; P=1;; ghe-cho-noi) MT=5000; LT=1500; P=1;; thuyen-buom) MT=6000; LT=2000; P=1;; esac
   echo "== $s"
-  LOWTRIS=$LT node --max-old-space-size=8192 process.mjs "$IN/${MAP[$s]}" "$s" "$OUT" >> results.jsonl || echo "FAILED $s"
+  PROP=$P MIDTRIS=$MT LOWTRIS=$LT node --max-old-space-size=8192 process.mjs "$IN/${MAP[$s]}" "$s" "$OUT" >> results.jsonl || echo "FAILED $s"
 done

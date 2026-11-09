@@ -1,6 +1,6 @@
 import { NodeIO, getBounds } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { weld, prune, dedup, textureCompress, cloneDocument, quantize, compactPrimitive } from '@gltf-transform/functions';
+import { weld, prune, dedup, textureCompress, cloneDocument, quantize, compactPrimitive, flatten, join, palette } from '@gltf-transform/functions';
 import { MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 import fs from 'fs';
@@ -81,6 +81,9 @@ scene.addChild(wrapper);
 
 const srcTris = countTris(doc);
 await doc.transform(weld());
+// props (PROP=1) are drawn instanced, one draw call per primitive: fold colour-only materials into one palette material,
+// then merge every primitive that shares a material (a motorbike drops from ~190 primitives to a handful)
+if (process.env.PROP === '1') await doc.transform(flatten(), dedup(), palette({ min: 2 }), join(), weld(), prune());
 
 const tiers = [
   { name: 'high', tris: 50000, tex: 2048, ntex: 1024, normal: true, error: 0.02 },
@@ -92,7 +95,9 @@ let work = doc;
 for (const tier of tiers) {
   const cur = countTris(work);
   if (cur > tier.tris * 1.05) {
-    simplifyDoc(work, tier.tris, tier.error, tier.name === 'low');
+    // props are small on screen: allow a larger error and topology changes at every tier
+    if (process.env.PROP === '1') simplifyDoc(work, tier.tris, tier.error * 4, true);
+    else simplifyDoc(work, tier.tris, tier.error, tier.name === 'low');
   }
   const outDoc = cloneDocument(work);
   if (!tier.normal) for (const mat of outDoc.getRoot().listMaterials()) mat.setNormalTexture(null);
