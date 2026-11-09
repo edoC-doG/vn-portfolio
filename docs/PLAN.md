@@ -102,16 +102,19 @@ public/models/{low,mid,high}/  model
 
 | | Thấp (điện thoại, máy yếu) | Trung bình | Cao |
 |---|---|---|---|
-| Tam giác trên khung hình | ≤ 120k (đo được 55–110k) | ≤ 700k (đo được 370–640k) | ≤ 1M |
-| Draw call | ≤ 120 (đo được 59–111) | ≤ 180 (đo được 106–174) | ≤ 250 |
+| Tam giác trên khung hình | ≤ 120k (đo được 56–104k) | ≤ 720k (đo được 434–710k) | ≤ 1M |
+| Draw call | ≤ 120 (đo được 49–115) | ≤ 190 (đo được 118–189, chưa kể lượt vẽ bóng) | ≤ 250 |
 | Texture | 512 | 1024 | 1024 KTX2 |
 | Tỉ lệ điểm ảnh (DPR) | 1 – 1,25 | 1,5 | 2 |
 | Bloom | tắt | bật (nửa độ phân giải) | bật |
+| Bóng đổ | không | bản đồ bóng 2048 theo máy quay (±120) | như trung bình |
+| Khử răng cưa | MSAA của canvas | MSAA 4× (2× khi DPR > 1,4) trong chuỗi bloom | như trung bình |
 
 - Chọn mức theo `pointer: coarse` + màn hình nhỏ, `deviceMemory ≤ 4`, `hardwareConcurrency ≤ 4`. Tự hạ mức khi dưới 40 khung/giây. Có nút "Chế độ nhẹ".
 - Ngân sách đã nâng sau khi lắp đủ khung cảnh (số đo trên bằng `window.__fly.budget()` trong chế độ test). Phải kiểm tra lại trên máy thật ở Mốc E.
 - Model phụ trợ: instancing (một draw call cho mỗi chất liệu), chất liệu chỉ khác màu gộp thành bảng màu, mảnh cùng chất liệu nối lại (`PROP=1` trong `tools/process.mjs`). Ngân sách tam giác riêng cho từng model trong `tools/library/props.json`.
 - Đồ nhỏ chỉ vẽ trong bán kính 110 (thấp) hoặc 230 (trung bình) quanh máy quay. Mức thấp chỉ có xe máy trên đường, không có ô tô và xe buýt.
+- Cỏ, lau sậy và lúa trên ruộng bậc thang chỉ vẽ ở chặng máy quay đang ở (bán kính 85 / 105), là phần tốn tam giác nhất mỗi chặng (khoảng 50k ở mức trung bình).
 
 ## 8. Các mốc
 
