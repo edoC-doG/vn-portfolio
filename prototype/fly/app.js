@@ -318,7 +318,7 @@ const BASE_R = [6, 2.4, 2, 3, 9, 8, 6, 2.4, 1.8, 1.2, 1];
 const BASE_L = [6, 2.2, -3, 1.2, 3, 8, 2, 2.2, 1.6, 1.2, 1];
 const ROUGH = [6, 2, 1.5, 2.5, 5, 6, 4, 2, 0.6, 0.5, 0.4];
 const MOUNT = [95, 14, 10, 26, 42, 30, 32, 8, 3, 1.5, 1];
-const COLS = [0x1d3324, 0x1f3526, 0x1d2f2a, 0x1c3326, 0x1d3428, 0x3a2a20, 0x233528, 0x4e3f2c, 0x26302b, 0x1b3a22, 0x15301f].map((c) => new THREE.Color(c));
+const COLS = [0x1d3324, 0x1f3526, 0x1d2f2a, 0x1c3326, 0x1d3428, 0x5a2a1c, 0x233528, 0x4e3f2c, 0x26302b, 0x1b3a22, 0x15301f].map((c) => new THREE.Color(c));
 const capeFade = (a) => 1 - smooth(A_STOP[10] + 20, A_STOP[10] + 85, a);
 const widthW = (a) => si(WEST, a) * capeFade(a);
 const widthE = (a) => si(EAST, a) * capeFade(a);
@@ -1135,7 +1135,8 @@ function addFlag(k, o, rot) {
   const dg = new THREE.PlaneGeometry(220, 160, sx, sz), dp = dg.attributes.position;
   for (let i = 0; i < dp.count; i++) { const x = dp.getX(i), yy = dp.getY(i); const fx = smooth(110, 70, Math.abs(x)) * smooth(80, 50, Math.abs(yy)); dp.setZ(i, -3 + fx * (3 + Math.max(0, Math.sin(x * 0.05 + vnoise(x * 0.03, yy * 0.03) * 3) * 6 + vnoise(x * 0.02, yy * 0.02) * 10))); }
   dg.rotateX(-Math.PI / 2); dg.computeVertexNormals();
-  const dunes = new THREE.Mesh(dg, M({ color: 0xc49a6a, roughness: 1 })); dunes.position.set(d.x, 1, d.z); dunes.rotation.y = d.rot; G[k].add(dunes);
+  { const uv = dg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (220 / 9), uv.getY(i) * (160 / 9)); }
+  const dunes = new THREE.Mesh(dg, texMat('sand-red', { color: 0xf2d2b0, roughness: 1 })); dunes.position.set(d.x, 1, d.z); dunes.rotation.y = d.rot; G[k].add(dunes);
   for (let i = 0; i < nq(6, 3); i++) place(k, 'thuyen-thung', 2.4, at(k, -R(56, 82), R(-30, 40)), -0.15, R(0, 6), { bob: 0.07 });
   field(k, [{ x: p.x, y: y + 0.8, z: p.z, c: 0xffc46b, s: 0.3, tw: 0.2 }], { reflect: false });
 }
@@ -1752,7 +1753,9 @@ async function fetchWeather() {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${STOP_LL.map((l) => l[0]).join(',')}&longitude=${STOP_LL.map((l) => l[1]).join(',')}&current=precipitation,cloud_cover,weather_code`;
     const j = await (await fetch(url)).json(), list = Array.isArray(j) ? j : [j];
-    ATMO.wx = list.map(({ current: c = {} }) => {
+    // an error body ({ error: true, reason }) or a short list (rate limit, outage) keeps the previous weather
+    if (list.length !== STOP_LL.length || list.some((x) => !x || x.error || !x.current)) throw new Error(j.reason || 'unexpected weather response');
+    ATMO.wx = list.map(({ current: c }) => {
       const wet = (c.weather_code >= 51 && c.weather_code <= 67) || (c.weather_code >= 80 && c.weather_code <= 99);
       return { rain: c.precipitation > 0.05 || wet ? clamp(0.25 + (c.precipitation || 0) / 4, 0.25, 1) : 0, cloud: clamp((c.cloud_cover ?? 0) / 100, 0, 1), storm: c.weather_code >= 95 };
     });
@@ -2104,7 +2107,7 @@ requestAnimationFrame(frame);
 // test hooks
 window.__fly = {
   ready: Promise.all([...MODEL_JOBS, ...TEX_JOBS]),
-  atmo: () => ({ e: +ATMO.e.toFixed(1), rain: +ATMO.rain.toFixed(2), cloud: +ATMO.cloud.toFixed(2), clock: ATMO.clock }),
+  atmo: () => ({ e: +ATMO.e.toFixed(1), rain: +ATMO.rain.toFixed(2), cloud: +ATMO.cloud.toFixed(2), clock: ATMO.clock, stop: STATE.s.k, phase: STATE.phase, wx: ATMO.wx ? ATMO.wx.length : 0 }),
   setTime(mode) { ATMO.timeMode = mode; }, setWx(mode) { ATMO.wxMode = mode; },
   trees: () => ({ total: TREES.x.length, near: NEAR_TREES.map((l) => l[0]?.count ?? 0), uNear: impMat.uniforms.uNear.value }),
   shot(u, t = 10) { HOLD = true; curU = targetU = u; T = t; writeU(u); step(u, 0.016); step(u, 0.5); step(u, 0.5); step(u, 0.5); step(u, 0.5); },
