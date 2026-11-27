@@ -169,7 +169,7 @@ const vi: Dict = {
     text: 'Cảm ơn bạn đã đi cùng mình từ Lũng Cú tới đây. Nếu bạn có một hành trình mới cho kỹ sư .NET và Next.js, hãy nhắn cho mình.',
   },
   stops: [
-    { place: 'Lũng Cú', tag: 'Khởi hành', side: 'right', seen: 'Cột cờ Lũng Cú, ruộng bậc thang Hà Giang', body: { kind: 'profile' } },
+    { place: 'Lũng Cú', tag: 'Khởi hành', side: 'right', seen: 'Cột cờ Lũng Cú trên đỉnh núi Rồng, đường bậc đá lên đỉnh', body: { kind: 'profile' } },
     {
       place: 'Hà Nội',
       tag: '2021',
@@ -186,7 +186,7 @@ const vi: Dict = {
     },
     { place: 'Huế', tag: '2023', side: 'left', seen: 'Tháp Phước Duyên chùa Thiên Mụ, cầu Trường Tiền, nón lá trên sông Hương', body: { kind: 'job', job: 2 } },
     { place: 'Đà Nẵng, Hội An', side: 'left', now: true, seen: 'Cầu Vàng, cầu Rồng, phố đèn lồng Hội An và thuyền thúng', body: { kind: 'job', job: 3 } },
-    { place: 'Tây Nguyên', side: 'right', seen: 'Nhà rông, cồng chiêng bên đống lửa, đồi cà phê', body: { kind: 'projects' } },
+    { place: 'Tây Nguyên', side: 'right', seen: 'Nhà rông, cồng chiêng bên đống lửa, voi và thác nước', body: { kind: 'projects' } },
     { place: 'Nha Trang', side: 'left', seen: 'Tháp Bà Ponagar, đảo và đèn thuyền câu mực', body: { kind: 'ways' } },
     { place: 'Phan Thiết', side: 'right', seen: 'Tháp nước Phan Thiết, đồi cát Mũi Né, thuyền thúng', body: { kind: 'skills' } },
     { place: 'Sài Gòn', side: 'left', seen: 'Chợ Bến Thành, Landmark 81, Bitexco', body: { kind: 'education' } },

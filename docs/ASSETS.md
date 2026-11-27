@@ -201,4 +201,8 @@ Mỗi model Meshy đã có **chỗ chừa sẵn trong cảnh** theo tên file �
 
 ## 5. Không có model tốt (mình làm bằng code)
 
-Ruộng bậc thang và ruộng lúa, cây thanh long trên trụ, dừa nước, hoa tam giác mạch, thuyền độc mộc, nhà bè Hạ Long, phà, thác nước Tây Nguyên, cờ đỏ sao vàng (đã có).
+Chỉ những thứ mà bản chất là khối xây, dựng theo đúng kích thước thật: kè sông (tường đá kè nghiêng, đá viền, lối đi lát đá, lan can, bậc xuống nước có tường má), nền sân đá Thiên Mụ, nền bát giác và đường bậc lên cột cờ Lũng Cú, phà, thác nước Tây Nguyên, cờ đỏ sao vàng. Lan can con tiện dùng mẫu con tiện thư viện (`con-tien-da`) đặt giữa các trụ.
+
+Đã bỏ hẳn (27/11/2026), vì làm bằng khối và hình cầu trông giả: ruộng bậc thang hình nón, ruộng lúa bằng hộp, cây thanh long trên trụ, dừa nước bằng nón, hoa tam giác mạch bằng chấm, cây cà phê và cây bằng khối cầu, cây bẹo, quả cầu thay đèn, dừa và nhà sàn Miền Tây bằng hộp (đã thay bằng `dua`, `nha-mai-la`), đền Ngọc Sơn bằng hộp (thay bằng `den-chua`).
+
+Chưa có model, đã gỡ khối thay thế, sẽ hiện ngay khi có file: **Chùa Cầu** (`chua-cau`), **Bưu điện Thành phố** (`buu-dien-thanh-pho`), **Ngọ Môn** (`ngo-mon`). Sketchfab không có bản miễn phí dùng được (chỉ có bản quét hàng trăm MB của cả Đại Nội và cầu An Hội).

@@ -170,7 +170,7 @@ const en: Dict = {
     text: 'Thank you for travelling with me from Lũng Cú to here. If you have a new journey for a .NET and Next.js engineer, send me a message.',
   },
   stops: [
-    { place: 'Lũng Cú', tag: 'Setting off', side: 'right', seen: 'Lũng Cú flag tower, the terraced fields of Hà Giang', body: { kind: 'profile' } },
+    { place: 'Lũng Cú', tag: 'Setting off', side: 'right', seen: 'Lũng Cú flag tower on the summit of Rồng mountain, the stone stairway up', body: { kind: 'profile' } },
     {
       place: 'Hà Nội',
       tag: '2021',
@@ -203,7 +203,7 @@ const en: Dict = {
       seen: 'The Golden Bridge, the Dragon Bridge, the lantern streets and basket boats of Hội An',
       body: { kind: 'job', job: 3 },
     },
-    { place: 'Central Highlands', side: 'right', seen: 'A rông communal house, gongs by the fire, coffee hills', body: { kind: 'projects' } },
+    { place: 'Central Highlands', side: 'right', seen: 'A rông communal house, gongs by the fire, elephants and a waterfall', body: { kind: 'projects' } },
     { place: 'Nha Trang', side: 'left', seen: 'The Po Nagar towers, islands and squid-boat lights', body: { kind: 'ways' } },
     { place: 'Phan Thiết', side: 'right', seen: 'The Phan Thiết water tower, the Mũi Né dunes, basket boats', body: { kind: 'skills' } },
     { place: 'Saigon', side: 'left', seen: 'Bến Thành market, Landmark 81, Bitexco', body: { kind: 'education' } },

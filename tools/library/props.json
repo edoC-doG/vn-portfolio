@@ -544,5 +544,26 @@
   "lowTris": 110,
   "midTex": 512,
   "lowTex": 256
+ },
+ "cay-lieu": {
+  "src": "sketchfab/cay/willow-422de237.glb",
+  "midTris": 2500,
+  "lowTris": 800,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "cay-dai": {
+  "src": "sketchfab/cay/realistic-hd-frangipani-tree-16-50-49d2bb67.glb",
+  "midTris": 3000,
+  "lowTris": 900,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "con-tien-da": {
+  "src": "sketchfab/duong-pho/balustrade-1b94160b.glb",
+  "midTris": 160,
+  "lowTris": 60,
+  "midTex": 256,
+  "lowTex": 128
  }
 }
