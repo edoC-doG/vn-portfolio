@@ -153,6 +153,16 @@ Kết quả kiểm tra: ✅ tốt 74, 🔧 cần xử lý thêm 5, ⚠️ yếu 
 | ✅ | Khác | Thanh long (quả, cho sạp chợ) | [3D Scan: Dragon Fruit / Pitaya](https://sketchfab.com/3d-models/c7833d1adf434d66a694d732f6dc5446) | 64.124 | Z3D | Cây thanh long mình làm bằng code |
 | ✅ | Khác | Lưới đánh cá | [Fishing net (Rede de pesca)](https://sketchfab.com/3d-models/cab12e62c8dd46cdbb6b250c2a3c1306) | 112 | Alex Martire |  |
 
+### Bổ sung 27/11/2026 (theo ảnh thật từng chặng)
+
+Tải thêm 20 model CC Attribution (tên tác giả trong `tools/library/sketchfab.json`, ghi công tự sinh trên trang):
+
+- **Hội An:** đèn lồng lụa Hội An (bản quét), đèn lồng tròn đỏ, đèn lụa trống, đèn giấy (nhuộm nhiều màu trong engine), xe hủ tiếu, xe xôi bánh mì, hai sạp trái cây, chậu hoa giấy.
+- **Sài Gòn:** xe cà phê, trạm xe buýt, tháp mặt đá, tháp kính nhọn, tòa căn hộ hiện đại (bản trung bình 9k tam giác; bản nhẹ dùng tháp khác vì giảm lưới làm thủng tường).
+- **Miền Tây:** nhà gỗ mái tôn có hiên, nhà sàn gỗ ven sông, nhà lá vách tre, chòi gỗ, chòi tre.
+
+Hai model có tấm nền đi kèm (chậu hoa giấy, sạp trái cây) được gỡ nền bằng `tools/library/drop_nodes.mjs`. Đã bỏ: tòa văn phòng cũ (mất kính sau khi giảm lưới, trông như giàn giáo), dãy nhà phố thô.
+
 ## 4. Meshy (bạn làm)
 
 > **Cập nhật 27/11/2026:** Meshy hết credit, nên các mục có model cộng đồng đủ tốt đã thay bằng model Sketchfab (đánh dấu [x] bên dưới, ghi công tự thêm vào trang ghi công). Còn thiếu: Chùa Cầu (thư viện công khai Meshy có bản CC0 do người khác tạo; Sketchfab Store có bản chi tiết khoảng 15 USD), Bưu điện, Ngọ Môn và xích lô (không có bản miễn phí dùng được; Ngọ Môn có 3 bản trên Sketchfab nhưng khóa tải). 3 model mức 0 đã tạo xong vẫn tải được trong My Assets của Meshy.

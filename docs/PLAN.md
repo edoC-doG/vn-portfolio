@@ -103,8 +103,8 @@ public/models/{low,mid,high}/  model
 
 | | Thấp (điện thoại, máy yếu) | Trung bình | Cao |
 |---|---|---|---|
-| Tam giác trên khung hình | ≤ 120k (đo được 52–118k) | ≤ 950k (đo được 427–913k) | ≤ 1M |
-| Draw call | ≤ 120 (đo được 39–120) | ≤ 250 (đo được 82–244, chưa kể lượt vẽ bóng) | ≤ 250 |
+| Tam giác trên khung hình | ≤ 120k (đo được 51–114k) | ≤ 950k (đo được 361–856k) | ≤ 1M |
+| Draw call | ≤ 120 (đo được 49–115) | ≤ 250 (đo được 59–255, chưa kể lượt vẽ bóng) | ≤ 250 |
 | Texture | 512 | 1024 | 1024 KTX2 |
 | Tỉ lệ điểm ảnh (DPR) | 1 – 1,25 | 1,5 | 2 |
 | Bloom | tắt | bật (nửa độ phân giải) | bật |
@@ -116,6 +116,7 @@ public/models/{low,mid,high}/  model
 - Model phụ trợ: instancing (một draw call cho mỗi chất liệu), chất liệu chỉ khác màu gộp thành bảng màu, mảnh cùng chất liệu nối lại (`PROP=1` trong `tools/process.mjs`). Ngân sách tam giác riêng cho từng model trong `tools/library/props.json`.
 - Đồ nhỏ chỉ vẽ trong bán kính 110 (thấp) hoặc 230 (trung bình) quanh máy quay. Mức thấp chỉ có xe máy trên đường, không có ô tô và xe buýt.
 - Cỏ (ảnh cỏ thật trên thẻ chéo) và dương xỉ chỉ vẽ ở chặng máy quay đang ở (bán kính 85 / 105).
+- Số đo cuối ngày 27/11/2026, sau vòng Hội An, Thiên Mụ, Ba Đình, Miền Tây, Sài Gòn: chặng Phan Thiết 255 draw call ở mức trung bình (thấy cả Sài Gòn), các chặng khác ≤ 223. Chi tiết gần của phố Hội An (đèn lồng, quầy, xe) nằm trong nhóm GC nên chỉ vẽ khi máy quay ở gần; cụm nhà cao tầng Sài Gòn chỉ vẽ trong bán kính 300 (260 ở mức thấp) và ẩn khi đã vào Miền Tây.
 - Số đo 27/11/2026, sau khi làm kè sông, Thiên Mụ và Lũng Cú theo ảnh thật: Huế 204 → 226 draw call, 762k → 913k tam giác; Lũng Cú 121 → 154, 507k → 597k. Chặng Tây Nguyên đã ở mức 249 draw call từ trước (thấy cả nhóm xa của Hội An và Sài Gòn).
 
 ## 8. Các mốc
