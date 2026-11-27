@@ -257,9 +257,10 @@ function natureMaterial({ color = 0xffffff, vertexColors = false, rock = 0x3b3d3
           // photo textures divided by their own average: they add detail, the region tint still comes from the vertex colours
           vec3 tw = pow(abs(WN), vec3(4.0)); tw /= tw.x + tw.y + tw.z;
           rk = uRock * rel(triC(tRock, P / 11.0, tw), uRockMean) * mix(vec3(1.0), rel(triC(tRock, P / 43.0 + 0.37, tw), uRockMean), 0.35) * (0.8 + 0.4 * big);
-          vec3 gT = rel(texture2D(tGround, P.xz / 7.5).rgb, uGroundMean), fT = rel(texture2D(tField, P.xz / 9.0).rgb, uFieldMean);
-          // fields on low flat land near the river, forest floor elsewhere
-          float fieldW = (1.0 - smoothstep(3.0, 9.0, P.y + (big - 0.5) * 6.0)) * (1.0 - smoothstep(0.12, 0.3, slope));
+          vec3 gT = rel(texture2D(tGround, P.xz / 7.5).rgb, uGroundMean);
+          vec3 fT = rel(texture2D(tField, P.xz / 9.0).rgb, uFieldMean) * mix(vec3(1.0), rel(texture2D(tField, P.xz / 2.6 + 0.31).rgb, uFieldMean), 0.45);
+          // grass on the gentle slopes, leaf litter in patches (under the forest) and on steeper ground
+          float fieldW = (1.0 - smoothstep(32.0, 55.0, P.y + (big - 0.5) * 14.0)) * (1.0 - smoothstep(0.2, 0.42, slope)) * smoothstep(0.22, 0.5, big + 0.18 * (mid - 0.5));
           veg = diffuseColor.rgb * (0.7 + 0.5 * big) * mix(mix(vec3(1.0), gT, 0.85), mix(vec3(1.0), fT, 0.85) * vec3(1.05, 1.0, 0.85), fieldW);
           sandC = uSand * rel(texture2D(tSand, P.xz / 6.0).rgb, uSandMean) * (0.85 + 0.3 * mid);
         #endif
@@ -1764,27 +1765,55 @@ function addFlag(k, o, rot) {
   field(k, [...Array(nq(10, 5))].map(() => { const b = at(k, -R(40, 160), R(60, 220)); return { x: b.x, y: 1.4, z: b.z, c: 0xe6fbff, s: 0.3, halo: 10, tw: 0.5 }; }), { bodies: false, reflect: true });
 }
 
-// ---------------------------------------------------------------- ground cover: photoscanned grass on the banks, tall grass at the waterline
-// Clumps from Poly Haven's grass_medium_01 (green and dry variants, split and cut out by tools/library/split_variants.mjs)
-// and fern_02, thickest in the band the camera skims past. Drawn only at the stop the camera is at (GC groups).
+// ---------------------------------------------------------------- ground cover: grass sprites
+// Photographed grass clumps (the atlas of Poly Haven's grass_bermuda_01, built into assets/textures/grass-sprites.png) on
+// two crossed cards each: a clump is 4 triangles, so thousands fit in one draw call per stop. Thin 3D blades vanish at
+// the camera's height; these read like the grass you see from a low flight. A few photoscanned ferns in between.
+// Drawn only at the stop the camera is at (GC groups).
+const GRASS_CELLS = [[40, 160, 320, 296], [360, 24, 488, 320], [544, 32, 680, 240], [696, 112, 976, 248], [544, 368, 736, 560], [792, 328, 960, 568], [48, 424, 192, 560], [280, 408, 472, 552], [48, 696, 176, 1016], [232, 640, 632, 1016], [712, 680, 888, 1016]]; // [x0, y0, x1, y1] px in the 1024 atlas
+const GRASS_TEX = loadTex('grass-sprites', { mime: 'image/png', srgb: true, repeat: false, placeholder: 'rgba(0,0,0,0)' });
+const GRASS_MAT = M({ map: GRASS_TEX, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.95 });
+GRASS_MAT.onBeforeCompile = (sh) => {
+  sh.vertexShader = 'attribute vec4 aCell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  vMapUv = aCell.xy + uv * aCell.zw;');
+};
+const GRASS_CARD = (() => {
+  const a = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), b = a.clone().rotateY(Math.PI / 2);
+  const g = mergeGeometries([a, b]); const n = g.attributes.normal; for (let i = 0; i < n.count; i++) n.setXYZ(i, 0, 1, 0); // lit like the ground under it
+  return g;
+})();
+function grassField(k, items, dry) {
+  if (!items.length) return null;
+  const geo = GRASS_CARD.clone(), cell = new Float32Array(items.length * 4);
+  const im = new THREE.InstancedMesh(geo, GRASS_MAT, items.length), c = new THREE.Color(), green = new THREE.Color(0xffffff), straw = new THREE.Color(0xe8d39a);
+  items.forEach((it, i) => {
+    const [x0, y0, x1, y1] = GRASS_CELLS[Math.floor(rand() * GRASS_CELLS.length)], w = (x1 - x0) / 1024, h = (y1 - y0) / 1024;
+    cell.set([x0 / 1024, 1 - y1 / 1024, w, h], i * 4);
+    const hh = it.s, ww = hh * (w / h);
+    im.setMatrixAt(i, _m4.compose(_v3.set(it.x, it.y, it.z), _q.setFromAxisAngle(UP, it.ry), _s3.set(ww, hh, ww)));
+    im.setColorAt(i, c.copy(green).lerp(straw, clamp(dry + R(-0.25, 0.25), 0, 1)).multiplyScalar(R(0.78, 1.08)));
+  });
+  geo.setAttribute('aCell', new THREE.InstancedBufferAttribute(cell, 4));
+  im.computeBoundingSphere(); im.userData.noCast = true; GC[k].add(im);
+  return im;
+}
 {
   const DRY = [0.05, 0.1, 0.15, 0.15, 0.2, 0.55, 0.45, 0.75, 0.25, 0, 0.05], DENS = [1, 0.55, 0.45, 1, 0.75, 1, 0.55, 0.7, 0.3, 1, 0.8];
   const free = (x, z) => !EXCL.some(([ex, ez, er]) => (x - ex) ** 2 + (z - ez) ** 2 < (er * 0.8) ** 2);
-  const GREEN = ['co-c', 'co-d', 'co-e'], DRYS = ['co-kho-c', 'co-kho-d'], FERNS = ['xi-a', 'xi-b'];
   for (let k = 0; k < 11; k++) {
-    // in patches, as grass grows: a few clumps of the same kind round each patch centre
-    const by = {};
-    for (const c of onLand(k, Math.round(nq(42, 14) * DENS[k]), -44, 44, -100, 100, (y) => y > 0.4 && y < 30, 4)) {
+    const items = [];
+    // in patches, as grass grows, thinning out away from the flight line
+    for (const c of onLand(k, Math.round(nq(260, 90) * DENS[k]), -48, 48, -100, 100, (y) => y > 0.25 && y < 34, 4)) {
       if (!free(c.x, c.z)) continue;
-      const r = rand(), pick2 = (a) => a[Math.floor(rand() * a.length)], slug = r < DRY[k] * 0.85 ? pick2(DRYS) : r > 0.88 ? pick2(FERNS) : pick2(GREEN);
-      for (let j = 0, n = Math.round(R(4, 8)); j < n; j++) {
-        const a = R(0, 6.28), d = R(0, 2.6), x = c.x + Math.cos(a) * d, z = c.z + Math.sin(a) * d, y = gy(x, z);
-        if (y > 0.3) (by[slug] ??= []).push({ x, z, y: y - 0.04, s: R(0.6, 1.15), ry: R(0, 6.28) });
+      for (let j = 0, n = Math.round(R(6, 14)); j < n; j++) {
+        const a = R(0, 6.28), d = Math.sqrt(rand()) * R(2, 5), x = c.x + Math.cos(a) * d, z = c.z + Math.sin(a) * d, y = gy(x, z);
+        if (y > 0.2) items.push({ x, z, y: y - 0.05, s: R(0.55, 1.25), ry: R(0, 6.28) });
       }
     }
-    for (const [slug, items] of Object.entries(by)) scatter(k, slug, items, { keep: true, group: GC[k], noCast: true });
-    const wl = onLand(k, Math.round(nq(110, 36) * DENS[k]), -40, 40, -100, 100, (y) => y > -0.3 && y < 0.7, 4).filter((p) => free(p.x, p.z));
-    scatter(k, 'co-a', wl.map((p) => ({ ...p, y: Math.max(p.y, -0.3), s: R(0.9, 1.5), ry: R(0, 6.28) })), { keep: true, group: GC[k], noCast: true });
+    // the waterline: taller clumps
+    for (const p of onLand(k, Math.round(nq(160, 50) * DENS[k]), -40, 40, -100, 100, (y) => y > -0.25 && y < 0.8, 4)) if (free(p.x, p.z)) items.push({ ...p, y: Math.max(p.y, -0.2), s: R(1.0, 1.7), ry: R(0, 6.28) });
+    grassField(k, items, DRY[k]);
+    const ferns = onLand(k, Math.round(nq(14, 5) * DENS[k]), -40, 40, -100, 100, (y) => y > 0.6 && y < 30, 4).filter((p) => free(p.x, p.z));
+    for (const [n, slug] of [[0, 'xi-a'], [1, 'xi-b']]) scatter(k, slug, ferns.filter((_, i) => i % 2 === n).flatMap((c) => [...Array(4)].map(() => { const x = c.x + R(-2, 2), z = c.z + R(-2, 2); return { x, z, y: gy(x, z) - 0.03, s: R(1.0, 1.6), ry: R(0, 6.28) }; })), { keep: true, group: GC[k], noCast: true });
   }
 }
 

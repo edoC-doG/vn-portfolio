@@ -19,12 +19,12 @@
   },
   "field": {
     "mean": [
-      0.1361,
-      0.0956,
-      0.0369
+      0.3156,
+      0.2331,
+      0.104
     ],
     "normal": true,
-    "source": "brown_mud_leaves_01"
+    "source": "leafy_grass"
   },
   "sand": {
     "mean": [
