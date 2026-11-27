@@ -134,15 +134,15 @@
  },
  "toa-van-phong": {
   "src": "sketchfab/nha/free-atlanta-corperate-office-building-d96380fb.glb",
-  "midTris": 8000,
-  "lowTris": 1500,
+  "midTris": 2600,
+  "lowTris": 800,
   "midTex": 1024,
   "lowTex": 512
  },
  "chung-cu": {
   "src": "sketchfab/nha/city-apartment-building-7f77793a.glb",
-  "midTris": 8000,
-  "lowTris": 1500,
+  "midTris": 2600,
+  "lowTris": 800,
   "midTex": 1024,
   "lowTex": 512
  },
@@ -528,6 +528,62 @@
   "src": "sketchfab/thuyen/gilded-dragon-boat-226c5a54.glb",
   "midTris": 3000,
   "lowTris": 1000,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-a": {
+  "src": "models/cay/split/grass_medium_01_tall_a_LOD0.glb",
+  "midTris": 220,
+  "lowTris": 90,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-c": {
+  "src": "models/cay/split/grass_medium_01_mid_b_LOD0.glb",
+  "midTris": 300,
+  "lowTris": 110,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-d": {
+  "src": "models/cay/split/grass_medium_01_mid_a_LOD0.glb",
+  "midTris": 320,
+  "lowTris": 120,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "xi-a": {
+  "src": "models/cay/split/fern_02_a.glb",
+  "midTris": 300,
+  "lowTris": 110,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "xi-b": {
+  "src": "models/cay/split/fern_02_d.glb",
+  "midTris": 300,
+  "lowTris": 110,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-e": {
+  "src": "models/cay/split/grass_medium_01_large_a_LOD0.glb",
+  "midTris": 360,
+  "lowTris": 130,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-kho-c": {
+  "src": "models/cay/split-dry/grass_medium_01_mid_b_LOD0.glb",
+  "midTris": 300,
+  "lowTris": 110,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "co-kho-d": {
+  "src": "models/cay/split-dry/grass_medium_01_mid_a_LOD0.glb",
+  "midTris": 320,
+  "lowTris": 120,
   "midTex": 512,
   "lowTex": 256
  }

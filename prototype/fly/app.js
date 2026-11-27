@@ -875,7 +875,8 @@ function scatter(k, slug, items, opts = {}) {
     tpl.traverse((m) => {
       if (!m.isMesh) return;
       const im = new THREE.InstancedMesh(m.geometry, m.material, set.items.length);
-      set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); (opts.far ? G[k] : SG[k]).add(im);
+      set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); (opts.group ?? (opts.far ? G[k] : SG[k])).add(im);
+      if (opts.noCast) im.userData.noCast = true;
       if (opts.extra) EXTRAS.push(im);
     });
     setMatrices(set);
@@ -1031,7 +1032,6 @@ FALL_MAT.uniforms.uTime = SH.uTime;
 // Rice terraces that follow the hill's contours: each level is a flat paddy whose edge wanders (smooth periodic noise
 // that shifts a little from level to level, so the contours run roughly parallel like a real hillside), with a sloping
 // grassy riser below it. Returns the top height and along(i, dir): the distance to level i's edge in a local direction.
-const TERRACES = []; // read by the ground cover, which plants rice on each level
 function terraces(k, x, z, g0, rot, n, r0, dr, h) {
   EXCL.push([x, z, r0 + 6]);
   const seed = R(0, 6.28), N = LOW ? 32 : 72, Z = 0.7, M0 = MY(x, 0, z, rot);
@@ -1061,7 +1061,6 @@ function terraces(k, x, z, g0, rot, n, r0, dr, h) {
   for (const m of [new THREE.Mesh(flat(bake(capA)), texMat('grass', { color: 0xd2e48e })), new THREE.Mesh(flat(bake(capB)), texMat('grass', { color: 0xbcd27e })),
     new THREE.Mesh(smoothN(bake(wall)), texMat('grass', { color: 0x7a8a4e }))]) { m.userData.noCast = true; G[k].add(m); }
   const along = (i, dir) => { const th = Math.atan2(dir.y / Z, dir.x), r = rad(i, th); return Math.hypot(r * Math.cos(th), r * Math.sin(th) * Z); };
-  TERRACES.push({ k, n, h, g0, M0, rad, Z });
   return { top: g0 + (n - 1) * h + 0.2 + h / 2, along };
 }
 const FLAG_MAT = new THREE.ShaderMaterial({
@@ -1344,14 +1343,15 @@ function addFlag(k, o, rot) {
   HERO[k] = v3(p.x, y + 7, p.z); HERO_ALONG[k] = 2;
   place(k, 'cho-ben-thanh', 22, p, y, -0.4);
   { const d1 = at(k, 62, 34), d2 = at(k, 46, 56); place(k, pick('nha-tho-duc-ba') ? 'nha-tho-duc-ba' : 'nha-tho-duc-ba-sf', 26, d1, gy(d1.x, d1.z), -0.3 + Math.PI / 2); place(k, 'buu-dien-thanh-pho', 22, d2, gy(d2.x, d2.z), -0.3); }
-  const parts = [], reserved = [[38, 2, 22], [62, 34, 12], [46, 56, 14], [98, 78, 10], [66, 54, 9]];
-  for (let n = 0, t = 0; n < nq(34, 18) && t < 500; t++) {
+  const parts = [], towers = [], blocks = [], reserved = [[38, 2, 22], [62, 34, 12], [46, 56, 14], [98, 78, 10], [66, 54, 9]];
+  for (let n = 0, t = 0; n < nq(22, 10) && t < 500; t++) {
     const west = rand() < 0.75, lat = west ? R(58, 160) : -R(26, 70), al = R(-30, 58); // stops are ~110 apart: stay out of Miền Tây
     if (reserved.some(([l, a, r]) => Math.hypot(lat - l, al - a) < r + 8) || Math.abs(al - 40) < 9) continue; // al 40: the Ba Son bridge
     const q = at(k, lat, al), g = gy(q.x, q.z); if (g < 0.5) continue;
-    const w = R(6, 13), h = R(14, west ? 56 : 32), dd = R(6, 12);
-    parts.push([scaleUV(new THREE.BoxGeometry(w, h, dd), w, h, dd), MY(q.x, g + h / 2, q.z, q.rot + R(-0.2, 0.2))]); n++;
+    const h = R(18, west ? 60 : 34), ry = q.rot + R(-0.25, 0.25) + (rand() < 0.5 ? Math.PI / 2 : 0);
+    (h > 30 ? towers : blocks).push({ x: q.x, z: q.z, y: g, s: h > 30 ? h : h * 1.25, ry }); n++;
   }
+  scatter(k, 'toa-van-phong', towers, { far: true, keep: true }); scatter(k, 'chung-cu', blocks, { far: true, keep: true });
   const lm = at(k, 98, 78), lg = Math.max(gy(lm.x, lm.z), 0), l81 = AVAILABLE.has('landmark-81');
   if (l81) scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }], { far: true, keep: true });
   else for (const [ox, oz, h] of [[0, 0, 120], [5, 0, 104], [-5, 0, 98], [0, 5, 90], [0, -5, 84], [5, 5, 72], [-5, -5, 66], [5, -5, 58], [-5, 5, 50]]) parts.push([scaleUV(new THREE.BoxGeometry(5, h, 5), 5, h, 5), MY(lm.x + ox, lg + h / 2, lm.z + oz)]);
@@ -1440,11 +1440,10 @@ function addFlag(k, o, rot) {
   scatter(k, 'tre', onLand(k, nq(14, 6), 40, 85, -70, 20, (y) => y > 2 && y < 25).map((p) => ({ ...p, s: R(7, 10), ry: R(0, 6) })), { excl: 0.3 });
   scatter(k, 'tang-da', onLand(k, nq(16, 8), -90, 90, -80, 60, (y) => y > 1).map((p) => ({ ...p, s: R(1.5, 4), ry: R(0, 6) })));
   const pink = [0xff8cc6, 0xf06ab0, 0xffb3d9, 0xffffff];
-  instances(k, new THREE.IcosahedronGeometry(0.3, 0), M({ color: 0xffffff, roughness: 1 }), onLand(k, nq(1800, 600), 26, 110, -90, 50, (y) => y > 2 && y < 30).map((p, i) => ({ ...p, y: p.y + 0.25, s: R(0.8, 1.6), c: pink[i % 4] })), { extra: true });
+  instances(k, new THREE.IcosahedronGeometry(0.3, 1), M({ color: 0xffffff, roughness: 1 }), onLand(k, nq(1100, 380), 26, 110, -90, 50, (y) => y > 2 && y < 30).map((p, i) => ({ ...p, y: p.y + 0.15, s: R(0.4, 0.8), c: pink[i % 4] })), { extra: true });
   const lolo = [];
   for (const [l, al] of [[56, -36], [64, -28], [61, -44], [72, -34], [52, -52]]) { const q = at(k, l, al); lolo.push({ q, y: Math.max(gy(q.x, q.z), 0.5) }); }
-  G[k].add(new THREE.Mesh(bake(lolo.map(({ q, y }) => [tiledBox(6, 3.4, 5, 3), MY(q.x, y + 1.7, q.z, q.rot + 0.3)])), texMat('earth-wall', { color: 0xd8b48a })));
-  G[k].add(new THREE.Mesh(bake(lolo.map(({ q, y }) => [new THREE.CylinderGeometry(0.01, 4.2, 6.6, 3, 1).rotateX(Math.PI / 2).rotateY(Math.PI / 2).scale(1, 0.5, 1), MY(q.x, y + 3.4 + 0.8, q.z, q.rot + 0.3)])), texMat('roof-tile', { color: 0x9a8a80 })));
+  scatter(k, 'nha-tranh', lolo.map(({ q, y }) => ({ x: q.x, z: q.z, y, s: R(7, 9), ry: q.rot + R(-0.4, 0.4) })));
   for (const { q } of lolo) EXCL.push([q.x, q.z, 7]);
 }
 // 02 Hà Nội: lakeside road with motorbikes, banyans around the lake, street lamps, One Pillar Pagoda and Khuê Văn Các near Ba Đình,
@@ -1531,7 +1530,7 @@ function addFlag(k, o, rot) {
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(12, 5), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-vespa', n: nq(5, 2), s: 1.8 }, { slug: 'o-to', n: nq(5, 2), s: 4.4, speed: 7 }]);
   scatter(k, 'den-duong', along(k, nq(7, 4), -23.6, 2, 58, 4.2));
   scatter(k, 'toa-van-phong', [[-29, 12, 44], [-30, 44, 50], [-28, 28, 36], [-30, 58, 40]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4, far: true });
-  { const parts = []; for (const [l, al, w, h] of [[-29, 2, 9, 30], [-30, 22, 8, 24], [-29, 36, 10, 34], [-30, 50, 8, 22]]) { const q = at(k, l, al), g = Math.max(gy(q.x, q.z), 0.5); parts.push([scaleUV(new THREE.BoxGeometry(w, h, w), w, h, w), MY(q.x, g + h / 2, q.z, q.rot)]); EXCL.push([q.x, q.z, w]); } G[k].add(new THREE.Mesh(bake(parts), WINDOW_MAT)); }
+  scatter(k, 'chung-cu', [[-31, 2, 30], [-32, 22, 26], [-31, 36, 32], [-32, 50, 24]].map(([l, al, sz]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: sz, ry: q.rot + Math.PI / 2 }; }), { excl: 0.4, far: true, keep: true });
   // cable car: cabins along a sagging line from the valley up to the Golden Bridge
   const A = at(k, 38, -34), B = at(k, 44, 4), ya = Math.max(gy(A.x, A.z), 0) + 6, yb = gy(B.x, B.z) + 18, cab = [], wv = [];
   for (let i = 0; i <= 24; i++) { const t = i / 24; wv.push(v3(A.x + (B.x - A.x) * t, ya + (yb - ya) * t - 5 * t * (1 - t) + 0.6, A.z + (B.z - A.z) * t)); }
@@ -1594,9 +1593,11 @@ function addFlag(k, o, rot) {
   scatter(k, 'ghe-do', stools); scatter(k, 'ghe-xanh', stools.slice(0, Math.floor(stools.length / 3)).map((p) => ({ ...p, x: p.x + 0.7, s: 0.6 })));
   scatter(k, 'cay-ven-bien', along(k, nq(8, 4), 27.2, -56, 86, 10, { gap: 3 }).map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.3 });
   const np = pick('nha-pho-sai-gon');
-  const row = np ? null : houseRow(k, 31.5, 60, 92, { w: [4, 5.5], h: [12, 18], d: 8, flat: true, wall: 'white', tints: [0xe9e4d8, 0xd6e2e6, 0xf0dcc2, 0xdfe6d0, 0xe8d0d0] });
+  const blk = !np && pick('day-nha-ong-ha-noi');
+  const row = np || blk ? null : houseRow(k, 31.5, 60, 92, { w: [4, 5.5], h: [12, 18], d: 8, flat: true, wall: 'white', tints: [0xe9e4d8, 0xd6e2e6, 0xf0dcc2, 0xdfe6d0, 0xe8d0d0] });
   if (np) scatter(k, np, along(k, 6, 31.5, 60, 92, 16, { face: Math.PI / 2 }), { excl: 0.5 });
-  else {
+  else if (blk) scatter(k, blk, [86].map((al) => { const q = at(k, 39, al); return { x: q.x, z: q.z, s: 30, ry: q.rot - Math.PI / 2 }; }), { excl: 0.45, keep: true }); // tube houses facing the river road
+  else if (row) {
     scatter(k, 'cua-cuon', row.map((h) => { const q = at(k, 27.4, h.al); return { x: q.x, z: q.z, s: 3.6, ry: h.rot + Math.PI / 2 }; }));
     scatter(k, 'cuc-nong', row.filter((_, i) => i % 2 === 0).map((h) => { const q = at(k, 27.3, h.al); return { x: q.x, z: q.z, y: h.y + h.h * 0.6, s: 2, ry: h.rot + Math.PI / 2 }; }));
   }
@@ -1763,55 +1764,27 @@ function addFlag(k, o, rot) {
   field(k, [...Array(nq(10, 5))].map(() => { const b = at(k, -R(40, 160), R(60, 220)); return { x: b.x, y: 1.4, z: b.z, c: 0xe6fbff, s: 0.3, halo: 10, tw: 0.5 }; }), { bodies: false, reflect: true });
 }
 
-// ---------------------------------------------------------------- ground cover: grass clumps on the banks, reeds at the waterline
-// Breaks up the flat terrain near the flight line and softens the edge where land meets water. Built last, so the
-// exclusion circles of roads, landmarks and houses are all known. Blades are thin tapered strips with dark roots and
-// light tips (vertex colours); normals point up, so a clump is lit like the ground under it.
-function bladeClump(blades, segs, hMin, hMax, wMin, wMax, spread) {
-  const pos = [], col = [], nor = [], idx = [];
-  for (let b = 0; b < blades; b++) {
-    const a = (b / blades) * Math.PI * 2 + R(-0.4, 0.4), r0 = R(0, spread), h = R(hMin, hMax), w = R(wMin, wMax), lean = R(0.1, 0.5) * h;
-    const dx = Math.cos(a), dz = Math.sin(a), px = -dz, pz = dx, base = pos.length / 3;
-    for (let s = 0; s <= segs; s++) {
-      const t = s / segs, ww = w * (1 - t * 0.92), off = r0 + lean * t * t, c = 0.66 + 0.34 * t;
-      pos.push(dx * off - px * ww, h * t, dz * off - pz * ww, dx * off + px * ww, h * t, dz * off + pz * ww);
-      col.push(c, c, c, c, c, c); nor.push(0, 1, 0, 0, 1, 0);
-    }
-    for (let s = 0; s < segs; s++) { const i = base + s * 2; idx.push(i, i + 1, i + 2, i + 1, i + 3, i + 2); }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeBoundingSphere();
-  return g;
-}
+// ---------------------------------------------------------------- ground cover: photoscanned grass on the banks, tall grass at the waterline
+// Clumps from Poly Haven's grass_medium_01 (green and dry variants, split and cut out by tools/library/split_variants.mjs)
+// and fern_02, thickest in the band the camera skims past. Drawn only at the stop the camera is at (GC groups).
 {
-  const GRASS = bladeClump(LOW ? 5 : 7, 1, 0.3, 0.65, 0.07, 0.11, 0.32), REEDS = bladeClump(LOW ? 4 : 6, 2, 1.4, 2.6, 0.04, 0.06, 0.35);
-  const mat = M({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide, roughness: 0.9 });
-  const lush = new THREE.Color(0x6e9447), dry = new THREE.Color(0xb7a66a), reedC = new THREE.Color(0x9aa05e), c = new THREE.Color();
-  const DRY = [0.1, 0.15, 0.2, 0.2, 0.25, 0.55, 0.45, 0.75, 0.3, 0.05, 0.1], DENS = [1, 0.55, 0.45, 1, 0.75, 1, 0.55, 0.7, 0.3, 1, 0.8];
+  const DRY = [0.05, 0.1, 0.15, 0.15, 0.2, 0.55, 0.45, 0.75, 0.25, 0, 0.05], DENS = [1, 0.55, 0.45, 1, 0.75, 1, 0.55, 0.7, 0.3, 1, 0.8];
   const free = (x, z) => !EXCL.some(([ex, ez, er]) => (x - ex) ** 2 + (z - ez) ** 2 < (er * 0.8) ** 2);
+  const GREEN = ['co-c', 'co-d', 'co-e'], DRYS = ['co-kho-c', 'co-kho-d'], FERNS = ['xi-a', 'xi-b'];
   for (let k = 0; k < 11; k++) {
-    const g = onLand(k, Math.round(nq(3400, 900) * DENS[k]), -50, 50, -95, 95, (y) => y > 0.35 && y < 42, 3).filter((p) => free(p.x, p.z));
-    const im = instances(k, GRASS, mat, g.map((p) => ({ ...p, y: p.y - 0.05, s: R(0.7, 1.3), sy: R(0.7, 1.25), ry: R(0, 6.28) })).map((it) => ({ ...it, sx: it.s, sz: it.s })));
-    if (im) { g.forEach((_, i) => im.setColorAt(i, c.copy(lush).lerp(dry, clamp(DRY[k] + R(-0.18, 0.18), 0, 1)).multiplyScalar(R(0.78, 1.12)))); im.userData.noCast = true; GC[k].add(im); }
-    const r = onLand(k, Math.round(nq(700, 200) * DENS[k]), -48, 48, -110, 110, (y) => y > -0.45 && y < 0.8, 4).filter((p) => free(p.x, p.z));
-    const ir = instances(k, REEDS, mat, r.map((p) => ({ ...p, y: Math.max(p.y, -0.45), s: R(0.8, 1.4), sy: R(0.7, 1.2), ry: R(0, 6.28) })).map((it) => ({ ...it, sx: it.s, sz: it.s })));
-    if (ir) { r.forEach((_, i) => ir.setColorAt(i, c.copy(reedC).lerp(dry, R(0, 0.5)).multiplyScalar(R(0.8, 1.1)))); ir.userData.noCast = true; GC[k].add(ir); }
-  }
-  // rice on the terrace levels: small clumps in rows between each level's edge and the riser of the next
-  const rice = new THREE.Color(0x9cbf4e), ripe = new THREE.Color(0xd2c25a);
-  for (const T of TERRACES) {
-    const items = [], v = new THREE.Vector3();
-    for (let i = 0; i < T.n - 1; i++) {
-      const top = T.g0 + i * T.h + 0.2 + T.h / 2, count = nq(170, 50) - i * nq(14, 4);
-      for (let j = 0; j < count; j++) {
-        const th = R(0, 6.28), r = T.rad(i + 1, th) + R(0.35, 0.92) * (T.rad(i, th) - T.rad(i + 1, th) - 0.3);
-        v.set(r * Math.cos(th), top, r * Math.sin(th) * T.Z).applyMatrix4(T.M0);
-        items.push({ x: v.x, z: v.z, y: top - 0.02, s: R(0.55, 0.8), sy: R(0.6, 0.9), ry: R(0, 6.28) });
+    // in patches, as grass grows: a few clumps of the same kind round each patch centre
+    const by = {};
+    for (const c of onLand(k, Math.round(nq(42, 14) * DENS[k]), -44, 44, -100, 100, (y) => y > 0.4 && y < 30, 4)) {
+      if (!free(c.x, c.z)) continue;
+      const r = rand(), pick2 = (a) => a[Math.floor(rand() * a.length)], slug = r < DRY[k] * 0.85 ? pick2(DRYS) : r > 0.88 ? pick2(FERNS) : pick2(GREEN);
+      for (let j = 0, n = Math.round(R(4, 8)); j < n; j++) {
+        const a = R(0, 6.28), d = R(0, 2.6), x = c.x + Math.cos(a) * d, z = c.z + Math.sin(a) * d, y = gy(x, z);
+        if (y > 0.3) (by[slug] ??= []).push({ x, z, y: y - 0.04, s: R(0.6, 1.15), ry: R(0, 6.28) });
       }
     }
-    const im = instances(T.k, GRASS, mat, items.map((it) => ({ ...it, sx: it.s, sz: it.s })));
-    if (im) { items.forEach((_, i) => im.setColorAt(i, c.copy(rice).lerp(ripe, R(0, 0.35)).multiplyScalar(R(0.9, 1.15)))); im.userData.noCast = true; GC[T.k].add(im); }
+    for (const [slug, items] of Object.entries(by)) scatter(k, slug, items, { keep: true, group: GC[k], noCast: true });
+    const wl = onLand(k, Math.round(nq(110, 36) * DENS[k]), -40, 40, -100, 100, (y) => y > -0.3 && y < 0.7, 4).filter((p) => free(p.x, p.z));
+    scatter(k, 'co-a', wl.map((p) => ({ ...p, y: Math.max(p.y, -0.3), s: R(0.9, 1.5), ry: R(0, 6.28) })), { keep: true, group: GC[k], noCast: true });
   }
 }
 

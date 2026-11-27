@@ -21,7 +21,7 @@ const countTris = (doc) => {
 function simplifyDoc(d, targetTris, err, permissive) {
   // the budget is shared out in proportion to each primitive's size (a single-primitive Meshy model gets all of it).
   // Small primitives are kept whole: a 220-triangle wall must not shrink to 4 triangles because the roof has 200k.
-  const FLOOR = 600, tris = (p) => (p.getMode() === 4 && p.getIndices() ? p.getIndices().getCount() / 3 : 0);
+  const FLOOR = Math.min(600, Math.max(60, targetTris / 10)), tris = (p) => (p.getMode() === 4 && p.getIndices() ? p.getIndices().getCount() / 3 : 0);
   let small = 0, big = 0;
   for (const m of d.getRoot().listMeshes()) for (const p of m.listPrimitives()) { const t = tris(p); if (t <= FLOOR) small += t; else big += t; }
   const ratio = Math.min(1, Math.max(0.01, (targetTris - small) / Math.max(1, big)));
