@@ -452,7 +452,7 @@ const capeFade = (a) => 1 - smooth(A_STOP[10] + 20, A_STOP[10] + 85, a);
 const widthW = (a) => si(WEST, a) * capeFade(a);
 const widthE = (a) => si(EAST, a) * capeFade(a);
 const FLAT = [
-  { a0: A_STOP[1] - 26, a1: A_STOP[1] + 30, l0: 22, l1: 60, y: 2.4, e: 8 },     // Ba Đình square
+  { a0: A_STOP[1] - 62, a1: A_STOP[1] + 66, l0: 22, l1: 106, y: 2.4, e: 8 },    // Ba Đình: the square, the mausoleum, its garden
   { a0: A_STOP[4] + 58, a1: A_STOP[4] + 142, l0: 13, l1: 48, y: 1.5, e: 10 },   // Hội An quarter
   { a0: A_STOP[4] - 16, a1: A_STOP[4] + 76, l0: -48, l1: -15, y: 2.2, e: 6 },    // Đà Nẵng east bank: flat city blocks
   { a0: A_STOP[9] + 27, a1: A_STOP[9] + 33, l0: 12, l1: 95, y: -1.8, e: 2.5 },  // Miền Tây side canal
@@ -1275,11 +1275,11 @@ function addFlag(k, o, rot) {
 }
 // 02 Hà Nội: mausoleum on Ba Đình square, Hoàn Kiếm lake with Turtle Tower, Thê Húc bridge to Ngọc Sơn
 {
-  const k = 1, p = at(k, 38, 4), y = pedestal(k, p.x, p.z, 18, 1.2, 0x1b2c26, 0.6, 'plaza');
-  HERO[k] = v3(p.x, y + 6, p.z); HERO_ALONG[k] = 4;
-  place(k, 'lang-bac', 20, p, y, -0.35);
+  const k = 1, p = at(k, 79, 4), y = 2.45;
+  HERO[k] = v3(p.x, y + 8, p.z); HERO_ALONG[k] = 4;
+  place(k, 'lang-bac', 28, p, y, -Math.PI / 2); // the entrance faces the square
+  EXCL.push([p.x, p.z, 20]);
   const lamps = [];
-  for (let i = 0; i < 6; i++) for (const s of [-1, 1]) { const q = at(k, 21 + i * 2.6, 4 + s * 13); lamps.push({ x: q.x, y: gy(q.x, q.z) + 3.4, z: q.z, c: 0xffd59a, s: 0.2, tw: 0.1 }); }
   const t = at(k, -7, -12), ty = pedestal(k, t.x, t.z, 4.2, 1.2, 0x223428);
   place(k, 'thap-rua', 6.5, t, ty, 0.6);
   // Ngọc Sơn islet with a small temple
@@ -1602,9 +1602,9 @@ function addFlag(k, o, rot) {
   for (const [qq, n0] of [[east, nq(8, 4)], [west, nq(7, 4)]]) scatter(k, 'cay-lieu', [...Array(n0)].map((_, i) => { const p = qq.on(-76 + i * (140 / n0) + R(-3, 3), R(1.2, 1.8)); return { ...p, s: R(8, 10.5), ry: R(0, 6.28) }; })); // willows leaning over the lake
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(16, 6), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-may-rx', n: nq(8, 3), s: 1.9 }, { slug: 'o-to', n: nq(4, 2), s: 4.4, speed: 7 }, { slug: 'xe-khach', n: 1, s: 9, speed: 5 }]);
   scatter(k, pick('xich-lo'), along(k, 3, 26.9, -60, 30, 2.6, { gap: 8 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })), { long: true }); // Meshy slot
-  scatter(k, 'cay-da', [...along(k, nq(6, 3), -29, -66, 22, 14, { jit: 3, gap: 4 }), ...along(k, 3, 29.8, -40, 40, 13, { gap: 6 })].map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.45 });
-  { const q = at(k, 52, 46); scatter(k, 'chua-mot-cot', [{ x: q.x, z: q.z, s: 15, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
-  { const q = at(k, 78, -40); scatter(k, 'khue-van-cac', [{ x: q.x, z: q.z, s: 18, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  scatter(k, 'cay-da', [...along(k, nq(6, 3), -29, -66, 22, 14, { jit: 3, gap: 4 })].map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.45 });
+  { const q = at(k, 88, 56); scatter(k, 'chua-mot-cot', [{ x: q.x, z: q.z, s: 15, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  { const q = at(k, 90, -54); scatter(k, 'khue-van-cac', [{ x: q.x, z: q.z, s: 18, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
   const oq = pick('nha-ong-ha-noi'), blk = !oq && pick('day-nha-ong-ha-noi');
   if (oq) scatter(k, oq, along(k, nq(9, 5), -33, 28, 82, 8, { face: Math.PI / 2 }), { excl: 0.5 });
   else if (blk) scatter(k, blk, [41, 68].map((al) => { const q = at(k, -39, al); return { x: q.x, z: q.z, s: 27, ry: q.rot + Math.PI / 2 }; }), { excl: 0.45 }); // a block of tube houses, 27 long
@@ -1855,19 +1855,52 @@ function addFlag(k, o, rot) {
 }
 
 // ---------------------------------------------------------------- details per stop (second pass): what each place is known for
-// 02 Hà Nội: Ba Đình flagpole and the lawn squares of the square
+// 02 Hà Nội: Ba Đình, laid out as it is: from the lake road, the square of grass squares between paths of dark stone,
+// a paved avenue on the axis with the flagpole in the middle of the square, Hùng Vương road, the forecourt with trimmed
+// shrubs, the mausoleum, a reviewing stand of stepped granite on either side, rows of bamboo along its sides, the
+// garden behind; tall lamps along the avenue and the square
 {
-  const k = 1, fp = at(k, 30, -18), fy = gy(fp.x, fp.z);
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.26, 24, 10), M({ color: 0xe8e8e0, roughness: 0.5 }));
-  pole.position.set(fp.x, fy + 12, fp.z); G[k].add(pole); pole.updateMatrixWorld(true); addFlag(k, pole, fp.rot); EXCL.push([fp.x, fp.z, 4]);
-  const lawn = [];
-  for (const [a0, a1] of [[-28, -10], [18, 32]]) for (let l = 24; l <= 54; l += 6) for (let al = a0; al < a1; al += 6) { const q = at(k, l, al + 3); lawn.push({ x: q.x, z: q.z, y: gy(q.x, q.z) + 0.05, sx: 5, sy: 1, sz: 5, ry: q.rot }); }
-  instances(k, new THREE.BoxGeometry(1, 0.12, 1), texMat('grass', { color: 0xb8d088 }), lawn);
-}
-// 05 Hội An: lantern boats
-{
-  const k = 4;
-  const mag = [0xd8327a, 0xe8559a, 0xc0206a, 0xf07ab0];
+  const k = 1, Y = 2.45, C = 4, O = (() => { const q = at(k, 44, C); return { q, M: MY(q.x, 0, q.z, q.rot) }; })();
+  const loc = (l, a) => new THREE.Vector3(l - 44, 0, -(a - C)).applyMatrix4(O.M); // square frame (lat, along) -> world
+  const box = (l0, l1, a0, a1, y0, y1, tile = 3) => [tiledBox(l1 - l0, y1 - y0, a1 - a0, tile), O.M.clone().multiply(TR4((l0 + l1) / 2 - 44, (y0 + y1) / 2, -((a0 + a1) / 2 - C)))];
+  // the square: dark stone paving, lawns on a grid, the avenue left open on the axis
+  G[k].add(new THREE.Mesh(bake([box(29, 58, -37, 45, Y - 0.4, Y, 2.5)]), texMat('pavers', { color: 0x8d8c88 })));
+  const lawns = [], SQ = 5.6, ST = 6.9;
+  for (let r = 0; r < 4; r++) for (const sd of [-1, 1]) for (let c = 0; c < 5; c++) {
+    const l0 = 30.4 + r * ST, a0 = C + sd * (5.8 + c * ST);
+    lawns.push(box(l0, l0 + SQ, Math.min(a0, a0 + sd * SQ), Math.max(a0, a0 + sd * SQ), Y, Y + 0.07, 4));
+  }
+  G[k].add(new THREE.Mesh(bake(lawns), texMat('grass', { color: 0xa9c98a })));
+  for (let l = 30; l <= 58; l += 4) for (let a = -36; a <= 44; a += 4) { const q = at(k, l, a); EXCL.push([q.x, q.z, 3.2]); }
+  // the flagpole in the middle of the square on a round two-step plinth
+  {
+    const f = loc(43.6, C);
+    G[k].add(new THREE.Mesh(bake([[new THREE.CylinderGeometry(3, 3.1, 0.35, 24), MY(f.x, Y + 0.17, f.z)], [new THREE.CylinderGeometry(1.8, 1.9, 0.35, 20), MY(f.x, Y + 0.52, f.z)]]), texMat('concrete', { color: 0xbdbab2 })));
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.28, 26, 12), M({ color: 0xe8e8e2, metalness: 0.4, roughness: 0.35 }));
+    pole.position.set(f.x, Y + 0.7 + 13, f.z); G[k].add(pole); pole.updateMatrixWorld(true); addFlag(k, pole, O.q.rot); EXCL.push([f.x, f.z, 4]);
+  }
+  // Hùng Vương road between the square and the mausoleum, the forecourt of dark stone in front of it
+  road(k, 61, -58, 62, 6, 'asphalt', { lift: 0.06 });
+  G[k].add(new THREE.Mesh(bake([box(64, 66.5, -16, 24, Y - 0.3, Y + 0.08, 2.5)]), texMat('pavers', { color: 0x6f6e6b })));
+  scatter(k, 'tree-bush', [-14, -11, -8, 16, 19, 22].flatMap((a) => [65.2].map((l) => { const q = loc(l, a); return { x: q.x, z: q.z, y: Y + 0.05, s: 1.5, ry: R(0, 6.28) }; })), { keep: true });
+  // reviewing stands: stepped granite tiers rising away from the road, one either side of the mausoleum
+  const tiers = [];
+  for (const [a0, a1] of [[-44, -18], [26, 52]]) for (let t = 0; t < 8; t++) tiers.push(box(64 + t * 0.95, 72.5, a0 + t * 0.35, a1 - t * 0.35, Y - 0.3, Y + 0.5 * (t + 1), 1.6));
+  G[k].add(new THREE.Mesh(bake(tiers), texMat('pavers', { color: 0xc9c7c1 })));
+  for (const [a0, a1] of [[-44, -18], [26, 52]]) { const q = at(k, 68, (a0 + a1) / 2); EXCL.push([q.x, q.z, 15]); }
+  // rows of bamboo along the mausoleum's sides, the garden behind it
+  const bam = [];
+  for (const a of [-15.5, 23.5]) for (let l = 67; l <= 92; l += 3.1) { const q = loc(l + R(-0.4, 0.4), a + R(-0.6, 0.6)); bam.push({ x: q.x, z: q.z, y: Y, s: R(7, 9), ry: R(0, 6.28) }); }
+  scatter(k, 'tre', bam.filter((_, i) => !LOW || i % 2 === 0), { keep: true });
+  const gar = [];
+  for (let i = 0; i < nq(14, 6); i++) { const q = loc(R(95, 106), R(-30, 38)); gar.push({ x: q.x, z: q.z, y: Y, s: R(10, 15), ry: R(0, 6.28) }); }
+  scatter(k, 'cay-da', gar.filter((_, i) => i % 2 === 0)); scatter(k, 'tree-oak', gar.filter((_, i) => i % 2 === 1));
+  // tall lamps along both sides of the avenue and along the lake-road side of the square
+  const lam = [];
+  for (let l = 31.5; l <= 56; l += 6.9) for (const sd of [-1, 1]) { const q = loc(l, C + sd * 5.2); lam.push({ x: q.x, z: q.z, y: Y, s: 5.2, ry: q.rot }); }
+  for (let a = -34; a <= 42; a += 12.6) { const q = loc(29.6, a); lam.push({ x: q.x, z: q.z, y: Y, s: 5.2, ry: q.rot }); }
+  scatter(k, 'den-duong', lam, { keep: true });
+  field(k, lam.map((m) => ({ x: m.x, y: m.y + 5, z: m.z, c: 0xffe2b0, s: 0.26, tw: 0.06 })), { reflect: false });
 }
 // 07 Nha Trang: a white sand beach on the sea side and the cable car over the sea to the island
 {
