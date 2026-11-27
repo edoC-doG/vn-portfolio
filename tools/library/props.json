@@ -565,5 +565,96 @@
   "lowTris": 60,
   "midTex": 256,
   "lowTex": 128
+ },
+ "den-long-hoi-an": {
+  "src": "sketchfab/duong-pho/vietnamese-lantern-scaniverse-90517b64.glb",
+  "midTris": 500,
+  "lowTris": 160,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "den-long-tron": {
+  "src": "sketchfab/duong-pho/chinese-paper-lantern-red-927615b3.glb",
+  "midTris": 400,
+  "lowTris": 140,
+  "midTex": 256,
+  "lowTex": 128
+ },
+ "den-long-lua": {
+  "src": "sketchfab/duong-pho/chinese-japanese-paper-lantern-chochin-20bcc5d2.glb",
+  "midTris": 400,
+  "lowTris": 140,
+  "midTex": 256,
+  "lowTex": 128
+ },
+ "den-long-giay": {
+  "src": "sketchfab/duong-pho/spherical-japanese-paper-lantern-4e3c3875.glb",
+  "midTris": 300,
+  "lowTris": 120,
+  "midTex": 256,
+  "lowTex": 128
+ },
+ "xe-hu-tieu": {
+  "src": "sketchfab/duong-pho/vietnamese-hu-tieu-cart-stylized-3d-mode-8175f874.glb",
+  "midTris": 1500,
+  "lowTris": 500,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "xe-banh-mi": {
+  "src": "sketchfab/duong-pho/banhmi-cart-f45b8dfd.glb",
+  "midTris": 1500,
+  "lowTris": 500,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "xe-ca-phe": {
+  "src": "sketchfab/duong-pho/street-soft-drink-vietnam-xe-b-n-n-c-vi--bb36c679.glb",
+  "midTris": 1200,
+  "lowTris": 400,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "sap-trai-cay": {
+  "src": "sketchfab/duong-pho/fruit-market-stall-2ec1f5d7.glb",
+  "midTris": 2500,
+  "lowTris": 800,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "sap-trai-cay-2": {
+  "src": "sketchfab/duong-pho/fruit-stall-acf6ea36-noground.glb",
+  "midTris": 3000,
+  "lowTris": 900,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "hoa-giay-chau": {
+  "src": "sketchfab/cay/bougainvillea-02fd7606-pot.glb",
+  "midTris": 1500,
+  "lowTris": 500,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "choi-tre": {
+  "src": "sketchfab/nha/bamboo-house-adb2010f.glb",
+  "midTris": 2500,
+  "lowTris": 800,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "tram-xe-buyt": {
+  "src": "sketchfab/duong-pho/bus-stop-367bdb5c.glb",
+  "midTris": 1500,
+  "lowTris": 500,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "day-nha-pho": {
+  "src": "sketchfab/nha/vietnamese-house-7bbb52c4.glb",
+  "midTris": 2600,
+  "lowTris": 1200,
+  "midTex": 1024,
+  "lowTex": 512
  }
 }

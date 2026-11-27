@@ -886,7 +886,7 @@ function scatter(k, slug, items, opts = {}) {
     if (opts.long) { const sz = new THREE.Box3().setFromObject(tpl).getSize(new THREE.Vector3()); if (sz.x > sz.z) pre.makeRotationY(Math.PI / 2); }
     tpl.traverse((m) => {
       if (!m.isMesh) return;
-      const im = new THREE.InstancedMesh(m.geometry, m.material, set.items.length);
+      const im = new THREE.InstancedMesh(m.geometry, opts.tint != null || opts.glow ? varMat(k, m.material, opts) : m.material, set.items.length);
       set.meshes.push(im); set.parts.push(pre.clone().multiply(m.matrixWorld)); (opts.group ?? (opts.far ? G[k] : SG[k])).add(im);
       if (opts.noCast) im.userData.noCast = true;
       im.name = slug;
@@ -898,6 +898,23 @@ function scatter(k, slug, items, opts = {}) {
     precompile(k);
   }));
   return set;
+}
+// A tinted and/or glowing copy of a library material: opts.tint multiplies the colour (a white paper lantern becomes a
+// yellow, orange or green one), opts.glow lights it up after dark with its own texture as the light.
+const VAR_MATS = new Map();
+function varMat(k, src, { tint = null, glow = 0, plain = false }) {
+  const key = `${src.uuid}|${tint}|${glow}|${plain}`;
+  if (VAR_MATS.has(key)) return VAR_MATS.get(key);
+  // unlit materials (some scans) have no emissive: a lit copy takes their texture so it can glow
+  const m = src.emissive ? src.clone() : new THREE.MeshStandardMaterial({ map: src.map, color: src.color, transparent: src.transparent, opacity: src.opacity, alphaTest: src.alphaTest, side: src.side, roughness: 0.75 });
+  if (tint != null && plain) { m.map = null; m.color.set(tint); }
+  else if (tint != null) m.color.multiply(new THREE.Color(tint));
+  if (glow) {
+    m.emissive = new THREE.Color(tint ?? 0xffffff); m.emissiveMap = m.map ?? null; if (!m.map) m.emissive.multiplyScalar(0.55);
+    ANIM.push({ k, fn: () => { m.emissiveIntensity = glow * lerp(0.06, 1, SH.uLamp.value); } });
+  }
+  VAR_MATS.set(key, m);
+  return m;
 }
 // whether a prop at (x, z) with radius r keeps clear of the flight path (sampled once, after the camera rig is defined)
 // and of the line of sight from the camera at each stop to its landmark
@@ -1400,10 +1417,10 @@ function addFlag(k, o, rot) {
     const rail = []; for (let i = 0; i <= 16; i++) for (const sd of [-1, 1]) { const q = at(k, -L / 2 + (i * L) / 16, 36); rail.push({ x: q.x + TX[q.i] * sd * 3, y: 14.8, z: q.z + TZ[q.i] * sd * 3, c: 0xfff1d6, s: 0.12, tw: 0.1 }); }
     field(k, rail, { reflect: false });
   }
-  // Hội An: yellow shophouses, lantern strings along the bank, floating flower lanterns
+  // Hội An: yellow shophouses, floating flower lanterns (the street, its lanterns and stalls are in the riverside block)
   {
     // shophouses: the Meshy houses (nha-hoi-an-1/2) when they exist, else textured stand-ins in Hội An yellows
-    const walls = [], roofs = [], lan = [], hm = [pick('nha-hoi-an-1'), pick('nha-hoi-an-2')], meshy = [[], []];
+    const walls = [], roofs = [], hm = [pick('nha-hoi-an-1'), pick('nha-hoi-an-2')], meshy = [[], []];
     const yellows = [0xe3bf5a, 0xd9a842, 0xe8c66e, 0xcfa04a];
     for (let i = 0; i < nq(11, 7); i++) {
       const al = 64 + i * 7.4, q = at(k, 28 + R(-1, 1), al), yy = gy(q.x, q.z), w = R(5.2, 6.6), h = R(3.6, 5.2), d = 6;
@@ -1414,7 +1431,6 @@ function addFlag(k, o, rot) {
         roofs.push([new THREE.BoxGeometry(d * 0.75, d * 0.75, w + 0.7).rotateZ(Math.PI / 4).scale(1, 0.62, 1), MY(q.x, yy + h, q.z, q.rot)]);
       }
       EXCL.push([q.x, q.z, 5]);
-      const f = at(k, 28 - d / 2 - 0.6, al); lan.push({ x: f.x, y: yy + 3, z: f.z, c: i % 2 ? 0xff5a2e : 0xffb347, s: 0.3, tw: 0.2 });
     }
     if (walls.length) {
       G[k].add(new THREE.Mesh(bake(walls), texMat('plaster-old', { vertexColors: true, emissive: 0x1a1004 })));
@@ -1422,19 +1438,12 @@ function addFlag(k, o, rot) {
     }
     meshy.forEach((items, v) => scatter(k, hm[v], items));
     const pal = [0xff5a2e, 0xffb347, 0xff7aa8, 0xd9452b, 0x9c7bff];
-    for (let i = 0; i < nq(34, 18); i++) { const al = 60 + i * (84 / nq(34, 18)), q = at(k, 21.5, al), sag = Math.sin(((al - 60) / 12) * Math.PI); lan.push({ x: q.x, y: gy(q.x, q.z) + 3.9 - Math.abs(sag) * 0.5, z: q.z, c: pal[i % pal.length], s: 0.26, tw: 0.2, bob: 0.04 }); }
-    field(k, lan, { reflect: true });
-    // the lanterns themselves, hung from a sagging wire along the street
-    const nh = nq(11, 7), str = lan.slice(nh);
-    scatter(k, 'den-long-do', lan.map((l, i) => ({ x: l.x, z: l.z, y: l.y - (i < nh ? 0.5 : 0.75), s: i < nh ? 0.8 : i % 2 ? 1.0 : 0.85, ry: R(0, 6.28) })), { keep: true });
-    { const v = []; for (let i = 1; i < str.length; i++) { const A = str[i - 1], B = str[i]; v.push(A.x, A.y + 0.32, A.z, (A.x + B.x) / 2, (A.y + B.y) / 2 + 0.12, (A.z + B.z) / 2, (A.x + B.x) / 2, (A.y + B.y) / 2 + 0.12, (A.z + B.z) / 2, B.x, B.y + 0.32, B.z); }
-      const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); SG[k].add(new THREE.LineSegments(wg, WIRE_MAT)); }
     const hd = [];
     for (let i = 0; i < nq(46, 20); i++) hd.push({ lat: R(-9, 9), a0: A_STOP[k] + 40, a1: A_STOP[k] + 165, aS: A_STOP[k] + R(40, 165), drift: R(0.5, 1.1), x: 0, y: 0.3, z: 0, c: pal[i % 3], s: 0.2, tw: 0.35, bob: 0.05 });
     field(k, hd, { reflect: true });
     place(k, 'chua-cau', 12, at(k, 23, 102), 1.5, Math.PI / 2);
     [[-7, 58, 3.2], [8, 82, 3], [-9, 106, 2.8], [5, 130, 3]].forEach(([l, al, s]) => place(k, 'thuyen-thung', s, at(k, l, al), -0.15, R(0, 6), { bob: 0.06, spin: R(-0.06, 0.06) }));
-    WARM[k] = (() => { const w = at(k, 24, 96); return v3(w.x, 4, w.z); })();
+    WARM[k] = (() => { const w = at(k, 17.5, 100); return v3(w.x, 7.5, w.z); })();
   }
 }
 // 06 Tây Nguyên: rông house, gongs around a fire, fireflies
@@ -1672,15 +1681,74 @@ function addFlag(k, o, rot) {
   G[k].add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(wv), 48, 0.07, 5), M({ color: 0x3a4042, metalness: 0.6, roughness: 0.4 })));
   for (let i = 1; i < 6; i++) { const t = i / 6; cab.push({ x: A.x + (B.x - A.x) * t, y: ya + (yb - ya) * t - 5 * t * (1 - t) - 2.6, z: A.z + (B.z - A.z) * t, s: 2.6, ry: Math.atan2(B.x - A.x, B.z - A.z) }); }
   scatter(k, 'cap-treo', cab, { long: true });
-  // Hội An riverside: banana and coconut behind the houses, lanterns, motorbikes parked on the brick street, sampans
-  quay(k, 1, 56, 150, 15.4, { rail: 'curb', steps: [67, 89, 117, 139] });
-  road(k, 20.2, 58, 148, 9.6, 'brick-floor', { tile: 4 });
-  scatter(k, 'xe-may-cub', along(k, nq(8, 3), 24.6, 62, 140, 1.9, { gap: 3 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 + R(-0.3, 0.3) })), { long: true });
+  // Hội An riverside, Bạch Đằng street on the Hoài river: the riverfront edge with steps down to the boats, the brick
+  // street, lanterns everywhere (wires along and across the street, rows of them at the lantern shops, on the moored
+  // boats), food carts and fruit stalls on the riverside, flower-lantern sellers at the steps, bougainvillea at the
+  // doors, old trees, motorbikes parked by the houses; banana and coconut behind
+  const ha = quay(k, 1, 56, 150, 15.4, { rail: 'curb', steps: [67, 89, 117, 139] });
+  const st = road(k, 20.2, 58, 148, 9.6, 'brick-floor', { tile: 4 });
+  {
+    // [model, tint, glow colour]: the paper ones take a colour, the silk and red ones keep their own
+    const LT = [['den-long-hoi-an', null, 0x9fc4ff], ['den-long-tron', null, 0xff4a2a], ['den-long-lua', null, 0xff5a3a], ['den-long-tron', 0xffd27a, 0xffa040],
+      ['den-long-giay', 0xffc43a, 0xffc43a], ['den-long-giay', 0xff7a2a, 0xff8a3a], ['den-long-giay', 0x8ad46a, 0x9be07a], ['den-long-giay', 0xff6fa8, 0xff7ab0], ['den-long-giay', 0xfff2d0, 0xfff0c8]];
+    const sets = LT.map(() => []), halos = [], wires = [], rnd = () => Math.floor(rand() * LT.length);
+    const hang = (x, y, z, sz, t = rnd()) => { sets[t].push({ x, y: y - sz, z, s: sz, ry: R(0, 6.28) }); halos.push({ x, y: y - sz * 0.55, z, c: LT[t][2], s: 0.1 + sz * 0.1, tw: 0.15 }); };
+    // a wire from (lat, along, height above the street) to another, sagging, a lantern every `gap`
+    const wire = (l0, a0, h0, l1, a1, h1, gap, sag, size = [0.45, 0.62]) => {
+      const L = Math.hypot(l1 - l0, a1 - a0), n = Math.max(2, Math.round(L / gap)); let pv = null;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n, a = lerp(a0, a1, t), o = atf(k, lerp(l0, l1, t), a), x = o.x, z = o.z, y = st.h(a) + lerp(h0, h1, t) - sag * 4 * t * (1 - t);
+        if (pv) wires.push(...pv, x, y, z);
+        pv = [x, y, z];
+        if (i > 0 && i < n) hang(x, y - 0.04, z, R(size[0], size[1]));
+      }
+    };
+    const gap = nq(1.5, 3), poles = [];
+    // riverside poles carry the wires; strings along the street by the river and under the eaves, others across it
+    for (let a = 60; a <= 146; a += 12) {
+      const o = at(k, 15.9, a); poles.push({ x: o.x, z: o.z, y: st.h(a), s: 1, sy: 4.9 });
+      if (a < 146) { wire(15.9, a, 4.6, 15.9, a + 12, 4.6, gap, 0.55); wire(15.9, a, 4.6, 24.4, a + 3, 4.3, gap * 0.95, 0.6); }
+    }
+    for (let a = 60; a < 146; a += 8.6) wire(23.4, a, 4.1, 23.4, Math.min(146, a + 8.6), 4.1, gap, 0.4, [0.4, 0.55]);
+    instances(k, new THREE.CylinderGeometry(0.07, 0.09, 1, 6).translate(0, 0.5, 0), texMat('painted-wood', { color: 0x5a4632 }), poles);
+    // lantern shops: rows of lanterns under the eaves of every other house
+    for (let i = 0; i < nq(11, 7); i += 2) {
+      const a0 = 64 + i * 7.4;
+      for (const [hh, n] of nq([[3.3, 7], [2.5, 6]], [[3.3, 5]])) {
+        const A = atf(k, 24.6, a0 - 2.5), ax = A.x, az = A.z, B = atf(k, 24.6, a0 + 2.5); wires.push(ax, st.h(a0) + hh, az, B.x, st.h(a0) + hh, B.z);
+        for (let j = 0; j < n; j++) { const o = atf(k, 24.6, a0 - 2.2 + (4.4 * (j + 0.5)) / n); hang(o.x, st.h(a0) + hh, o.z, R(0.4, 0.55)); }
+      }
+    }
+    // boats moored at the steps, each with a string of lanterns
+    const boats = [];
+    for (const a of [67, 89, 117, 139]) {
+      const w = ha.hAt(a), o = at(k, w.l - 6.2, a + 1.6); boats.push({ x: o.x, z: o.z, y: -0.2, s: 5.2, ry: o.rot + R(-0.15, 0.15) });
+      wire(w.l - 6.2, a - 0.3, 0.9, w.l - 6.2, a + 3.5, 0.9, 1.0, 0.2, [0.38, 0.5]);
+    }
+    scatter(k, 'thuyen-go', boats.map((b) => ({ ...b })), { long: true, keep: true });
+    LT.forEach(([slug, tint], t) => scatter(k, slug, sets[t], { keep: true, tint, plain: slug === 'den-long-giay', glow: 0.9 }));
+    const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wires, 3)); SG[k].add(new THREE.LineSegments(wg, WIRE_MAT));
+    field(k, halos, { reflect: true });
+  }
+  // the riverside walk: fruit stalls, a bánh mì cart and a noodle cart with plastic stools, flower-lantern sellers'
+  // baskets and hats at the steps, old trees; bougainvillea in pots at the doors, motorbikes parked by the houses
+  scatter(k, 'sap-trai-cay', [ha.on(75, 3.4), ha.on(127, 3.4)].map((p) => ({ ...p, s: 3.4, ry: p.ry - Math.PI / 2 })), { excl: 0.4 });
+  scatter(k, 'sap-trai-cay-2', [ha.on(102, 3.2)].map((p) => ({ ...p, s: 3.2, ry: p.ry - Math.PI / 2 })), { excl: 0.4 });
+  const carts = [[81, 'xe-banh-mi', 2.1], [110, 'xe-hu-tieu', 2.1], [133, 'xe-banh-mi', 2.1]];
+  for (const [a, slug, sz] of carts) {
+    const c = ha.on(a, 3.6); scatter(k, slug, [{ ...c, s: sz, ry: c.ry + Math.PI / 2 }], { excl: 0.5 });
+    if (slug === 'xe-hu-tieu') scatter(k, 'ghe-do', [...Array(6)].map((_, i) => { const o = ha.on(a - 2.2 + (i % 3) * 1.1, 1.6 + Math.floor(i / 3) * 1.1); return { ...o, s: 0.55, ry: R(0, 6.28) }; }));
+  }
+  const sellers = [];
+  for (const a of [67, 89, 117, 139]) for (const d of [-2.6, 2.6]) { const o = ha.on(a + d, 1.3); sellers.push({ ...o, s: 1.0, ry: R(0, 6.28) }); }
+  scatter(k, 'ro', sellers); scatter(k, 'non-la', sellers.filter((_, i) => i % 2 === 0).map((p) => ({ ...p, x: p.x + 0.5, y: p.y + 0.05, s: 0.55 })));
+  scatter(k, 'cay-da', [[58.5, 2.6], [147.5, 2.6]].map(([a, d]) => ({ ...ha.on(a, d), s: 10, ry: R(0, 6.28) })), { keep: true });
+  scatter(k, 'cay-da', [[85, 2.4], [123, 2.4]].map(([a, d]) => ({ ...ha.on(a, d), s: 8, ry: R(0, 6.28) })));
+  scatter(k, 'hoa-giay-chau', [...Array(nq(11, 7))].flatMap((_, i) => [-2.7, 2.7].map((d) => { const a = 64 + i * 7.4 + d, o = at(k, 24.3, a); return { x: o.x, z: o.z, y: st.h(a), s: R(1.8, 2.4), ry: R(0, 6.28) }; })));
+  scatter(k, 'xe-may-cub', along(k, nq(8, 3), 23.8, 62, 140, 1.9, { gap: 3 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 + R(-0.3, 0.3) })), { long: true });
   scatter(k, 'chuoi', onLand(k, nq(10, 5), 36, 52, 60, 146).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
   scatter(k, 'dua', onLand(k, nq(6, 3), 34, 50, 58, 146).map((p) => ({ ...p, s: R(9, 12), ry: R(0, 6) })));
-  scatter(k, 'den-long-vn', along(k, nq(6, 3), 25.6, 66, 140, 2.2, { gap: 3 }).map((p) => ({ ...p, y: p.y + 2.2 })));
   scatter(k, 'thuyen-viet', [[-4, 70], [6, 118], [-6, 136]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5.5, ry: q.rot + R(-0.4, 0.4) }; }), { long: true });
-  scatter(k, 'ro', along(k, 4, 22.6, 70, 130, 1.2, { gap: 4 }));
 }
 // 06 Tây Nguyên: thatched stilt houses round the rông house, elephants, bananas and ferns, a waterfall on the far hills
 {
