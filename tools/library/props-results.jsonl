@@ -17,7 +17,6 @@
 {"slug":"nha-tho-duc-ba-sf","srcTris":2187,"size":[1,0.611,0.443],"tiers":{"mid":{"tris":2187,"bytes":254856,"tex":1024,"normal":false},"low":{"tris":2187,"bytes":149976,"tex":512,"normal":false}},"seconds":0}
 {"slug":"chua-mot-cot","srcTris":12924,"size":[0.906,0.612,1],"tiers":{"mid":{"tris":12924,"bytes":488616,"tex":1024,"normal":false},"low":{"tris":2936,"bytes":96880,"tex":512,"normal":false}},"seconds":0}
 {"slug":"khue-van-cac","srcTris":281122,"size":[0.656,1,0.656],"tiers":{"mid":{"tris":14538,"bytes":517088,"tex":1024,"normal":false},"low":{"tris":2653,"bytes":121932,"tex":512,"normal":false}},"seconds":4}
-{"slug":"toa-van-phong","srcTris":37290,"size":[0.287,1,0.457],"tiers":{"mid":{"tris":7938,"bytes":778048,"tex":1024,"normal":false},"low":{"tris":1504,"bytes":295780,"tex":512,"normal":false}},"seconds":1}
 {"slug":"chung-cu","srcTris":40464,"size":[1,0.763,0.643],"tiers":{"mid":{"tris":8003,"bytes":2214208,"tex":1024,"normal":false},"low":{"tris":1501,"bytes":1570080,"tex":512,"normal":false}},"seconds":2}
 {"slug":"day-cua-hang","srcTris":37978,"size":[1,0.247,0.262],"tiers":{"mid":{"tris":9974,"bytes":950812,"tex":1024,"normal":false},"low":{"tris":1980,"bytes":514916,"tex":512,"normal":false}},"seconds":2}
 {"slug":"nha-san-can-tho","srcTris":6600,"size":[1,0.832,0.974],"tiers":{"mid":{"tris":4000,"bytes":331688,"tex":1024,"normal":false},"low":{"tris":1500,"bytes":115312,"tex":512,"normal":false}},"seconds":1}
@@ -93,9 +92,7 @@
 {"slug":"co-e","srcTris":6422,"size":[0.971,0.449,1],"tiers":{"mid":{"tris":900,"bytes":154576,"tex":512,"normal":false},"low":{"tris":300,"bytes":62988,"tex":256,"normal":false}},"seconds":0}
 {"slug":"co-kho-c","srcTris":1257,"size":[0.934,0.884,1],"tiers":{"mid":{"tris":420,"bytes":145956,"tex":512,"normal":false},"low":{"tris":420,"bytes":68284,"tex":256,"normal":false}},"seconds":0}
 {"slug":"co-kho-d","srcTris":2287,"size":[0.974,0.984,1],"tiers":{"mid":{"tris":520,"bytes":152080,"tex":512,"normal":false},"low":{"tris":520,"bytes":74404,"tex":256,"normal":false}},"seconds":0}
-{"slug":"toa-van-phong","srcTris":37290,"size":[0.287,1,0.457],"tiers":{"mid":{"tris":3573,"bytes":583168,"tex":1024,"normal":false},"low":{"tris":2986,"bytes":373868,"tex":512,"normal":false}},"seconds":1}
 {"slug":"chung-cu","srcTris":40464,"size":[1,0.763,0.643],"tiers":{"mid":{"tris":3045,"bytes":2027540,"tex":1024,"normal":false},"low":{"tris":1635,"bytes":1574080,"tex":512,"normal":false}},"seconds":1}
-{"slug":"toa-van-phong","srcTris":37290,"size":[0.287,1,0.457],"tiers":{"mid":{"tris":2953,"bytes":546476,"tex":1024,"normal":false},"low":{"tris":833,"bytes":268800,"tex":512,"normal":false}},"seconds":1}
 {"slug":"chung-cu","srcTris":40464,"size":[1,0.763,0.643],"tiers":{"mid":{"tris":2742,"bytes":2017568,"tex":1024,"normal":false},"low":{"tris":787,"bytes":1542576,"tex":512,"normal":false}},"seconds":1}
 {"slug":"co-a","srcTris":290,"size":[0.499,1,0.491],"tiers":{"mid":{"tris":220,"bytes":125692,"tex":512,"normal":false},"low":{"tris":90,"bytes":53648,"tex":256,"normal":false}},"seconds":0}
 {"slug":"co-c","srcTris":1257,"size":[0.934,0.884,1],"tiers":{"mid":{"tris":300,"bytes":129636,"tex":512,"normal":false},"low":{"tris":109,"bytes":54820,"tex":256,"normal":false}},"seconds":0}
@@ -124,4 +121,11 @@
 {"slug":"hoa-giay-chau","srcTris":159394,"size":[0.647,0.378,1],"tiers":{"mid":{"tris":1571,"bytes":109132,"tex":512,"normal":false},"low":{"tris":497,"bytes":34624,"tex":256,"normal":false}},"seconds":1}
 {"slug":"choi-tre","srcTris":22390,"size":[0.991,0.809,1],"tiers":{"mid":{"tris":2586,"bytes":195792,"tex":512,"normal":false},"low":{"tris":802,"bytes":63968,"tex":256,"normal":false}},"seconds":1}
 {"slug":"tram-xe-buyt","srcTris":8250,"size":[0.379,0.48,1],"tiers":{"mid":{"tris":1517,"bytes":105624,"tex":512,"normal":false},"low":{"tris":494,"bytes":43692,"tex":256,"normal":false}},"seconds":1}
-{"slug":"day-nha-pho","srcTris":1436,"size":[1,0.182,0.545],"tiers":{"mid":{"tris":2512,"bytes":735376,"tex":1024,"normal":false},"low":{"tris":1202,"bytes":409900,"tex":512,"normal":false}},"seconds":1}
+{"slug":"nha-go-mien-tay","srcTris":3826,"size":[1,0.404,0.916],"tiers":{"mid":{"tris":3499,"bytes":268492,"tex":1024,"normal":false},"low":{"tris":1200,"bytes":79816,"tex":512,"normal":false}},"seconds":1}
+{"slug":"nha-san-go","srcTris":119979,"size":[0.935,0.55,1],"tiers":{"mid":{"tris":4481,"bytes":382664,"tex":1024,"normal":false},"low":{"tris":1480,"bytes":126588,"tex":512,"normal":false}},"seconds":1}
+{"slug":"nha-la","srcTris":79987,"size":[1,0.57,0.577],"tiers":{"mid":{"tris":3809,"bytes":1471148,"tex":1024,"normal":false},"low":{"tris":1220,"bytes":355048,"tex":512,"normal":false}},"seconds":1}
+{"slug":"choi-go","srcTris":9108,"size":[0.787,0.597,1],"tiers":{"mid":{"tris":1800,"bytes":81652,"tex":512,"normal":false},"low":{"tris":600,"bytes":28808,"tex":256,"normal":false}},"seconds":0}
+{"slug":"toa-nha-1","srcTris":8328,"size":[1,0.985,0.684],"tiers":{"mid":{"tris":2850,"bytes":1584552,"tex":1024,"normal":false},"low":{"tris":797,"bytes":381556,"tex":512,"normal":false}},"seconds":1}
+{"slug":"thap-kinh","srcTris":33546,"size":[0.078,1,0.121],"tiers":{"mid":{"tris":2746,"bytes":605508,"tex":1024,"normal":false},"low":{"tris":803,"bytes":161260,"tex":512,"normal":false}},"seconds":1}
+{"slug":"thap-cao","srcTris":5949,"size":[0.216,1,0.216],"tiers":{"mid":{"tris":2499,"bytes":251872,"tex":1024,"normal":false},"low":{"tris":800,"bytes":80024,"tex":512,"normal":false}},"seconds":1}
+{"slug":"toa-nha-1","srcTris":8328,"size":[1,0.985,0.684],"tiers":{"mid":{"tris":8992,"bytes":1819412,"tex":1024,"normal":false},"low":{"tris":3004,"bytes":469352,"tex":512,"normal":false}},"seconds":2}

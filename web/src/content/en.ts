@@ -206,8 +206,8 @@ const en: Dict = {
     { place: 'Central Highlands', side: 'right', seen: 'A rông communal house, gongs by the fire, elephants and a waterfall', body: { kind: 'projects' } },
     { place: 'Nha Trang', side: 'left', seen: 'The Po Nagar towers, islands and squid-boat lights', body: { kind: 'ways' } },
     { place: 'Phan Thiết', side: 'right', seen: 'The Phan Thiết water tower, the Mũi Né dunes, basket boats', body: { kind: 'skills' } },
-    { place: 'Saigon', side: 'left', seen: 'Bến Thành market, Landmark 81, Bitexco', body: { kind: 'education' } },
-    { place: 'Mekong Delta', side: 'right', seen: 'Floating market, coconut palms, stilt houses on the river, monkey bridge', body: { kind: 'looking' } },
+    { place: 'Saigon', side: 'left', seen: 'Bạch Đằng wharf, Tôn Đức Thắng street, Bến Thành market, Landmark 81', body: { kind: 'education' } },
+    { place: 'Mekong Delta', side: 'right', seen: 'Floating market, coconut palms, riverside houses, rice paddies, monkey bridge', body: { kind: 'looking' } },
     { place: 'Cà Mau Cape', side: 'left', seen: 'The ship monument of Cà Mau Cape, the mangrove forest', body: { kind: 'contact' } },
   ],
   cv: {

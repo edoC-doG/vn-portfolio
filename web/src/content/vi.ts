@@ -189,8 +189,8 @@ const vi: Dict = {
     { place: 'Tây Nguyên', side: 'right', seen: 'Nhà rông, cồng chiêng bên đống lửa, voi và thác nước', body: { kind: 'projects' } },
     { place: 'Nha Trang', side: 'left', seen: 'Tháp Bà Ponagar, đảo và đèn thuyền câu mực', body: { kind: 'ways' } },
     { place: 'Phan Thiết', side: 'right', seen: 'Tháp nước Phan Thiết, đồi cát Mũi Né, thuyền thúng', body: { kind: 'skills' } },
-    { place: 'Sài Gòn', side: 'left', seen: 'Chợ Bến Thành, Landmark 81, Bitexco', body: { kind: 'education' } },
-    { place: 'Miền Tây', side: 'right', seen: 'Chợ nổi, rặng dừa, nhà sàn ven sông, cầu khỉ', body: { kind: 'looking' } },
+    { place: 'Sài Gòn', side: 'left', seen: 'Bến Bạch Đằng, đường Tôn Đức Thắng, chợ Bến Thành, Landmark 81', body: { kind: 'education' } },
+    { place: 'Miền Tây', side: 'right', seen: 'Chợ nổi, rặng dừa, nhà ven sông, ruộng lúa, cầu khỉ', body: { kind: 'looking' } },
     { place: 'Mũi Cà Mau', side: 'left', seen: 'Biểu tượng con tàu Mũi Cà Mau, rừng đước', body: { kind: 'contact' } },
   ],
   cv: {

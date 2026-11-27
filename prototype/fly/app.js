@@ -455,6 +455,9 @@ const FLAT = [
   { a0: A_STOP[1] - 62, a1: A_STOP[1] + 66, l0: 22, l1: 106, y: 2.4, e: 8 },    // Ba Đình: the square, the mausoleum, its garden
   { a0: A_STOP[4] + 58, a1: A_STOP[4] + 142, l0: 13, l1: 48, y: 1.5, e: 10 },   // Hội An quarter
   { a0: A_STOP[4] - 16, a1: A_STOP[4] + 76, l0: -48, l1: -15, y: 2.2, e: 6 },    // Đà Nẵng east bank: flat city blocks
+  { a0: A_STOP[8] - 70, a1: A_STOP[8] + 52, l0: 20, l1: 112, y: 1.8, e: 6 },     // Sài Gòn: District 1 by the river
+  { a0: A_STOP[9] - 50, a1: A_STOP[9] + 82, l0: 32, l1: 71, y: 0.25, e: 5 },     // Miền Tây paddies, right bank
+  { a0: A_STOP[9] - 50, a1: A_STOP[9] + 82, l0: -71, l1: -32, y: 0.25, e: 5 },   // Miền Tây paddies, left bank
   { a0: A_STOP[9] + 27, a1: A_STOP[9] + 33, l0: 12, l1: 95, y: -1.8, e: 2.5 },  // Miền Tây side canal
 ];
 // Lũng Cú: Rồng mountain, the peak the flag tower stands on: a level summit for the platform, rough slopes falling to
@@ -1494,35 +1497,34 @@ function addFlag(k, o, rot) {
   dg.rotateX(-Math.PI / 2); dg.computeVertexNormals();
   { const uv = dg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (220 / 9), uv.getY(i) * (160 / 9)); }
   const dunes = new THREE.Mesh(dg, texMat('sand-red', { color: 0xf2d2b0, roughness: 1 })); dunes.position.set(d.x, 1, d.z); dunes.rotation.y = d.rot; G[k].add(dunes);
-  { const d2 = at(k, 120, 120), wd = new THREE.Mesh(dg, texMat('sand-white', { color: 0xfff6ea, roughness: 1 })); wd.position.set(d2.x, 1, d2.z); wd.rotation.y = d2.rot + 0.7; wd.scale.set(0.8, 1.3, 0.7); G[k].add(wd); } // the white dunes of Mũi Né
+  { const d2 = at(k, 125, -100), // Bàu Trắng lies north-east of Mũi Né (back toward Nha Trang), not by Sài Gòn
+    wd = new THREE.Mesh(dg, texMat('sand-white', { color: 0xfff6ea, roughness: 1 })); wd.position.set(d2.x, 1, d2.z); wd.rotation.y = d2.rot + 0.7; wd.scale.set(0.8, 1.3, 0.7); G[k].add(wd); } // the white dunes of Mũi Né
   for (let i = 0; i < nq(6, 3); i++) place(k, 'thuyen-thung', 2.4, at(k, -R(56, 82), R(-30, 40)), -0.15, R(0, 6), { bob: 0.07 });
   field(k, [{ x: p.x, y: y + 0.8, z: p.z, c: 0xffc46b, s: 0.3, tw: 0.2 }], { reflect: false });
 }
 // 09 Sài Gòn: Bến Thành market, skyline with Landmark 81 and Bitexco, riverside lights
 {
-  const k = 8, p = at(k, 38, 2), y = pedestal(k, p.x, p.z, 16, 1.4, 0x202a28, 0.6, 'plaza');
+  const k = 8, p = at(k, 49, 2), y = 1.85; EXCL.push([p.x, p.z, 14]);
   HERO[k] = v3(p.x, y + 7, p.z); HERO_ALONG[k] = 2;
   place(k, 'cho-ben-thanh', 22, p, y, -0.4);
-  { const d1 = at(k, 62, 34), d2 = at(k, 46, 56); place(k, pick('nha-tho-duc-ba') ? 'nha-tho-duc-ba' : 'nha-tho-duc-ba-sf', 26, d1, gy(d1.x, d1.z), -0.3 + Math.PI / 2); place(k, 'buu-dien-thanh-pho', 22, d2, gy(d2.x, d2.z), -0.3); }
-  const parts = [], towers = [], blocks = [], reserved = [[38, 2, 22], [62, 34, 12], [46, 56, 14], [98, 78, 10], [66, 54, 9]];
+  { const d1 = at(k, 62, 34), d2 = at(k, 66, -22); place(k, pick('nha-tho-duc-ba') ? 'nha-tho-duc-ba' : 'nha-tho-duc-ba-sf', 26, d1, gy(d1.x, d1.z), -0.3 + Math.PI / 2); place(k, 'buu-dien-thanh-pho', 22, d2, gy(d2.x, d2.z), -0.3); }
+  const towers = [], blocks = [], reserved = [[49, 2, 18], [62, 34, 12], [66, -22, 14], [104, -52, 12], [80, -10, 9], [46, -30, 36], [46, 26, 12]];
   for (let n = 0, t = 0; n < nq(22, 10) && t < 500; t++) {
-    const west = rand() < 0.75, lat = west ? R(58, 160) : -R(26, 70), al = R(-30, 58); // stops are ~110 apart: stay out of Miền Tây
+    const west = rand() < 0.75, lat = west ? R(58, 160) : -R(26, 70), al = R(-30, 36); // stops are ~110 apart: stay out of Miền Tây
     if (reserved.some(([l, a, r]) => Math.hypot(lat - l, al - a) < r + 8) || Math.abs(al - 40) < 9) continue; // al 40: the Ba Son bridge
     const q = at(k, lat, al), g = gy(q.x, q.z); if (g < 0.5) continue;
     const h = R(18, west ? 60 : 34), ry = q.rot + R(-0.25, 0.25) + (rand() < 0.5 ? Math.PI / 2 : 0);
     (h > 30 ? towers : blocks).push({ x: q.x, z: q.z, y: g, s: h > 30 ? h : h * 1.25, ry }); n++;
   }
-  scatter(k, 'toa-van-phong', towers, { far: true, keep: true }); scatter(k, 'chung-cu', blocks, { far: true, keep: true });
-  const lm = at(k, 98, 78), lg = Math.max(gy(lm.x, lm.z), 0), l81 = AVAILABLE.has('landmark-81');
-  if (l81) scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }], { far: true, keep: true });
-  else for (const [ox, oz, h] of [[0, 0, 120], [5, 0, 104], [-5, 0, 98], [0, 5, 90], [0, -5, 84], [5, 5, 72], [-5, -5, 66], [5, -5, 58], [-5, 5, 50]]) parts.push([scaleUV(new THREE.BoxGeometry(5, h, 5), 5, h, 5), MY(lm.x + ox, lg + h / 2, lm.z + oz)]);
-  const bx = at(k, 66, 54), bg = Math.max(gy(bx.x, bx.z), 0);
-  parts.push([new THREE.CylinderGeometry(3.2, 7, 84, 20), MY(bx.x, bg + 42, bx.z)]);
-  G[k].add(new THREE.Mesh(bake(parts), WINDOW_MAT));
-  if (!l81) { const spire = new THREE.Mesh(new THREE.ConeGeometry(1.2, 14, 6), new THREE.MeshBasicMaterial({ color: 0xffe6b8 })); spire.position.set(lm.x, lg + 127, lm.z); G[k].add(spire); }
-  const pad = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 7.5, 1.2, 24), M({ color: 0x2a3436, emissive: 0x4a3418, emissiveIntensity: 0.6 })); pad.position.set(bx.x + 3.6, bg + 66, bx.z); G[k].add(pad);
+  // towers: a glass spire and a stone-faced tower; mid-rises: white apartment and office blocks
+  scatter(k, 'thap-cao', towers.filter((_, i) => i % 2 === 0), { far: true, keep: true }); scatter(k, 'thap-kinh', towers.filter((_, i) => i % 2 === 1), { far: true, keep: true });
+  scatter(k, LOW ? 'chung-cu' : 'toa-nha-1', blocks.slice(0, 4).map((b) => ({ ...b, s: b.s * 0.8 })), { far: true, keep: true });
+  scatter(k, 'thap-cao', blocks.slice(4).map((b) => ({ ...b, s: b.s * 1.1 })), { far: true, keep: true });
+  // Landmark 81 stands north of District 1 by the river (Bình Thạnh); a glass tower rises behind Bến Thành
+  const lm = at(k, 104, -52), lg = Math.max(gy(lm.x, lm.z), 0); scatter(k, 'landmark-81', [{ x: lm.x, z: lm.z, y: lg, s: 128, ry: lm.rot }], { far: true, keep: true });
+  { const bx = at(k, 80, -10); scatter(k, 'thap-kinh', [{ x: bx.x, z: bx.z, y: Math.max(gy(bx.x, bx.z), 0), s: 84, ry: bx.rot }], { far: true, keep: true }); }
   const lights = [];
-  for (let al = -50; al <= 70; al += 8) for (const s of [-1, 1]) { const q = at(k, s * 15, al); lights.push({ x: q.x, y: Math.max(gy(q.x, q.z), 0) + 3.2, z: q.z, c: 0xffd59a, s: 0.18, tw: 0.1 }); }
+  for (let al = -50; al <= 46; al += 8) for (const s of [-1, 1]) { const q = at(k, s * 15, al); lights.push({ x: q.x, y: Math.max(gy(q.x, q.z), 0) + 3.2, z: q.z, c: 0xffd59a, s: 0.18, tw: 0.1 }); }
   lights.push({ x: lm.x, y: lg + 135, z: lm.z, c: 0xff4040, s: 0.5, tw: 1 });
   field(k, lights, { reflect: true });
   WARM[k] = (() => { const w = at(k, 28, 2); return v3(w.x, 3, w.z); })();
@@ -1542,21 +1544,12 @@ function addFlag(k, o, rot) {
   // coconut palms along both banks
   const palms = [];
   for (let t = 0; t < 400 && palms.length < nq(40, 16); t++) {
-    const lat = (rand() < 0.5 ? -1 : 1) * R(17, 64), al = R(-80, 80);
+    const lat = (rand() < 0.5 ? -1 : 1) * R(17, 31), al = R(-50, 80);
     if (lat > 10 && Math.abs(al - 30) < 6) continue;
     const q = at(k, lat, al), g = gy(q.x, q.z); if (g < 0.4) continue;
     palms.push({ x: q.x, z: q.z, y: g - 0.1, s: R(8, 12), ry: R(0, 6.28) });
   }
   scatter(k, 'dua', palms);
-  // thatched stilt houses on the banks, a lamp in each
-  const huts = [], win = [];
-  for (let i = 0; i < nq(7, 4); i++) {
-    const sd = i % 2 ? 1 : -1, al = -66 + i * 21, l = sd * R(22, 28), q = at(k, l, al), g = Math.max(gy(q.x, q.z), -1);
-    huts.push({ x: q.x, z: q.z, y: g, s: R(7, 8.5), ry: q.rot + (sd > 0 ? Math.PI / 2 : -Math.PI / 2) });
-    const f = at(k, l - sd * 2.2, al); win.push({ x: f.x, y: g + 3.2, z: f.z, c: 0xffc46b, s: 0.22, tw: 0.2 });
-  }
-  scatter(k, 'nha-mai-la', huts, { excl: 0.5 });
-  field(k, win, { reflect: true });
   // cầu khỉ: bamboo monkey bridge over the side canal
   {
     const b = at(k, 42, 30), g = new THREE.Group(); g.position.set(b.x, 0, b.z); g.rotation.y = b.rot; G[k].add(g);
@@ -1675,7 +1668,7 @@ function addFlag(k, o, rot) {
   const rd = road(k, -22.5, 0, 60, 6, 'asphalt'); road(k, -26.8, 0, 60, 2.6, 'pavers');
   scatter(k, 'cay-ven-bien', [...Array(nq(6, 3))].map((_, i) => { const p = bd.on(-6 + i * 13 + R(-2, 2), R(2.2, 2.8)); return { ...p, s: R(8, 10), ry: R(0, 6.28) }; }));
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(12, 5), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(10, 4), s: 1.8 }, { slug: 'xe-vespa', n: nq(5, 2), s: 1.8 }, { slug: 'o-to', n: nq(5, 2), s: 4.4, speed: 7 }]);
-  scatter(k, 'toa-van-phong', [[-33, 12, 44], [-34, 44, 50], [-32, 28, 36], [-34, 58, 40]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4, far: true });
+  scatter(k, LOW ? 'chung-cu' : 'toa-nha-1', [[-33, 12, 34], [-34, 44, 38], [-32, 28, 30], [-34, 58, 32]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.2, 0.2) }; }), { excl: 0.4, far: true });
   scatter(k, 'chung-cu', [[-35, 2, 30], [-36, 22, 26], [-35, 36, 32], [-36, 50, 24]].map(([l, al, sz]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: sz, ry: q.rot + Math.PI / 2 }; }), { excl: 0.4, far: true, keep: true });
   // cable car: cabins along a sagging line from the valley up to the Golden Bridge
   const A = at(k, 38, -34), B = at(k, 44, 4), ya = Math.max(gy(A.x, A.z), 0) + 6, yb = gy(B.x, B.z) + 18, cab = [], wv = [];
@@ -1691,8 +1684,8 @@ function addFlag(k, o, rot) {
   const st = road(k, 20.2, 58, 148, 9.6, 'brick-floor', { tile: 4 });
   {
     // [model, tint, glow colour]: the paper ones take a colour, the silk and red ones keep their own
-    const LT = [['den-long-hoi-an', null, 0x9fc4ff], ['den-long-tron', null, 0xff4a2a], ['den-long-lua', null, 0xff5a3a], ['den-long-tron', 0xffd27a, 0xffa040],
-      ['den-long-giay', 0xffc43a, 0xffc43a], ['den-long-giay', 0xff7a2a, 0xff8a3a], ['den-long-giay', 0x8ad46a, 0x9be07a], ['den-long-giay', 0xff6fa8, 0xff7ab0], ['den-long-giay', 0xfff2d0, 0xfff0c8]];
+    const LT = [['den-long-hoi-an', null, 0x9fc4ff], ['den-long-tron', null, 0xff4a2a], ['den-long-lua', null, 0xff5a3a],
+      ['den-long-giay', 0xffc43a, 0xffc43a], ['den-long-giay', 0xff7a2a, 0xff8a3a], ['den-long-giay', 0xff6fa8, 0xff7ab0]];
     const sets = LT.map(() => []), halos = [], wires = [], rnd = () => Math.floor(rand() * LT.length);
     const hang = (x, y, z, sz, t = rnd()) => { sets[t].push({ x, y: y - sz, z, s: sz, ry: R(0, 6.28) }); halos.push({ x, y: y - sz * 0.55, z, c: LT[t][2], s: 0.1 + sz * 0.1, tw: 0.15 }); };
     // a wire from (lat, along, height above the street) to another, sagging, a lantern every `gap`
@@ -1712,7 +1705,7 @@ function addFlag(k, o, rot) {
       if (a < 146) { wire(15.9, a, 4.6, 15.9, a + 12, 4.6, gap, 0.55); wire(15.9, a, 4.6, 24.4, a + 3, 4.3, gap * 0.95, 0.6); }
     }
     for (let a = 60; a < 146; a += 8.6) wire(23.4, a, 4.1, 23.4, Math.min(146, a + 8.6), 4.1, gap, 0.4, [0.4, 0.55]);
-    instances(k, new THREE.CylinderGeometry(0.07, 0.09, 1, 6).translate(0, 0.5, 0), texMat('painted-wood', { color: 0x5a4632 }), poles);
+    GC[k].add(instances(k, new THREE.CylinderGeometry(0.07, 0.09, 1, 6).translate(0, 0.5, 0), texMat('painted-wood', { color: 0x5a4632 }), poles));
     // lantern shops: rows of lanterns under the eaves of every other house
     for (let i = 0; i < nq(11, 7); i += 2) {
       const a0 = 64 + i * 7.4;
@@ -1727,27 +1720,26 @@ function addFlag(k, o, rot) {
       const w = ha.hAt(a), o = at(k, w.l - 6.2, a + 1.6); boats.push({ x: o.x, z: o.z, y: -0.2, s: 5.2, ry: o.rot + R(-0.15, 0.15) });
       wire(w.l - 6.2, a - 0.3, 0.9, w.l - 6.2, a + 3.5, 0.9, 1.0, 0.2, [0.38, 0.5]);
     }
-    scatter(k, 'thuyen-go', boats.map((b) => ({ ...b })), { long: true, keep: true });
-    LT.forEach(([slug, tint], t) => scatter(k, slug, sets[t], { keep: true, tint, plain: slug === 'den-long-giay', glow: 0.9 }));
-    const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wires, 3)); SG[k].add(new THREE.LineSegments(wg, WIRE_MAT));
+    scatter(k, 'thuyen-go', boats.map((b) => ({ ...b })), { long: true, keep: true, group: GC[k] });
+    LT.forEach(([slug, tint], t) => scatter(k, slug, sets[t], { keep: true, group: GC[k], tint, plain: slug === 'den-long-giay', glow: 0.9 }));
+    const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(wires, 3)); GC[k].add(new THREE.LineSegments(wg, WIRE_MAT));
     field(k, halos, { reflect: true });
   }
   // the riverside walk: fruit stalls, a bánh mì cart and a noodle cart with plastic stools, flower-lantern sellers'
   // baskets and hats at the steps, old trees; bougainvillea in pots at the doors, motorbikes parked by the houses
-  scatter(k, 'sap-trai-cay', [ha.on(75, 3.4), ha.on(127, 3.4)].map((p) => ({ ...p, s: 3.4, ry: p.ry - Math.PI / 2 })), { excl: 0.4 });
-  scatter(k, 'sap-trai-cay-2', [ha.on(102, 3.2)].map((p) => ({ ...p, s: 3.2, ry: p.ry - Math.PI / 2 })), { excl: 0.4 });
+  scatter(k, 'sap-trai-cay', [ha.on(75, 3.4), ha.on(127, 3.4)].map((p) => ({ ...p, s: 3.4, ry: p.ry - Math.PI / 2 })), { excl: 0.4, group: GC[k] });
+  if (!LOW) scatter(k, 'sap-trai-cay-2', [ha.on(102, 3.2)].map((p) => ({ ...p, s: 3.2, ry: p.ry - Math.PI / 2 })), { excl: 0.4, group: GC[k] });
   const carts = [[81, 'xe-banh-mi', 2.1], [110, 'xe-hu-tieu', 2.1], [133, 'xe-banh-mi', 2.1]];
   for (const [a, slug, sz] of carts) {
-    const c = ha.on(a, 3.6); scatter(k, slug, [{ ...c, s: sz, ry: c.ry + Math.PI / 2 }], { excl: 0.5 });
-    if (slug === 'xe-hu-tieu') scatter(k, 'ghe-do', [...Array(6)].map((_, i) => { const o = ha.on(a - 2.2 + (i % 3) * 1.1, 1.6 + Math.floor(i / 3) * 1.1); return { ...o, s: 0.55, ry: R(0, 6.28) }; }));
+    const c = ha.on(a, 3.6); scatter(k, slug, [{ ...c, s: sz, ry: c.ry + Math.PI / 2 }], { excl: 0.5, group: GC[k] });
+    if (slug === 'xe-hu-tieu' && !LOW) scatter(k, 'ghe-do', [...Array(6)].map((_, i) => { const o = ha.on(a - 2.2 + (i % 3) * 1.1, 1.6 + Math.floor(i / 3) * 1.1); return { ...o, s: 0.55, ry: R(0, 6.28) }; }), { group: GC[k] });
   }
   const sellers = [];
   for (const a of [67, 89, 117, 139]) for (const d of [-2.6, 2.6]) { const o = ha.on(a + d, 1.3); sellers.push({ ...o, s: 1.0, ry: R(0, 6.28) }); }
-  scatter(k, 'ro', sellers); scatter(k, 'non-la', sellers.filter((_, i) => i % 2 === 0).map((p) => ({ ...p, x: p.x + 0.5, y: p.y + 0.05, s: 0.55 })));
-  scatter(k, 'cay-da', [[58.5, 2.6], [147.5, 2.6]].map(([a, d]) => ({ ...ha.on(a, d), s: 10, ry: R(0, 6.28) })), { keep: true });
-  scatter(k, 'cay-da', [[85, 2.4], [123, 2.4]].map(([a, d]) => ({ ...ha.on(a, d), s: 8, ry: R(0, 6.28) })));
-  scatter(k, 'hoa-giay-chau', [...Array(nq(11, 7))].flatMap((_, i) => [-2.7, 2.7].map((d) => { const a = 64 + i * 7.4 + d, o = at(k, 24.3, a); return { x: o.x, z: o.z, y: st.h(a), s: R(1.8, 2.4), ry: R(0, 6.28) }; })));
-  scatter(k, 'xe-may-cub', along(k, nq(8, 3), 23.8, 62, 140, 1.9, { gap: 3 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 + R(-0.3, 0.3) })), { long: true });
+  if (!LOW) { scatter(k, 'ro', sellers, { group: GC[k] }); scatter(k, 'non-la', sellers.filter((_, i) => i % 2 === 0).map((p) => ({ ...p, x: p.x + 0.5, y: p.y + 0.05, s: 0.55 })), { group: GC[k] }); }
+  if (!LOW) scatter(k, 'cay-da', [[58.5, 2.6, 10], [147.5, 2.6, 10], [85, 2.4, 8], [123, 2.4, 8]].map(([a, d, sz]) => ({ ...ha.on(a, d), s: sz, ry: R(0, 6.28) })), { keep: true, group: GC[k] });
+  if (!LOW) scatter(k, 'hoa-giay-chau', [...Array(nq(11, 7))].flatMap((_, i) => [-2.7, 2.7].map((d) => { const a = 64 + i * 7.4 + d, o = at(k, 24.3, a); return { x: o.x, z: o.z, y: st.h(a), s: R(1.8, 2.4), ry: R(0, 6.28) }; })), { group: GC[k] });
+  scatter(k, 'xe-may-cub', along(k, nq(8, 3), 23.8, 62, 140, 1.9, { gap: 3 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 + R(-0.3, 0.3) })), { long: true, group: GC[k] });
   scatter(k, 'chuoi', onLand(k, nq(10, 5), 36, 52, 60, 146).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
   scatter(k, 'dua', onLand(k, nq(6, 3), 34, 50, 58, 146).map((p) => ({ ...p, s: R(9, 12), ry: R(0, 6) })));
   scatter(k, 'thuyen-viet', [[-4, 70], [6, 118], [-6, 136]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5.5, ry: q.rot + R(-0.4, 0.4) }; }), { long: true });
@@ -1771,7 +1763,7 @@ function addFlag(k, o, rot) {
   scatter(k, 'dua', along(k, nq(12, 6), 18.4, -76, 66, 11, { gap: 2 }).map((p) => ({ ...p, ry: R(0, 6) })));
   scatter(k, 'du-bien', around(k, nq(10, 5), -24, -19, -60, 50, 3.2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
   scatter(k, 'ghe-bien', around(k, nq(10, 5), -24, -19, -60, 50, 2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
-  scatter(k, 'toa-van-phong', [[68, -40, 28], [74, -20, 32], [70, 50, 30], [78, 66, 26]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
+  scatter(k, LOW ? 'chung-cu' : 'toa-nha-1', [[68, -40, 24], [74, -20, 28], [70, 50, 26], [78, 66, 22]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
   const sq = around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 }));
   scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), sq, { long: true });
   if (pick('thuyen-cau-muc')) field(k, sq.flatMap((b) => [-0.3, -0.12, 0.06, 0.24].map((f) => ({ x: b.x + Math.cos(b.ry) * f * b.s, y: 2.1, z: b.z - Math.sin(b.ry) * f * b.s, c: 0xf2fbff, s: 0.3, halo: 12, tw: 0.15 }))), { bodies: false, reflect: true }); // the bulbs strung over the deck
@@ -1788,25 +1780,36 @@ function addFlag(k, o, rot) {
 // townhouses with shutters and air conditioners, office towers, a ferry crossing the river
 {
   const k = 8;
-  quay(k, 1, -64, 94, 21, { rail: 'steel', lamps: 12, steps: [-22, 62] });
-  const rd = road(k, 24.5, -60, 90, 7, 'asphalt'); road(k, 29.5, -60, 90, 3, 'pavers');
+  // Bạch Đằng wharf: the stone quay with its stainless railing and lamps, steps down to the water-bus landing, then the
+  // riverside park (lawn, shade trees and palms), Tôn Đức Thắng street with its traffic, the pavement (big street trees,
+  // a bus stop, coffee and bánh mì carts with plastic stools, parked motorbikes, power lines), the rows of shop houses
+  // with their signs either side of Bến Thành, office towers behind
+  quay(k, 1, -64, 50, 20.5, { rail: 'steel', lamps: 12, steps: [-22] });
+  road(k, 24, -62, 48, 4.4, 'grass', { lift: 0.18, tile: 4 }); road(k, 26.9, -62, 48, 1.4, 'pavers', { lift: 0.16 });
+  const pk = along(k, nq(12, 6), 24, -58, 44, 1, { gap: 2 });
+  scatter(k, 'tree-oak', pk.filter((_, i) => i % 2 === 0).map((p) => ({ ...p, s: R(11, 14), ry: R(0, 6.28) })));
+  scatter(k, 'dua', pk.filter((_, i) => i % 2 === 1).map((p) => ({ ...p, s: R(9, 11), ry: R(0, 6.28) })));
+  const rd = road(k, 31.2, -62, 48, 7, 'asphalt'); road(k, 36.4, -62, 48, 3.4, 'pavers');
   traffic(k, rd, [{ slug: 'xe-may-cub', n: nq(24, 8), s: 1.9 }, { slug: 'xe-ga-vino', n: nq(18, 6), s: 1.8 }, { slug: 'xe-may-rx', n: nq(10, 4), s: 1.9 }, { slug: 'xe-vespa', n: nq(6, 2), s: 1.8 },
     { slug: 'o-to', n: nq(6, 3), s: 4.4, speed: 7 }, { slug: 'xe-buyt', n: 2, s: 10, speed: 5 }]);
-  powerLine(k, 31.3, -58, 88, 12);
-  if (!LOW) scatter(k, 'xe-day', along(k, nq(5, 2), 29.9, -50, 80, 2.4, { gap: 6 }).map((p) => ({ ...p, ry: p.ry + Math.PI / 2 })));
-  const stools = []; for (const c of along(k, nq(7, 3), 29.7, -46, 84, 1, { gap: 5 })) for (let i = 0; i < 5; i++) stools.push({ x: c.x + R(-1.2, 1.2), z: c.z + R(-1.2, 1.2), s: 0.55, ry: R(0, 6) });
-  scatter(k, 'ghe-do', stools); scatter(k, 'ghe-xanh', stools.slice(0, Math.floor(stools.length / 3)).map((p) => ({ ...p, x: p.x + 0.7, s: 0.6 })));
-  scatter(k, 'cay-ven-bien', along(k, nq(8, 4), 31.6, -56, 86, 10, { gap: 3 }).map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.3 });
-  const np = pick('nha-pho-sai-gon');
-  const blk = !np && pick('day-nha-ong-ha-noi');
-  const row = np || blk ? null : houseRow(k, 31.5, 60, 92, { w: [4, 5.5], h: [12, 18], d: 8, flat: true, wall: 'white', tints: [0xe9e4d8, 0xd6e2e6, 0xf0dcc2, 0xdfe6d0, 0xe8d0d0] });
-  if (np) scatter(k, np, along(k, 6, 31.5, 60, 92, 16, { face: Math.PI / 2 }), { excl: 0.5 });
-  else if (blk) scatter(k, blk, [86].map((al) => { const q = at(k, 39, al); return { x: q.x, z: q.z, s: 30, ry: q.rot - Math.PI / 2 }; }), { excl: 0.45, keep: true }); // tube houses facing the river road
-  else if (row) {
-    scatter(k, 'cua-cuon', row.map((h) => { const q = at(k, 27.4, h.al); return { x: q.x, z: q.z, s: 3.6, ry: h.rot + Math.PI / 2 }; }));
-    scatter(k, 'cuc-nong', row.filter((_, i) => i % 2 === 0).map((h) => { const q = at(k, 27.3, h.al); return { x: q.x, z: q.z, y: h.y + h.h * 0.6, s: 2, ry: h.rot + Math.PI / 2 }; }));
+  powerLine(k, 37.9, -60, 46, 12);
+  const pv = (al, l = 36.2) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: rd.h(al) + 0.04, ry: q.rot }; };
+  scatter(k, 'tree-oak', [-56, -44, -16, 14, 30].map((a) => ({ ...pv(a, 35.4), s: R(13, 16), ry: R(0, 6.28) })));
+  scatter(k, 'tram-xe-buyt', [-30].map((a) => ({ ...pv(a, 35.6), s: 4.2, ry: pv(a).ry + Math.PI / 2 })));
+  const carts = [[-50, 'xe-ca-phe', 1.9], [-38, 'xe-banh-mi', 2.1], [-8, 'xe-day', 2.4], [22, 'xe-ca-phe', 1.9], [36, 'xe-banh-mi', 2.1]];
+  for (const [a, slug, sz] of carts) {
+    scatter(k, slug, [{ ...pv(a, 36.6), s: sz, ry: pv(a).ry + Math.PI / 2 }]);
+    const st = [...Array(5)].map(() => ({ ...pv(a + R(-2.2, 2.2), R(35.2, 37.4)), s: 0.55, ry: R(0, 6.28) }));
+    scatter(k, 'ghe-do', st.slice(0, 3)); scatter(k, 'ghe-xanh', st.slice(3).map((p) => ({ ...p, s: 0.6 })));
   }
-  scatter(k, 'toa-van-phong', [[120, 20, 60], [140, 60, 70], [110, -20, 48]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.4, far: true });
+  scatter(k, 'xe-may-cub', along(k, nq(14, 5), 37.6, -60, 46, 1.9, { gap: 2 }).filter((p, i) => i % 3 !== 2).map((p) => ({ ...p, y: rd.h(0) + 0.04, ry: p.ry + Math.PI / 2 + R(-0.2, 0.2) })), { long: true });
+  // shop houses along the street front: a row of Sài Gòn shop houses with their signs, a block of tube houses, a row of
+  // shops with awnings; a gap for Bến Thành and one where the Ba Son bridge comes down
+  scatter(k, 'day-nha-ong-ha-noi', [[-42, 46, 22], [-23, 45, 15]].map(([a, l, sz]) => { const q = at(k, l, a); return { x: q.x, z: q.z, y: 1.85, s: sz, ry: q.rot - Math.PI / 2 }; }), { keep: true, far: true });
+  scatter(k, 'day-cua-hang', [[-63, 44]].map(([a, l]) => { const q = at(k, l, a); return { x: q.x, z: q.z, y: 1.85, s: 22, ry: q.rot - Math.PI / 2 }; }), { keep: true, far: true });
+  scatter(k, 'day-nha-ong-ha-noi', [[24, 46]].map(([a, l]) => { const q = at(k, l, a); return { x: q.x, z: q.z, y: 1.85, s: 20, ry: q.rot - Math.PI / 2 }; }), { keep: true, far: true });
+  scatter(k, 'thap-kinh', [[120, 20, 66], [140, 30, 74]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.2, far: true });
+  scatter(k, 'thap-cao', [[110, -20, 52]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot }; }), { excl: 0.2, far: true });
   // ferry crossing back and forth: a navy hull with a steel car deck, railings, ramps at both ends, a cabin and
   // wheelhouse along one side, and a few cars and motorbikes aboard
   const fg = new THREE.Group(); G[k].add(fg);
@@ -1832,14 +1835,25 @@ function addFlag(k, o, rot) {
 // nipa palms on the banks, rice paddies inland
 {
   const k = 9;
-  scatter(k, 'nha-san-can-tho', [[24, -56], [-26, -14], [26, 50]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: Math.max(gy(q.x, q.z), -0.5), s: 11, ry: q.rot + (l > 0 ? Math.PI / 2 : -Math.PI / 2) }; }), { excl: 0.5 });
-  scatter(k, 'nha-nho-can-tho', [[-24, 40], [28, -36]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 10, ry: q.rot + (l > 0 ? Math.PI / 2 : -Math.PI / 2) }; }), { excl: 0.5 });
-  scatter(k, 'thuyen-viet', around(k, nq(6, 3), -10, 10, -70, 70, 5).map((p) => ({ ...p, y: -0.25, ry: p.ry })), { long: true });
-  scatter(k, 'thuyen-duoi-dai', around(k, nq(3, 2), -9, 9, -60, 60, 7).map((p) => ({ ...p, y: -0.25 })), { long: true });
-  scatter(k, 'vong', [[22, -50], [-23, -10], [24, 46]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3, ry: q.rot }; }));
+  // houses along both banks, facing the river: wooden houses with tin roofs, stilt houses at the water's edge, thatched
+  // houses with woven bamboo walls, a small hut; a light in each after dark
+  const HS = [[22, -48, 'nha-go-mien-tay', 10], [-21, -46, 'nha-la', 9], [17, -34, 'nha-san-go', 11], [-17, -22, 'nha-san-go', 11], [23, -14, 'nha-la', 9],
+    [-23, 4, 'nha-go-mien-tay', 10], [24, 8, 'choi-go', 5], [22, 48, 'nha-go-mien-tay', 10], [-22, 32, 'nha-la', 9], [17, 64, 'nha-san-go', 11], [-17, 60, 'nha-go-mien-tay', 10]];
+  const hl = [];
+  for (const [i, slug] of ['nha-go-mien-tay', 'nha-la', 'nha-san-go', 'choi-go'].entries()) {
+    const it = HS.filter((h, n) => h[2] === slug && (!LOW || n % 2 === 0)).map(([l, al, , sz]) => { const q = at(k, l, al), stilt = slug === 'nha-san-go'; return { x: q.x, z: q.z, y: stilt ? Math.max(gy(q.x, q.z), -0.7) : Math.max(gy(q.x, q.z), 0.2), s: sz, ry: q.rot + (l > 0 ? -Math.PI / 2 : Math.PI / 2) }; });
+    scatter(k, slug, it, { excl: 0.55 });
+    if (i < 3) for (const h of it) hl.push({ x: h.x, y: h.y + 2.4, z: h.z, c: 0xffc46b, s: 0.22, tw: 0.2 });
+  }
+  field(k, hl, { reflect: true });
+  scatter(k, 'thuyen-go', [[-38], [-22], [64]].map(([al], n) => { const l = n === 1 ? -12.5 : 12.5, q = at(k, l, al + 3); return { x: q.x, z: q.z, y: -0.2, s: 5, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
+  scatter(k, 'luoi', [[20, -44], [-19, -42]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3, ry: q.rot }; }));
+  scatter(k, 'thuyen-viet', around(k, nq(6, 3), -10, 10, -48, 70, 5).map((p) => ({ ...p, y: -0.25, ry: p.ry })), { long: true });
+  scatter(k, 'thuyen-duoi-dai', around(k, nq(3, 2), -9, 9, -46, 60, 7).map((p) => ({ ...p, y: -0.25 })), { long: true });
+  scatter(k, 'vong', [[20, -42], [-20, 8], [20, 52]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3, ry: q.rot }; }));
   scatter(k, 'sap-rau', [[-17, -2], [18, 22]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s: 3.2, ry: q.rot }; }));
-  scatter(k, 'chuoi', onLand(k, nq(16, 6), 16, 60, -80, 80).concat(onLand(k, nq(10, 4), -60, -16, -80, 80)).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
-  scatter(k, 'dua', onLand(k, nq(10, 4), 18, 64, -80, 80).map((p) => ({ ...p, s: R(10, 13), ry: R(0, 6) })));
+  scatter(k, 'chuoi', onLand(k, nq(16, 6), 16, 31, -50, 80).concat(onLand(k, nq(10, 4), -31, -16, -50, 80)).map((p) => ({ ...p, s: R(4.5, 6), ry: R(0, 6) })));
+  scatter(k, 'dua', onLand(k, nq(10, 4), 18, 31, -50, 80).map((p) => ({ ...p, s: R(10, 13), ry: R(0, 6) })));
 }
 // 11 Mũi Cà Mau: mangroves of three kinds, a boardwalk into them, the GPS 0001 marker, fishing boats, nipa palms
 {
@@ -1955,16 +1969,16 @@ const GRASS_CARD = (() => {
   const g = mergeGeometries([a, b]); const n = g.attributes.normal; for (let i = 0; i < n.count; i++) n.setXYZ(i, 0, 1, 0); // lit like the ground under it
   return g;
 })();
-function grassField(k, items, dry) {
+function grassField(k, items, dry, base = 0xffffff, vary = 0.25) {
   if (!items.length) return null;
   const geo = GRASS_CARD.clone(), cell = new Float32Array(items.length * 4);
-  const im = new THREE.InstancedMesh(geo, GRASS_MAT, items.length), c = new THREE.Color(), green = new THREE.Color(0xffffff), straw = new THREE.Color(0xe8d39a);
+  const im = new THREE.InstancedMesh(geo, GRASS_MAT, items.length), c = new THREE.Color(), green = new THREE.Color(base), straw = new THREE.Color(0xe8d39a);
   items.forEach((it, i) => {
     const [x0, y0, x1, y1] = GRASS_CELLS[Math.floor(rand() * GRASS_CELLS.length)], w = (x1 - x0) / 1024, h = (y1 - y0) / 1024;
     cell.set([x0 / 1024, 1 - y1 / 1024, w, h], i * 4);
     const hh = it.s, ww = hh * (w / h);
     im.setMatrixAt(i, _m4.compose(_v3.set(it.x, it.y, it.z), _q.setFromAxisAngle(UP, it.ry), _s3.set(ww, hh, ww)));
-    im.setColorAt(i, c.copy(green).lerp(straw, clamp(dry + R(-0.25, 0.25), 0, 1)).multiplyScalar(R(0.78, 1.08)));
+    im.setColorAt(i, c.copy(green).lerp(straw, clamp(dry + R(-vary, vary), 0, 1)).multiplyScalar(R(1 - vary * 0.9, 1.08)));
   });
   geo.setAttribute('aCell', new THREE.InstancedBufferAttribute(cell, 4));
   im.computeBoundingSphere(); im.userData.noCast = true; GC[k].add(im);
@@ -1989,6 +2003,32 @@ function grassField(k, items, dry) {
     const ferns = onLand(k, Math.round(nq(14, 5) * DENS[k]), -40, 40, -100, 100, (y) => y > 0.6 && y < 30, 4).filter((p) => free(p.x, p.z));
     for (const [n, slug] of [[0, 'xi-a'], [1, 'xi-b']]) scatter(k, slug, ferns.filter((_, i) => i % 2 === n).flatMap((c) => [...Array(4)].map(() => { const x = c.x + R(-2, 2), z = c.z + R(-2, 2); return { x, z, y: gy(x, z) - 0.03, s: R(1.0, 1.6), ry: R(0, 6.28) }; })), { keep: true, group: GC[k], noCast: true });
   }
+}
+
+// 10 Miền Tây: rice paddies on the flat alluvial land behind the banks, between low grassy dikes: young bright-green
+// rice, deeper green, a few fields ripening gold; watch huts on the dikes. The rice is the photographed grass clumps
+// planted in rows on a coloured field floor.
+{
+  const k = 9, CROP = [[0xa6d86a, 0.0], [0x86c255, 0.0], [0x6aa443, 0.05], [0xd8c46c, 0.8]], WEIGHT = [0.3, 0.35, 0.25, 0.1];
+  const floors = CROP.map(() => []), dikes = [], rice = CROP.map(() => []), huts = [], FW = 15, FD = 10.5, DK = 0.9, sp = nq(0.68, 1.3), Y = 0.27;
+  for (const sd of [-1, 1]) for (let l = 34; l + FD <= 70; l += FD + DK) for (let a = -48; a + FW <= 78; a += FW + DK) {
+    if (sd > 0 && a < 35 && a + FW > 25) continue; // the side canal
+    let t = 0; for (let r = rand(), acc = 0; t < 3; t++) { acc += WEIGHT[t]; if (r < acc) break; }
+    const c = at(k, sd * (l + FD / 2), a + FW / 2), M0 = MY(c.x, 0, c.z, c.rot);
+    floors[t].push([tiledBox(FD, 0.06, FW, 4), M0.clone().multiply(TR4(0, Y, 0))]);
+    for (const [x, z, w, d] of [[-FD / 2 - DK / 2, 0, DK, FW + 2 * DK], [FD / 2 + DK / 2, 0, DK, FW + 2 * DK], [0, -FW / 2 - DK / 2, FD, DK], [0, FW / 2 + DK / 2, FD, DK]])
+      dikes.push([tiledBox(w, 0.42, d, 2), M0.clone().multiply(TR4(x, Y + 0.12, z))]);
+    for (let x = -FD / 2 + sp / 2; x < FD / 2; x += sp) for (let z = -FW / 2 + sp / 2; z < FW / 2; z += sp) {
+      const v = new THREE.Vector3(x + R(-0.06, 0.06), 0, z + R(-0.06, 0.06)).applyMatrix4(M0);
+      rice[t].push({ x: v.x, z: v.z, y: Y + 0.02, s: t === 3 ? R(0.7, 0.85) : t === 0 ? R(0.42, 0.55) : R(0.55, 0.7), ry: R(0, 6.28) });
+    }
+    EXCL.push([c.x, c.z, FW * 0.62]);
+    if (rand() < 0.07) { const v = new THREE.Vector3(FD / 2 + DK / 2, 0, R(-4, 4)).applyMatrix4(M0); huts.push({ x: v.x, z: v.z, y: Y + 0.3, s: R(3.6, 4.4), ry: c.rot + R(-0.3, 0.3) }); }
+  }
+  floors.forEach((f, t) => { if (f.length) G[k].add(new THREE.Mesh(bake(f), texMat('grass', { color: CROP[t][0] }))); });
+  G[k].add(new THREE.Mesh(bake(dikes), texMat('grass-dark', { color: 0x8a9a6a })));
+  rice.forEach((items, t) => grassField(k, items, CROP[t][1], [0xe6ffa8, 0xd2f590, 0xbfe57c, 0xffffff][t], 0.08));
+  scatter(k, 'choi-tre', huts);
 }
 
 // ---------------------------------------------------------------- overview: route ribbon, stop markers, glowing coastline, village lights
@@ -2750,6 +2790,7 @@ function step(u, dt) {
   // visibility: only nearby stops and terrain are drawn during the flight
   const low = camY < 320, vr = VIS_R();
   for (let i = 0; i < 11; i++) { const d = Math.hypot(camera.position.x - GCENTER[i].x, camera.position.z - GCENTER[i].y); G[i].visible = low && d < vr; SG[i].visible = d < SG_R(); GC[i].visible = d < GC_R(); }
+  { const d8 = Math.hypot(camera.position.x - GCENTER[8].x, camera.position.z - GCENTER[8].y), d9 = Math.hypot(camera.position.x - GCENTER[9].x, camera.position.z - GCENTER[9].y); if (d9 < d8 - 25 || d8 > (LOW ? 260 : 300)) G[8].visible = false; } // no city skyline over the delta, nor from three stops away
   for (const m of TERRAIN) m.visible = mapA < 0.995 && (!low || Math.abs(m.userData.zc - camera.position.z) < 640);
   updateForest(low);
   for (const f of FIELDS) if (f.dyn && (f.k < 0 || G[f.k].visible)) fieldUpdate(f, T);
