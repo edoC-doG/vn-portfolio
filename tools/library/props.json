@@ -491,8 +491,8 @@
  },
  "nha-hoi-an-2": {
   "src": "sketchfab/nha/hoi-an-house-nh-h-i-an-2f2c7d59.glb",
-  "midTris": 6000,
-  "lowTris": 1500,
+  "midTris": 3500,
+  "lowTris": 1000,
   "midTex": 1024,
   "lowTex": 512
  },
@@ -519,15 +519,15 @@
  },
  "cong-tam-quan": {
   "src": "sketchfab/dia-danh/vietnam-temple-gate-4fad9643.glb",
-  "midTris": 9000,
-  "lowTris": 2500,
+  "midTris": 5000,
+  "lowTris": 1500,
   "midTex": 1024,
   "lowTex": 512
  },
  "thuyen-rong": {
   "src": "sketchfab/thuyen/gilded-dragon-boat-226c5a54.glb",
-  "midTris": 6000,
-  "lowTris": 1500,
+  "midTris": 3000,
+  "lowTris": 1000,
   "midTex": 512,
   "lowTex": 256
  }

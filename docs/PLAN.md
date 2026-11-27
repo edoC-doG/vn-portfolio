@@ -103,8 +103,8 @@ public/models/{low,mid,high}/  model
 
 | | Thấp (điện thoại, máy yếu) | Trung bình | Cao |
 |---|---|---|---|
-| Tam giác trên khung hình | ≤ 120k (đo được 56–104k) | ≤ 720k (đo được 434–710k) | ≤ 1M |
-| Draw call | ≤ 120 (đo được 49–115) | ≤ 190 (đo được 118–189, chưa kể lượt vẽ bóng) | ≤ 250 |
+| Tam giác trên khung hình | ≤ 120k (đo được 56–111k) | ≤ 800k (đo được 434–779k) | ≤ 1M |
+| Draw call | ≤ 120 (đo được 49–115) | ≤ 200 (đo được 118–194, chưa kể lượt vẽ bóng) | ≤ 250 |
 | Texture | 512 | 1024 | 1024 KTX2 |
 | Tỉ lệ điểm ảnh (DPR) | 1 – 1,25 | 1,5 | 2 |
 | Bloom | tắt | bật (nửa độ phân giải) | bật |

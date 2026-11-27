@@ -653,7 +653,11 @@ function field(k, items, { bodies = true, reflect = true, halo = 9, mat = GLOW_M
   const parent = k < 0 ? scene : G[k];
   let mesh = null;
   if (bodies) {
-    mesh = new THREE.InstancedMesh(SPHERE, new THREE.MeshBasicMaterial({ color: 0xffffff }), n);
+    // lit by day (a shaded lantern), glowing in its own colour after dark: the instance colour also tints the emissive
+    const bm = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
+    bm.color.setScalar(0.42);
+    bm.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n#if defined( USE_COLOR ) || defined( USE_INSTANCING_COLOR )\n  totalEmissiveRadiance *= vColor.rgb;\n#endif'); };
+    mesh = new THREE.InstancedMesh(SPHERE, bm, n); mesh.userData.noCast = true;
     mesh.frustumCulled = false; parent.add(mesh);
   }
   let refl = 0; if (reflect) for (const it of items) if (it.y < 7) refl++;
@@ -1249,7 +1253,7 @@ function addFlag(k, o, rot) {
     for (let i = 0; i < nq(11, 7); i++) {
       const al = 64 + i * 7.4, q = at(k, 28 + R(-1, 1), al), yy = gy(q.x, q.z), w = R(5.2, 6.6), h = R(3.6, 5.2), d = 6;
       const v = i % 2, slot = hm[v] ?? hm[1 - v];
-      if (slot) meshy[hm[v] ? v : 1 - v].push({ x: q.x, z: q.z, y: yy, s: v ? 9 : 7.5, ry: q.rot + Math.PI / 2 });
+      if (slot) meshy[hm[v] ? v : 1 - v].push({ x: q.x, z: q.z, y: yy, s: v ? 9 : 7.5, ry: q.rot + Math.PI });
       else {
         walls.push([tint(tiledBox(d, h, w, 3.5), yellows[i % yellows.length]), MY(q.x, yy + h / 2, q.z, q.rot)]);
         roofs.push([new THREE.BoxGeometry(d * 0.75, d * 0.75, w + 0.7).rotateZ(Math.PI / 4).scale(1, 0.62, 1), MY(q.x, yy + h, q.z, q.rot)]);
@@ -1501,7 +1505,7 @@ function addFlag(k, o, rot) {
   scatter(k, pick('thuyen-rong', 'thuyen-duoi-dai'), [[-6, -30], [5, 14]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: pick('thuyen-rong') ? 10 : 8, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
   scatter(k, 'thuyen-viet', [[8, -50], [-9, 70], [7, 90]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5, ry: q.rot + R(-0.5, 0.5) }; }), { long: true });
   scatter(k, 'sen', around(k, nq(10, 5), 11, 14, -70, -20, 5).map((p) => ({ ...p, y: 0.02 })));
-  { const q = at(k, 24, -4), y = HERO[k].y - 9; scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: q.x, z: q.z, y, s: 9, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); } // on the mound's flat top
+  { const q = at(k, 31, -12), y = HERO[k].y - 9; scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: q.x, z: q.z, y, s: 8, ry: q.rot }], { excl: 0.5, keep: true }); } // the gate in front of the tower on the mound's top, the view of Thiên Mụ everyone knows
   const nm = pick('ngo-mon'), c = at(k, -52, 24), cy = Math.max(gy(c.x, c.z), 0.5);
   if (nm) scatter(k, nm, [{ x: c.x, z: c.z, y: cy, s: 34, ry: c.rot - Math.PI / 2 }], { excl: 0.5 });
   else {
@@ -1688,7 +1692,13 @@ function addFlag(k, o, rot) {
     EXCL.push([c.x, c.z, 9]);
   }
   const mag = [0xd8327a, 0xe8559a, 0xc0206a, 0xf07ab0];
-  instances(k, new THREE.IcosahedronGeometry(0.32, 0), M({ color: 0xffffff, roughness: 0.9 }), [...Array(nq(260, 90))].map((_, i) => { const q = at(k, 24.8 + R(-0.3, 0.3), R(62, 142)); return { x: q.x, z: q.z, y: gy(q.x, q.z) + R(2, 4.6), s: R(0.7, 1.4), c: mag[i % 4] }; }), { extra: true });
+  // bougainvillea: small clusters of blossoms hanging down the house fronts, not single big gems
+  const bloom = [];
+  for (let c = 0; c < nq(40, 14); c++) {
+    const al = R(62, 142), top = R(3.4, 5.2), q0 = at(k, 24.6, al), g0 = gy(q0.x, q0.z);
+    for (let j = 0; j < nq(10, 5); j++) { const q = at(k, 24.6 + R(-0.25, 0.25), al + R(-0.9, 0.9)); bloom.push({ x: q.x, z: q.z, y: g0 + top - Math.abs(R(-1, 1)) * R(0.2, 2.2), s: R(0.12, 0.22), c: mag[(c + j) % 4] }); }
+  }
+  instances(k, new THREE.IcosahedronGeometry(1, 0), M({ color: 0xffffff, roughness: 0.85 }), bloom, { extra: true });
 }
 // 07 Nha Trang: a white sand beach on the sea side and the cable car over the sea to the island
 {
@@ -2308,7 +2318,7 @@ function updateAtmo(dt, camY) {
     lastLamp = L.lamp;
     WINDOW_MAT.emissiveIntensity = 0.85 * lerp(0.03, 1, L.lamp);
     WINDOW_MAT.color.setRGB(1, 1, 1).lerp(_c2.setHex(0x1a2326), smooth(0.1, 0.6, L.lamp)); // facade by day, dark glass at night
-    for (const f of FIELDS) if (f.mesh) f.mesh.material.color.setScalar(lerp(0.3, 1, L.lamp));
+    for (const f of FIELDS) if (f.mesh) f.mesh.material.emissiveIntensity = lerp(0.03, 1, L.lamp);
   }
   impMat.uniforms.uLight.value.copy(L.hs).lerp(_c2.setRGB(1, 1, 1), 0.7).multiplyScalar(0.25 * A.hemi + 0.12 * moonLight.intensity);
   // rain and wet ground
@@ -2576,6 +2586,8 @@ requestAnimationFrame(frame);
 
 // test hooks
 window.__fly = {
+  // test only: look at a place from a given offset (k, lateral, along, then camera offset in metres)
+  view: (k, lat, al, clat, cal, ch, u) => { const q = at(k, lat, al), y = Math.max(gy(q.x, q.z), 0), c = at(k, clat, cal); HOLD = true; curU = targetU = u; writeU(u); step(u, 0.016); camera.position.set(c.x, y + ch, c.z); camera.lookAt(q.x, y + 2, q.z); for (const g of G) g.visible = true; for (const s of SG) s.visible = true; for (const c of GC) c.visible = true; if (bloomOn && composer) composer.render(); else renderer.render(scene, camera); },
   setOv: (k, sh) => { OVT.k = k; OVT.s = sh; resize(true); },
   ovInfo: () => ({ OV_DIST: Math.round(OV_DIST), MAPB, fov: camera.fov, cam: camera.position.toArray().map(Math.round), CV: MAP_CV.toArray().map(Math.round), vw: VW, vh: VH }),
   sh: () => { let c = 0, r = 0; scene.traverse((o) => { if (o.castShadow) c++; if (o.receiveShadow) r++; }); const t = moonLight.target.position, lp = moonLight.position, d = []; scene.traverse((o) => { if (o.castShadow && o.visible) { o.getWorldPosition(_v3); const dist = Math.hypot(_v3.x - t.x, _v3.z - t.z); if (dist < SH_R) d.push(o.name || o.type); } }); return { casters: c, receivers: r, on: renderer.shadowMap.enabled, light: moonLight.castShadow, keyI: +moonLight.intensity.toFixed(2), map: !!moonLight.shadow.map, near: d.length, kinds: [...new Set(d)].slice(0, 6), t: [t.x, t.y, t.z].map((v) => +v.toFixed(1)), l: [lp.x, lp.y, lp.z].map((v) => +v.toFixed(1)), cam: [camera.position.x, camera.position.y, camera.position.z].map((v) => +v.toFixed(1)) }; },
