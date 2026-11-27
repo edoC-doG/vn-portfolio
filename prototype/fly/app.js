@@ -1652,13 +1652,15 @@ function addFlag(k, o, rot) {
   scatter(k, pick('thuyen-rong', 'thuyen-duoi-dai'), [[-6, -30], [5, 14]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: pick('thuyen-rong') ? 10 : 8, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
   scatter(k, 'thuyen-viet', [[8, -50], [-9, 70], [7, 90]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5, ry: q.rot + R(-0.5, 0.5) }; }), { long: true });
   scatter(k, 'sen', around(k, nq(10, 5), -14, -11, -70, -20, 5).map((p) => ({ ...p, y: 0.02 })));
-  const tm = quay(k, 1, -46, 34, 21, { rail: 'stone', steps: [-4, 22], lamps: 0 });
-  { // Thiên Mụ: steps from the riverside walk up to the terrace, the gate behind the tower, pavilions, frangipani, pines
+  const tm = quay(k, 1, -46, 34, 21, { rail: 'stone', steps: [-4], lamps: 0 });
+  { // Thiên Mụ, on one axis: steps from the boat landing to the riverside walk, the flight up to the terrace, the
+    // three-entrance gate at its head facing the river, the paved path between the lawns to the tower; pavilions either
+    // side, frangipani, pines behind
     const p = at(k, 32, -4), O = MY(p.x, 0, p.z, p.rot), loc = (l, a) => new THREE.Vector3(l - 32, 0, -(a + 4)).applyMatrix4(O);
     let y = -9; for (let l = 25.5; l <= 41; l += 2) for (let a = -16; a <= 8; a += 2) { const q = at(k, l, a); y = Math.max(y, gy(q.x, q.z)); } y += 2.0;
     const s0 = loc(21, -4), hw = tm.hAt(-4).h;
     flight(k, s0.x, s0.z, p.rot + Math.PI / 2, 4.5, 6.8, hw, y, hw - 2.5);
-    const g = loc(39.2, -4); scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: g.x, z: g.z, y, s: 9, ry: p.rot }], { keep: true });
+    const g = loc(27.7, -4); scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: g.x, z: g.z, y, s: 9, ry: p.rot + Math.PI / 2 }], { keep: true });
     scatter(k, 'den-chua', [[30, -12.5], [30, 4.5]].map(([l, a]) => { const q = loc(l, a); return { x: q.x, z: q.z, y, s: 5.5, ry: p.rot + Math.PI / 2 }; }), { keep: true });
     scatter(k, 'cay-dai', [[27.5, -13.5], [27.5, 5.5], [37, -14], [37, 6], [34, -10.5], [34, 2.5]].map(([l, a]) => { const q = loc(l, a); return { x: q.x, z: q.z, y, s: R(5, 6.5), ry: R(0, 6.28) }; }), { keep: true });
     scatter(k, 'tree-pine', [...Array(nq(6, 3))].map(() => { const q = at(k, R(43, 60), R(-26, 18)); return { x: q.x, z: q.z, s: R(13, 17), ry: R(0, 6.28) }; }), { keep: true });
