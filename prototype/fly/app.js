@@ -1497,8 +1497,6 @@ function addFlag(k, o, rot) {
   dg.rotateX(-Math.PI / 2); dg.computeVertexNormals();
   { const uv = dg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (220 / 9), uv.getY(i) * (160 / 9)); }
   const dunes = new THREE.Mesh(dg, texMat('sand-red', { color: 0xf2d2b0, roughness: 1 })); dunes.position.set(d.x, 1, d.z); dunes.rotation.y = d.rot; G[k].add(dunes);
-  { const d2 = at(k, 125, -100), // Bàu Trắng lies north-east of Mũi Né (back toward Nha Trang), not by Sài Gòn
-    wd = new THREE.Mesh(dg, texMat('sand-white', { color: 0xfff6ea, roughness: 1 })); wd.position.set(d2.x, 1, d2.z); wd.rotation.y = d2.rot + 0.7; wd.scale.set(0.8, 1.3, 0.7); G[k].add(wd); } // the white dunes of Mũi Né
   for (let i = 0; i < nq(6, 3); i++) place(k, 'thuyen-thung', 2.4, at(k, -R(56, 82), R(-30, 40)), -0.15, R(0, 6), { bob: 0.07 });
   field(k, [{ x: p.x, y: y + 0.8, z: p.z, c: 0xffc46b, s: 0.3, tw: 0.2 }], { reflect: false });
 }
