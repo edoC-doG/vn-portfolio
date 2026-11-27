@@ -19,14 +19,19 @@ const countTris = (doc) => {
 
 
 function simplifyDoc(d, targetTris, err, permissive) {
-  // the budget is shared out in proportion to each primitive's size (a single-primitive Meshy model gets all of it)
-  const ratio = Math.min(1, targetTris / Math.max(1, countTris(d)));
+  // the budget is shared out in proportion to each primitive's size (a single-primitive Meshy model gets all of it).
+  // Small primitives are kept whole: a 220-triangle wall must not shrink to 4 triangles because the roof has 200k.
+  const FLOOR = 600, tris = (p) => (p.getMode() === 4 && p.getIndices() ? p.getIndices().getCount() / 3 : 0);
+  let small = 0, big = 0;
+  for (const m of d.getRoot().listMeshes()) for (const p of m.listPrimitives()) { const t = tris(p); if (t <= FLOOR) small += t; else big += t; }
+  const ratio = Math.min(1, Math.max(0.01, (targetTris - small) / Math.max(1, big)));
   for (const m of d.getRoot().listMeshes()) for (const p of m.listPrimitives()) {
     if (p.getMode() !== 4 || !p.getIndices()) continue; // triangles only
     const primTris = p.getIndices().getCount() / 3;
-    const primTarget = Math.floor(primTris * ratio);
-    if (primTarget >= primTris || primTris < 12) continue;
-    targetTris = Math.max(4, primTarget);
+    if (primTris <= FLOOR) continue;
+    const primTarget = Math.max(Math.min(primTris, FLOOR / 2), Math.floor(primTris * ratio));
+    if (primTarget >= primTris) continue;
+    targetTris = primTarget;
     const idxAcc = p.getIndices();
     const posAcc = p.getAttribute('POSITION');
     const n = posAcc.getCount();

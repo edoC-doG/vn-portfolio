@@ -155,6 +155,8 @@ Kết quả kiểm tra: ✅ tốt 74, 🔧 cần xử lý thêm 5, ⚠️ yếu 
 
 ## 4. Meshy (bạn làm)
 
+> **Cập nhật 27/11/2026:** Meshy hết credit, nên các mục có model cộng đồng đủ tốt đã thay bằng model Sketchfab (đánh dấu [x] bên dưới, ghi công tự thêm vào trang ghi công). Còn thiếu: Chùa Cầu (thư viện công khai Meshy có bản CC0 do người khác tạo; Sketchfab Store có bản chi tiết khoảng 15 USD), Bưu điện, Ngọ Môn và xích lô (không có bản miễn phí dùng được; Ngọ Môn có 3 bản trên Sketchfab nhưng khóa tải). 3 model mức 0 đã tạo xong vẫn tải được trong My Assets của Meshy.
+
 Chỉ gồm những thứ không có model miễn phí đủ tốt. Xếp theo mức cần, phòng khi credit không đủ cho cả danh sách.
 
 ### Mức 0: đã làm sẵn trên Meshy, chỉ cần tải về (không tốn credit)
@@ -170,11 +172,11 @@ Chỉ gồm những thứ không có model miễn phí đủ tốt. Xếp theo m
 | | Thứ | Tên file (slug) | Prompt |
 |---|---|---|---|
 | [ ] | Chợ Bến Thành: **làm lại màu** (Retexture) | `cho-ben-thanh` | Ben Thanh Market, Saigon: cream and light grey concrete walls, red tiled roofs, clock tower at the main gate |
-| [ ] | Nhà cổ Hội An, kiểu 1 tầng | `nha-hoi-an-1` | Old shophouse in Hoi An ancient town, Vietnam: one storey, faded mustard yellow plaster walls, dark brown wooden doors and shutters, curved yin-yang clay tile roof with moss, red lanterns under the eaves |
-| [ ] | Nhà cổ Hội An, kiểu 2 tầng | `nha-hoi-an-2` | Two-storey old shophouse in Hoi An, Vietnam: mustard yellow plaster walls with stains, wooden balcony on the upper floor, dark wooden shutters, clay tile roof, bougainvillea on the facade |
-| [ ] | Nhà ống phố cổ Hà Nội | `nha-ong-ha-noi` | Narrow tube house in Hanoi old quarter: three storeys, weathered pastel plaster, green wooden shutters, small balconies with iron railings, shop at street level, clay tile roof |
+| [x] | Nhà cổ Hội An, kiểu 1 tầng | `nha-hoi-an-1` (không cần: cả phố dùng bản 2 tầng ở dòng dưới) | Old shophouse in Hoi An ancient town, Vietnam: one storey, faded mustard yellow plaster walls, dark brown wooden doors and shutters, curved yin-yang clay tile roof with moss, red lanterns under the eaves |
+| [x] | Nhà cổ Hội An, kiểu 2 tầng: **đã thay bằng model cộng đồng** [Hoi An house](https://sketchfab.com/3d-models/2f2c7d59ede94b42bfc0d451c208ea8d) (CC BY) | `nha-hoi-an-2` | Two-storey old shophouse in Hoi An, Vietnam: mustard yellow plaster walls with stains, wooden balcony on the upper floor, dark wooden shutters, clay tile roof, bougainvillea on the facade |
+| [x] | Nhà ống phố cổ Hà Nội: **đã thay bằng** [dãy nhà ống Hà Nội](https://sketchfab.com/3d-models/e900c122f3b3491d98349385e04c700c) (CC BY, slug `day-nha-ong-ha-noi`) | `nha-ong-ha-noi` | Narrow tube house in Hanoi old quarter: three storeys, weathered pastel plaster, green wooden shutters, small balconies with iron railings, shop at street level, clay tile roof |
 | [ ] | Nhà phố Sài Gòn | `nha-pho-sai-gon` | Narrow Saigon townhouse: five storeys, painted concrete facade, balconies with plants and iron railings, roller shutter shop front, air conditioning units, flat roof with water tank |
-| [ ] | Cổng tam quan chùa Thiên Mụ (Huế) | `cong-tam-quan` | Three-entrance gate of Thien Mu pagoda, Hue, Vietnam: traditional Vietnamese Buddhist gate, three arched doorways, upturned curved tile roofs, old moss-stained plaster |
+| [~] | Cổng tam quan chùa Thiên Mụ (Huế): **tạm dùng** [Vietnam Temple Gate](https://sketchfab.com/3d-models/4fad9643769f4ff5b71ea66d7f42b8c5) (CC BY), không đúng tam quan Thiên Mụ | `cong-tam-quan` | Three-entrance gate of Thien Mu pagoda, Hue, Vietnam: traditional Vietnamese Buddhist gate, three arched doorways, upturned curved tile roofs, old moss-stained plaster |
 | [ ] | Kinh thành Huế: Ngọ Môn | `ngo-mon` | Ngo Mon gate of the Hue Imperial Citadel: massive stone base with three gates, two-tier wooden pavilion above with yellow and green glazed tile roofs |
 
 ### Mức 2: nên có
@@ -182,9 +184,9 @@ Chỉ gồm những thứ không có model miễn phí đủ tốt. Xếp theo m
 | | Thứ | Tên file (slug) | Prompt |
 |---|---|---|---|
 | [ ] | Xích lô Việt Nam | `xich-lo` | Vietnamese cyclo: three-wheeled bicycle taxi, passenger seat in front with a folding canopy, driver pedalling behind, metal frame painted dark red |
-| [ ] | Thuyền rồng sông Hương (Huế) | `thuyen-rong` | Dragon boat on the Perfume River in Hue: wooden tourist boat with a carved colourful dragon head at the bow, roofed cabin, red and yellow paint |
-| [ ] | Thuyền câu mực Nha Trang | `thuyen-cau-muc` | Vietnamese squid fishing boat: wooden boat painted blue with red and white trim, rows of light bulbs hung over the deck, small wheelhouse |
-| [ ] | Nhà bè làng chài Hạ Long | `nha-be` | Floating fisherman house in Ha Long Bay: small wooden house on a raft of plastic floats, corrugated metal roof, fish farm cages around it |
+| [x] | Thuyền rồng sông Hương (Huế): **đã thay bằng** [Gilded Dragon Boat](https://sketchfab.com/3d-models/226c5a54663b44bfb0832628a8b5affd) (CC BY), tô vàng bằng code | `thuyen-rong` | Dragon boat on the Perfume River in Hue: wooden tourist boat with a carved colourful dragon head at the bow, roofed cabin, red and yellow paint |
+| [x] | Thuyền câu mực Nha Trang: **đã thay bằng** [Fishing Boat](https://sketchfab.com/3d-models/15f42c52542e4bac8e879586b0ad4e24) (CC BY), dàn bóng đèn thêm bằng code | `thuyen-cau-muc` | Vietnamese squid fishing boat: wooden boat painted blue with red and white trim, rows of light bulbs hung over the deck, small wheelhouse |
+| [x] | Nhà bè làng chài Hạ Long: **đã thay bằng** [Low Poly Floating Villagers' Houses](https://sketchfab.com/3d-models/ec73b7fc747840afa2bdc28fdb85d1c4) (CC BY) | `nha-be` | Floating fisherman house in Ha Long Bay: small wooden house on a raft of plastic floats, corrugated metal roof, fish farm cages around it |
 
 Đã bỏ (dùng lại thứ có sẵn): tháp Chăm, nhà trình tường Lô Lô, xe Honda Wave, tàu du lịch Hạ Long.
 

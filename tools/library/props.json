@@ -488,5 +488,47 @@
   "lowTris": 800,
   "midTex": 512,
   "lowTex": 256
+ },
+ "nha-hoi-an-2": {
+  "src": "sketchfab/nha/hoi-an-house-nh-h-i-an-2f2c7d59.glb",
+  "midTris": 6000,
+  "lowTris": 1500,
+  "midTex": 1024,
+  "lowTex": 512
+ },
+ "day-nha-ong-ha-noi": {
+  "src": "sketchfab/nha/low-poly-hanoi-vietnamese-tube-houses-bl-e900c122.glb",
+  "midTris": 12000,
+  "lowTris": 4000,
+  "midTex": 1024,
+  "lowTex": 512
+ },
+ "thuyen-cau-muc": {
+  "src": "sketchfab/thuyen/fishing-boat-15f42c52.glb",
+  "midTris": 2400,
+  "lowTris": 900,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "nha-be": {
+  "src": "sketchfab/thuyen/low-poly-floating-villagers-houses-ec73b7fc.glb",
+  "midTris": 2700,
+  "lowTris": 1000,
+  "midTex": 512,
+  "lowTex": 256
+ },
+ "cong-tam-quan": {
+  "src": "sketchfab/dia-danh/vietnam-temple-gate-4fad9643.glb",
+  "midTris": 9000,
+  "lowTris": 2500,
+  "midTex": 1024,
+  "lowTex": 512
+ },
+ "thuyen-rong": {
+  "src": "sketchfab/thuyen/gilded-dragon-boat-226c5a54.glb",
+  "midTris": 6000,
+  "lowTris": 1500,
+  "midTex": 512,
+  "lowTex": 256
  }
 }

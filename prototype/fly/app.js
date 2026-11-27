@@ -1454,8 +1454,9 @@ function addFlag(k, o, rot) {
   scatter(k, 'cay-da', [...along(k, nq(6, 3), -26, -66, 22, 14, { jit: 3, gap: 4 }), ...along(k, 3, 27.5, -40, 40, 13, { gap: 6 })].map((p) => ({ ...p, ry: R(0, 6) })), { excl: 0.45 });
   { const q = at(k, 52, 46); scatter(k, 'chua-mot-cot', [{ x: q.x, z: q.z, s: 15, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
   { const q = at(k, 78, -40); scatter(k, 'khue-van-cac', [{ x: q.x, z: q.z, s: 18, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
-  const oq = pick('nha-ong-ha-noi');
+  const oq = pick('nha-ong-ha-noi'), blk = !oq && pick('day-nha-ong-ha-noi');
   if (oq) scatter(k, oq, along(k, nq(9, 5), -33, 28, 82, 8, { face: Math.PI / 2 }), { excl: 0.5 });
+  else if (blk) scatter(k, blk, [41, 68].map((al) => { const q = at(k, -39, al); return { x: q.x, z: q.z, s: 27, ry: q.rot + Math.PI / 2 }; }), { excl: 0.45 }); // a block of tube houses, 27 long
   else houseRow(k, -33, 28, 82, { w: [3.6, 5], h: [6, 10], d: 9, tints: [0xe8d6a8, 0xd9c49a, 0xc9d6c0, 0xe6c6a0, 0xd8c8b8] });
   road(k, -26.5, 26, 84, 4, 'asphalt');
   powerLine(k, -28.8, 28, 82, 11);
@@ -1470,7 +1471,7 @@ function addFlag(k, o, rot) {
   scatter(k, 'thuyen-viet', around(k, nq(5, 3), -90, -20, 40, 130, 5.5).map((p) => ({ ...p, y: -0.25 })), { long: true });
   const nb = pick('nha-be');
   const rafts = [[-62, 62], [-70, 74], [-58, 80], [-74, 88], [-64, 94], [-80, 66]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, ry: q.rot + R(-0.3, 0.3) }; });
-  if (nb) scatter(k, nb, rafts.map((r) => ({ ...r, y: -0.2, s: 9 })));
+  if (nb) { scatter(k, nb, rafts.slice(0, 4).map((r) => ({ ...r, y: -0.7, s: 13 }))); field(k, rafts.slice(0, 4).map((r) => ({ x: r.x, y: 2.2, z: r.z, c: 0xffc46b, s: 0.22, tw: 0.2 })), { reflect: true }); }
   else {
     // stand-in floating house until the Meshy model arrives: plank deck on blue barrel floats, a painted house with a
     // gabled tin roof, dark windows and a door, a lean-to awning over the deck
@@ -1496,10 +1497,11 @@ function addFlag(k, o, rot) {
 // 04 Huế: dragon boats and sampans on the Perfume River, lotus in the shallows, the pagoda gate, the citadel on the far bank
 {
   const k = 3;
-  scatter(k, pick('thuyen-rong', 'thuyen-duoi-dai'), [[-6, -30], [5, 14]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 8, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
+  if (AVAILABLE.has('thuyen-rong')) loadModel('thuyen-rong').then((t) => t?.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.color.set(0xd9a23a); m.material.metalness = 0.35; m.material.roughness = 0.45; } })); // before scatter() reads it
+  scatter(k, pick('thuyen-rong', 'thuyen-duoi-dai'), [[-6, -30], [5, 14]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: pick('thuyen-rong') ? 10 : 8, ry: q.rot + R(-0.2, 0.2) }; }), { long: true });
   scatter(k, 'thuyen-viet', [[8, -50], [-9, 70], [7, 90]].map(([l, al]) => { const q = at(k, l, al); return { x: q.x, z: q.z, y: -0.2, s: 5, ry: q.rot + R(-0.5, 0.5) }; }), { long: true });
   scatter(k, 'sen', around(k, nq(10, 5), 11, 14, -70, -20, 5).map((p) => ({ ...p, y: 0.02 })));
-  { const q = at(k, 19, -4), y = Math.max(gy(q.x, q.z), 0.4); scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: q.x, z: q.z, y, s: 10, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); }
+  { const q = at(k, 24, -4), y = HERO[k].y - 9; scatter(k, pick('cong-tam-quan', 'den-chua'), [{ x: q.x, z: q.z, y, s: 9, ry: q.rot + Math.PI / 2 }], { excl: 0.5 }); } // on the mound's flat top
   const nm = pick('ngo-mon'), c = at(k, -52, 24), cy = Math.max(gy(c.x, c.z), 0.5);
   if (nm) scatter(k, nm, [{ x: c.x, z: c.z, y: cy, s: 34, ry: c.rot - Math.PI / 2 }], { excl: 0.5 });
   else {
@@ -1561,7 +1563,9 @@ function addFlag(k, o, rot) {
   scatter(k, 'du-bien', around(k, nq(10, 5), -24, -19, -60, 50, 3.2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
   scatter(k, 'ghe-bien', around(k, nq(10, 5), -24, -19, -60, 50, 2).map((p) => ({ ...p, y: Math.max(gy(p.x, p.z), 0.4) })));
   scatter(k, 'toa-van-phong', [[68, -40, 28], [74, -20, 32], [70, 50, 30], [78, 66, 26]].map(([l, al, s]) => { const q = at(k, l, al); return { x: q.x, z: q.z, s, ry: q.rot + R(-0.3, 0.3) }; }), { excl: 0.4 });
-  scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 })), { long: true });
+  const sq = around(k, nq(8, 4), -170, -50, -40, 160, 9).map((p) => ({ ...p, y: -0.4 }));
+  scatter(k, pick('thuyen-cau-muc', 'thuyen-ca'), sq, { long: true });
+  if (pick('thuyen-cau-muc')) field(k, sq.flatMap((b) => [-0.3, -0.12, 0.06, 0.24].map((f) => ({ x: b.x + Math.cos(b.ry) * f * b.s, y: 2.1, z: b.z - Math.sin(b.ry) * f * b.s, c: 0xf2fbff, s: 0.3, halo: 12, tw: 0.15 }))), { bodies: false, reflect: true }); // the bulbs strung over the deck
   scatter(k, 'vach-bien', around(k, 3, -60, -36, -60, 60, 30).map((p) => ({ ...p, y: -3 })), { far: true });
 }
 // 08 Phan Thiết: dragon-fruit fields on the hills, fishing boats, coconut palms
